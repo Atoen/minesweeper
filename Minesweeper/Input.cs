@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Sudoku;
+namespace Minesweeper;
 
 public static class Input
 {

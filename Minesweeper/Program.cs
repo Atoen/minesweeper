@@ -1,4 +1,4 @@
-﻿namespace Sudoku;
+﻿namespace Minesweeper;
 
 public static class Program
 {

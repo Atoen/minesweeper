@@ -2,7 +2,7 @@
 using System.Runtime.Versioning;
 using Microsoft.Win32.SafeHandles;
 
-namespace Sudoku;
+namespace Minesweeper;
 
 public static class Display
 {
@@ -22,7 +22,7 @@ public static class Display
     [SupportedOSPlatform("windows")]
     internal static void Init()
     {
-        Console.Title = "Sudoku";
+        Console.Title = "Minesweeper";
         Console.WindowWidth = Width;
         Console.WindowHeight = Height;
         Console.SetBufferSize(Width, Height);

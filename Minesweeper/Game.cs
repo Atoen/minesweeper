@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Sudoku;
+namespace Minesweeper;
 
 public static class Game
 {
