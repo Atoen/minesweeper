@@ -6,16 +6,16 @@ namespace Minesweeper;
 
 public static class Display
 {
-    public const int Width = 120;
-    public const int Height = 40;
+    public const int WIDTH = 120;
+    public const int HEIGHT = 40;
     
     private static SafeFileHandle _fileHandle = null!;
 
-    private static readonly CharInfo[] Buffer = new CharInfo[Width * Height];
-    private static readonly Coord ScreenSize = new() {X = Width, Y = Height};
+    private static readonly CharInfo[] Buffer = new CharInfo[WIDTH * HEIGHT];
+    private static readonly Coord ScreenSize = new() {X = WIDTH, Y = HEIGHT};
     private static readonly Coord StartPos = new() {X = 0, Y = 0};
 
-    private static DisplayRect _screenRect = new() {Left = 0, Top = 0, Right = Width, Bottom = Height};
+    private static DisplayRect _screenRect = new() {Left = 0, Top = 0, Right = WIDTH, Bottom = HEIGHT};
 
     private static bool _modified;
 
@@ -23,9 +23,9 @@ public static class Display
     internal static void Init()
     {
         Console.Title = "Minesweeper";
-        Console.WindowWidth = Width;
-        Console.WindowHeight = Height;
-        Console.SetBufferSize(Width, Height);
+        Console.WindowWidth = WIDTH;
+        Console.WindowHeight = HEIGHT;
+        Console.SetBufferSize(WIDTH, HEIGHT);
         Console.CursorVisible = false;
         
         _fileHandle = CreateFile("CONOUT$",
@@ -49,9 +49,9 @@ public static class Display
 
     public static void Print(int posX, int posY, char symbol, ConsoleColor color = ConsoleColor.White)
     {
-        if (posX is < 0 or > Width || posY is < 0 or > Height) return;
+        if (posX is < 0 or > WIDTH || posY is < 0 or > HEIGHT) return;
 
-        var bufferIndex = posY * Width + posX;
+        var bufferIndex = posY * WIDTH + posX;
 
         Buffer[bufferIndex].Symbol = (byte) symbol;
         Buffer[bufferIndex].Color = (short) color;
@@ -61,9 +61,9 @@ public static class Display
 
     public static void ClearAt(int posX, int posY)
     {
-        if (posX is < 0 or > Width || posY is < 0 or > Height) return;
+        if (posX is < 0 or > WIDTH || posY is < 0 or > HEIGHT) return;
         
-        var bufferIndex = posY * Width + posX;
+        var bufferIndex = posY * WIDTH + posX;
         
         Buffer[bufferIndex].Symbol = (byte) ' ';
         Buffer[bufferIndex].Color = (short) ConsoleColor.White;

@@ -15,21 +15,21 @@ public static class Game
         _isRunning = true;
 
         Input.Init();
-        Input.MouseEvent += ConsoleListenerOnMouseEvent;
-        Input.KeyEvent += ConsoleListenerOnKeyEvent;
+        Input.MouseEvent += InputOnMouseEvent;
 
         Display.Init();
-        // MainLoop();
+        
+        Grid.Generate(100, 40);
+        
+        MainLoop();
     }
 
-    private static void ConsoleListenerOnKeyEvent(KeyboardState r)
+    private static void InputOnMouseEvent(MouseState state)
     {
-        Console.Write($"{r.Char} {r.Pressed}");
-    }
-
-    private static void ConsoleListenerOnMouseEvent(MouseState state)
-    {
-        Console.Write($"\r{state.Position} {state.Buttons:F} {state.Flags:F}\t\t");
+        if (state.Buttons.HasFlag(MouseButtonState.Left))
+        {
+            Display.ClearAt(state.Position.X, state.Position.Y);
+        }
     }
 
     private static void MainLoop()
@@ -40,6 +40,8 @@ public static class Game
         {
             stopwatch.Start();
 
+            Display.Update();
+            
             stopwatch.Stop();
 
             var sleepTime = TickLenght - (int) stopwatch.ElapsedMilliseconds;
