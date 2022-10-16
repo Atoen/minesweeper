@@ -17,9 +17,9 @@ public static class Game
         Input.Init();
         Input.MouseEvent += InputOnMouseEvent;
 
-        Display.Init();
+        Display.Init(1, 0);
         
-        Grid.Generate(100, 40);
+        Grid.Generate(100, 50);
         
         MainLoop();
     }

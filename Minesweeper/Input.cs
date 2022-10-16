@@ -173,16 +173,16 @@ public struct MouseState
 
 public enum MouseButtonState
 {
-    None = 0x0000,
-    Left = 0x0001,
-    Right = 0x002,
-    Middle = 0x004
+    None = 0,
+    Left = 1,
+    Right = 1 << 1,
+    Middle = 1 << 2
 }
 
 public enum MouseEventFlags
 {
-    Moved = 0x0001,
-    DoubleClicked = 0x0002,
-    Wheeled = 0x0004,
-    HorizontalWheeled = 0x0008
+    Moved = 1,
+    DoubleClicked = 1 << 1,
+    Wheeled = 1 << 2,
+    HorizontalWheeled = 1 << 3
 }

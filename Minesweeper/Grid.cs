@@ -19,7 +19,8 @@ public static class Grid
         {
             if (random.NextDouble() > 0.6)
             {
-                BombArray[y * height + width] = true;
+                
+                BombArray[x * height + y] = true;
                 Display.Print(x, y, '*');
                 continue;
             }
