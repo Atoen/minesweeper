@@ -76,18 +76,23 @@ public static class Display
         _modified = false;
     }
 
-    public static void Print(int posX, int posY, char symbol, ConsoleColor color = ConsoleColor.White)
+    public static void Print(Coord pos, char symbol, ConsoleColor foreground = ConsoleColor.White, ConsoleColor background = ConsoleColor.Black) =>
+        Print(pos.X, pos.Y, symbol, foreground, background);
+
+    public static void Print(int posX, int posY, char symbol, ConsoleColor foreground, ConsoleColor background)
     {
         if (posX < 0 || posX >= Width || posY < 0 || posY >= Height) return;
 
         var bufferIndex = posY * Width + posX;
 
         _buffer[bufferIndex].Symbol = (byte) symbol;
-        _buffer[bufferIndex].Color = (short) color;
+        _buffer[bufferIndex].Color = (short) ((int) foreground | (int) background << 4);
 
         _modified = true;
     }
 
+    public static void ClearAt(Coord pos) => ClearAt(pos.X, pos.Y);
+    
     public static void ClearAt(int posX, int posY)
     {
         if (posX < 0 || posX >= Width || posY < 0 || posY >= Height) return;
@@ -118,14 +123,7 @@ public static class Display
         Coord dwBufferSize,
         Coord dwBufferCoord,
         ref DisplayRect lpWriteRegion);
-    
-    [StructLayout(LayoutKind.Sequential)]
-    private struct Coord
-    {
-        public short X;
-        public short Y;
-    }
-    
+
     [StructLayout(LayoutKind.Explicit)]
     private struct CharInfo
     {
@@ -201,4 +199,12 @@ public static class Display
     private static extern IntPtr GetConsoleWindow();
     
     #endregion
+}
+
+[StructLayout(LayoutKind.Sequential)]
+public struct Coord
+{
+    public short X;
+    public short Y;
+    public override string ToString() => $"({X} {Y})";
 }

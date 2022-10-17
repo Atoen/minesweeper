@@ -82,14 +82,6 @@ public static class Input
     private const ushort KEY_EVENT = 0x0001,
         MOUSE_EVENT = 0x0002,
         WINDOW_BUFFER_SIZE_EVENT = 0x0004;
-        
-    public struct Coord
-    {
-        public short X;
-        public short Y;
-
-        public override string ToString() => $"({X} {Y})";
-    }
 
     [StructLayout(LayoutKind.Explicit)]
     private struct InputRecord
@@ -159,7 +151,7 @@ public struct KeyboardState
 
 public struct MouseState
 {
-    public Input.Coord Position;
+    public Coord Position;
     public MouseButtonState Buttons;
     public MouseEventFlags Flags;
 
@@ -171,6 +163,7 @@ public struct MouseState
     }
 }
 
+[Flags]
 public enum MouseButtonState
 {
     None = 0,

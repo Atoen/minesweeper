@@ -4,7 +4,7 @@ namespace Minesweeper;
 
 public static class Game
 {
-    private const int TicksPerSecond = 20;
+    private const int TicksPerSecond = 50;
     private const int TickLenght = 1000 / TicksPerSecond;
 
     private static bool _isRunning;
@@ -17,7 +17,7 @@ public static class Game
         Input.Init();
         Input.MouseEvent += InputOnMouseEvent;
 
-        Display.Init(1, 0);
+        Display.Init(100, 50);
         
         Grid.Generate(100, 50);
         
@@ -26,9 +26,9 @@ public static class Game
 
     private static void InputOnMouseEvent(MouseState state)
     {
-        if (state.Buttons.HasFlag(MouseButtonState.Left))
+        if ((state.Buttons & MouseButtonState.Left) != 0)
         {
-            Display.ClearAt(state.Position.X, state.Position.Y);
+            Display.Print(state.Position, ' ', ConsoleColor.White, ConsoleColor.White);
         }
     }
 
@@ -43,7 +43,6 @@ public static class Game
             Display.Update();
             
             stopwatch.Stop();
-
             var sleepTime = TickLenght - (int) stopwatch.ElapsedMilliseconds;
             stopwatch.Reset();
             
