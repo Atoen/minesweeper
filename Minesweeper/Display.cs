@@ -79,6 +79,12 @@ public static class Display
     public static void Print(Coord pos, char symbol, ConsoleColor foreground = ConsoleColor.White, ConsoleColor background = ConsoleColor.Black) =>
         Print(pos.X, pos.Y, symbol, foreground, background);
 
+    public static void Print(Coord pos, TileDisplay tileDisplay) =>
+        Print(pos.X, pos.Y, tileDisplay.Symbol, tileDisplay.Foreground, tileDisplay.Background);
+
+    public static void Print(int posX, int posY, TileDisplay tileDisplay) =>
+        Print(posX, posY, tileDisplay.Symbol, tileDisplay.Foreground, tileDisplay.Background);
+
     public static void Print(int posX, int posY, char symbol, ConsoleColor foreground, ConsoleColor background)
     {
         if (posX < 0 || posX >= Width || posY < 0 || posY >= Height) return;
@@ -206,5 +212,16 @@ public struct Coord
 {
     public short X;
     public short Y;
+
+    public Coord(short x, short y)
+    {
+        X = x;
+        Y = y;
+    }
+
     public override string ToString() => $"({X} {Y})";
+    
+    public static Coord operator +(Coord a, Coord b) => new((short) (a.X + b.X), (short) (a.X + b.Y));
+    public static Coord operator -(Coord a, Coord b) => new((short) (a.X - b.X), (short) (a.Y - b.Y));
+
 }

@@ -17,19 +17,25 @@ public static class Game
         Input.Init();
         Input.MouseEvent += InputOnMouseEvent;
 
-        Display.Init(100, 50);
+#pragma warning disable CA1416
+        Display.Init(50, 20);
+#pragma warning restore CA1416
         
-        Grid.Generate(100, 50);
-        
+        Grid.Generate(40, 15);
+
         MainLoop();
+    }
+
+    public static void Stop()
+    {
+        Input.Stop();
+        _isRunning = false;
     }
 
     private static void InputOnMouseEvent(MouseState state)
     {
-        if ((state.Buttons & MouseButtonState.Left) != 0)
-        {
-            Display.Print(state.Position, ' ', ConsoleColor.White, ConsoleColor.White);
-        }
+        if (state.Buttons != 0) Grid.ClickTile(state.Position, state.Buttons);
+        
     }
 
     private static void MainLoop()

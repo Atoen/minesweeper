@@ -4,13 +4,13 @@ namespace Minesweeper;
 
 public static class Input
 {
-    public static event Action<KeyboardState> KeyEvent = null!;
-    public static event Action<MouseState> MouseEvent = null!;
-    public static event Action<WindowBufferSizeRecord> WindowEvent = null!;
+    internal static event Action<KeyboardState> KeyEvent = null!;
+    internal static event Action<MouseState> MouseEvent = null!;
+    internal static event Action<WindowBufferSizeRecord> WindowEvent = null!;
         
     private static bool _running;
 
-    public static void Init()
+    internal static void Init()
     {
         if (_running) return;
         _running = true;
@@ -65,7 +65,7 @@ public static class Input
         WriteConsoleInput(handleIn, recordArray, 1, ref numWritten);
     }
 
-    public static void Stop() => _running = false;
+    internal static void Stop() => _running = false;
 
     #region NativeMethods
         
@@ -135,7 +135,7 @@ public static class Input
     #endregion
 }
 
-public struct KeyboardState
+internal struct KeyboardState
 {
     public ushort KeyCode;
     public char Char;
@@ -149,7 +149,7 @@ public struct KeyboardState
     }
 }
 
-public struct MouseState
+internal struct MouseState
 {
     public Coord Position;
     public MouseButtonState Buttons;
