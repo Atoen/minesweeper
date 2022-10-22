@@ -19,7 +19,7 @@ public static class Grid
         
         Center();
         
-        var random = new Random(10);
+        var random = new Random();
         _tiles = new Tile[width, height];
 
         for (short x = 0; x < width; x++)
@@ -64,13 +64,13 @@ public static class Grid
         
         if (!clickedTile.Flagged)
         {
-            Display.Print(pos, Tiles.Flag);
+            Display.Draw(pos, Tiles.Flag);
             clickedTile.Flagged = true;
                 
             return;
         }
             
-        Display.Print(pos, Tiles.Default);
+        Display.Draw(pos, Tiles.Default);
         clickedTile.Flagged = false;
     }
 
@@ -115,7 +115,7 @@ public static class Grid
                 // If tile is empty then its neighbours are searched too 
                 if (tileToReveal.NeighbouringBombs == 0) newTiles.AddRange(tileToReveal.Neighbours);
                 
-                Display.Print(tileToReveal.Pos + _printOffset, Tiles.GetTile(tileToReveal.NeighbouringBombs));
+                Display.Draw(tileToReveal.Pos + _printOffset, Tiles.GetTile(tileToReveal.NeighbouringBombs));
             }
 
             if (newTiles.Count == 0) break;
@@ -129,7 +129,7 @@ public static class Grid
     {
         foreach (var tile in _tiles)
         {
-            if (tile.HasBomb) Display.Print(tile.Pos + _printOffset, Tiles.Bomb);
+            if (tile.HasBomb) Display.Draw(tile.Pos + _printOffset, Tiles.Bomb);
         }
     }
     
@@ -138,7 +138,7 @@ public static class Grid
         for (var x = 0; x < Width; x++)
         for (var y = 0; y < Height; y++)
         {
-            Display.Print(x + _printOffset.X, y + _printOffset.Y, Tiles.Default);
+            Display.Draw(x + _printOffset.X, y + _printOffset.Y, Tiles.Default);
         }
     }
 

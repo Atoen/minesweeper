@@ -1,6 +1,8 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Microsoft.Win32.SafeHandles;
+using Minesweeper.UI;
 
 namespace Minesweeper;
 
@@ -8,6 +10,8 @@ public static class Display
 {
     public static short Width { get; private set; }
     public static short Height { get; private set; }
+    
+    public static int RefreshRate { get; set; }
     
     private static SafeFileHandle _fileHandle = null!;
     
@@ -17,15 +21,19 @@ public static class Display
     private static readonly Coord StartPos = new() {X = 0, Y = 0};
 
     private static bool _modified;
+    private static bool _refreshing;
+
+    private static readonly List<IRenderable> Renderables = new();
 
     [SupportedOSPlatform("windows")]
-    internal static void Init(short width, short height)
+    internal static void Init(short width, short height, int refreshRate = 20)
     {
         if (width < 40) width = 40;
         if (height < 20) height = 20;
 
         Width = width;
         Height = height;
+        RefreshRate = refreshRate;
 
         // Displaying stuff on the screen
         _buffer = new CharInfo[Width * Height];
@@ -66,33 +74,76 @@ public static class Display
             IntPtr.Zero);
 
         if (_fileHandle.IsInvalid) throw new IOException("Console buffer file is invalid");
+        
+        new Thread(Start).Start();
     }
+
+    internal static void Start()
+    {
+        var tickLenght = 1000 / RefreshRate; // ms
+        var stopwatch = new Stopwatch();
+
+        _refreshing = true;
+
+        while (_refreshing)
+        {
+            stopwatch.Start();
+
+            foreach (var renderable in Renderables)
+            {
+                renderable.Render();
+            }
+            
+            if (_modified)
+            {
+                WriteConsoleOutput(_fileHandle, _buffer, _screenSize, StartPos, ref _screenRect);
+                _modified = false;
+            }
+            
+            stopwatch.Stop();
+            var sleepTime = tickLenght - (int) stopwatch.ElapsedMilliseconds;
+            stopwatch.Reset();
+            
+            if (sleepTime > 0) Thread.Sleep(sleepTime);
+        }
+    }
+
+    internal static void Stop() => _refreshing = false;
+
+    internal static void AddToRenderList(IRenderable renderable) => Renderables.Add(renderable);
+
+    internal static void RemoveFromRenderList(IRenderable renderable) => Renderables.Remove(renderable);
 
     internal static void Update()
     {
         if (!_modified) return;
-
+    
         WriteConsoleOutput(_fileHandle, _buffer, _screenSize, StartPos, ref _screenRect);
         _modified = false;
     }
 
-    public static void Print(Coord pos, char symbol, ConsoleColor foreground = ConsoleColor.White, ConsoleColor background = ConsoleColor.Black) =>
-        Print(pos.X, pos.Y, symbol, foreground, background);
+    public static void Draw(Coord pos, char symbol, ConsoleColor foreground = ConsoleColor.White, ConsoleColor background = ConsoleColor.Black) =>
+        Draw(pos.X, pos.Y, symbol, foreground, background);
 
-    public static void Print(Coord pos, TileDisplay tileDisplay) =>
-        Print(pos.X, pos.Y, tileDisplay.Symbol, tileDisplay.Foreground, tileDisplay.Background);
+    public static void Draw(Coord pos, TileDisplay tileDisplay) =>
+        Draw(pos.X, pos.Y, tileDisplay.Symbol, tileDisplay.Foreground, tileDisplay.Background);
 
-    public static void Print(int posX, int posY, TileDisplay tileDisplay) =>
-        Print(posX, posY, tileDisplay.Symbol, tileDisplay.Foreground, tileDisplay.Background);
+    public static void Draw(int posX, int posY, TileDisplay tileDisplay) =>
+        Draw(posX, posY, tileDisplay.Symbol, tileDisplay.Foreground, tileDisplay.Background);
 
-    public static void Print(int posX, int posY, char symbol, ConsoleColor foreground, ConsoleColor background)
+    public static void Draw(int posX, int posY, char symbol, ConsoleColor foreground, ConsoleColor background)
     {
         if (posX < 0 || posX >= Width || posY < 0 || posY >= Height) return;
 
         var bufferIndex = posY * Width + posX;
 
+        var color = (short) ((int) foreground | (int) background << 4);
+        var symbolInfo = _buffer[bufferIndex];
+
+        if (symbolInfo.Symbol == symbol && symbolInfo.Color == color) return;
+
         _buffer[bufferIndex].Symbol = (byte) symbol;
-        _buffer[bufferIndex].Color = (short) ((int) foreground | (int) background << 4);
+        _buffer[bufferIndex].Color = color;
 
         _modified = true;
     }
@@ -109,6 +160,24 @@ public static class Display
         _buffer[bufferIndex].Color = (short) ConsoleColor.White;
 
         _modified = true;
+    }
+
+    public static void Print(int posX, int posY, string text, ConsoleColor foreground = ConsoleColor.White,
+        ConsoleColor background = ConsoleColor.Black, Alignment alignment = Alignment.Center)
+    {
+        var startX = alignment switch
+        {
+            Alignment.Left => posX - text.Length,
+            Alignment.Right => posX,
+            _ => posX - text.Length / 2
+        };
+            
+        var endX = startX + text.Length;
+
+        for (int x = startX - posX, i = 0; x < endX - posX; x++, i++)
+        {
+            Draw(posX + x, posY, text[i], foreground, background);
+        }
     }
 
     #region NativeMetods
@@ -223,5 +292,4 @@ public struct Coord
     
     public static Coord operator +(Coord a, Coord b) => new((short) (a.X + b.X), (short) (a.Y + b.Y));
     public static Coord operator -(Coord a, Coord b) => new((short) (a.X - b.X), (short) (a.Y - b.Y));
-
 }

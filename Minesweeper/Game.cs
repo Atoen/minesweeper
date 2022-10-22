@@ -14,23 +14,23 @@ public static class Game
         if (_isRunning) return;
         _isRunning = true;
 
-        Input.Init();
         Input.MouseClickEvent += InputOnMouseClickEvent;
-        // Input.MouseEvent += InputOnMouseClickEvent;
+        Input.MouseWheelEvent += InputOnMouseWheelEvent;
 
-#pragma warning disable CA1416
-        Display.Init(50, 20);
-#pragma warning restore CA1416
-        
+
         Grid.Generate(40, 15);
 
         MainLoop();
     }
 
+    private static void InputOnMouseWheelEvent(MouseWheelState state)
+    {
+        Console.Write($"\r{state}");
+    }
+
     private static void InputOnMouseClickEvent(MouseState state)
     {
         if (state.Buttons != 0) Grid.ClickTile(state.Position, state.Buttons);
-
     }
 
     public static void Stop()
@@ -38,12 +38,6 @@ public static class Game
         Input.Stop();
         _isRunning = false;
     }
-
-    // private static void InputOnMouseEvent(MouseState state)
-    // {
-    //     if (state.Buttons != 0) Grid.ClickTile(state.Position, state.Buttons);
-    //     
-    // }
 
     private static void MainLoop()
     {
@@ -53,7 +47,7 @@ public static class Game
         {
             stopwatch.Start();
 
-            Display.Update();
+            // Display.Update();
             
             stopwatch.Stop();
             var sleepTime = TickLenght - (int) stopwatch.ElapsedMilliseconds;

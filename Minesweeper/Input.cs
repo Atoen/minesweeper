@@ -1,15 +1,24 @@
 ﻿using System.Runtime.InteropServices;
+using Minesweeper.UI;
 
 namespace Minesweeper;
 
 public static class Input
 {
-    internal static event Action<KeyboardState> KeyEvent = null!;
-    internal static event Action<MouseState> MouseEvent = null!;
-    internal static event Action<MouseState> MouseClickEvent = null!;
-    internal static event Action<WindowBufferSizeRecord> WindowEvent = null!;
+    internal static event Action<KeyboardState>? KeyEvent;
+    internal static event Action<MouseState>? MouseEvent;
+    internal static event Action<MouseState>? MouseClickEvent;
+    internal static event Action<MouseWheelState>? MouseWheelEvent; 
+    internal static event Action<WindowBufferSizeRecord>? WindowEvent;
 
     private static bool _running;
+    private static uint _lastMouseButton = unchecked((uint) -1);
+    
+    private static MouseState _mouseState;
+    private static KeyboardState _keyboardState;
+
+    private static readonly List<IInteractable> MouseUi = new();
+    private static readonly List<IInteractable> KeyboardUi = new();
 
     internal static void Init()
     {
@@ -29,18 +38,24 @@ public static class Input
         new Thread(HandleInput).Start();
     }
 
+    internal static void RegisterMouseUiElement(IInteractable mouseUi) => MouseUi.Add(mouseUi);
+    internal static void UnregisterMouseUiElement(IInteractable mouseUi) => MouseUi.Remove(mouseUi);
+    internal static void RegisterKeyboardUiElement(IInteractable mouseUi) => KeyboardUi.Add(mouseUi);
+    internal static void UnregisterKeyboardUiElement(IInteractable mouseUi) => KeyboardUi.Remove(mouseUi);
+
     private static void HandleInput()
     {
         var handleIn = GetStdHandle(STD_INPUT_HANDLE);
         var recordArray = new[] {new InputRecord()};
-
-        var mouseState = new MouseState();
-        var keyboardState = new KeyboardState();
-
-        var lastMouseButton = 0u;
-
+        
+        
         while (_running)
         {
+            foreach (var mouseUi in MouseUi)
+            {
+                mouseUi.Update();
+            }
+            
             uint numRead = 0;
             ReadConsoleInput(handleIn, recordArray, 1, ref numRead);
 
@@ -49,18 +64,12 @@ public static class Input
             switch (record.EventType)
             {
                 case MOUSE_EVENT:
-
-                    mouseState.Assign(record.MouseEventRecord);
-                    if (lastMouseButton == 0) MouseClickEvent?.Invoke(mouseState);
-
-                    lastMouseButton = record.MouseEventRecord.ButtonState;
-
-                    MouseEvent?.Invoke(mouseState);
+                    HandleMouse(record.MouseEventRecord);
                     break;
 
                 case KEY_EVENT:
-                    keyboardState.Assign(record.KeyEventRecord);
-                    KeyEvent?.Invoke(keyboardState);
+                    _keyboardState.Assign(record.KeyEventRecord);
+                    KeyEvent?.Invoke(_keyboardState);
                     break;
 
                 case WINDOW_BUFFER_SIZE_EVENT:
@@ -71,6 +80,32 @@ public static class Input
 
         uint numWritten = 0;
         WriteConsoleInput(handleIn, recordArray, 1, ref numWritten);
+    }
+
+    private static void HandleMouse(MouseEventRecord mouseRecord)
+    {
+        _mouseState.Assign(mouseRecord);
+        if (_lastMouseButton == 0 && _mouseState.Buttons != 0)
+        {
+            MouseClickEvent?.Invoke(_mouseState);
+
+            // foreach (var mouseUi in MouseUi)
+            // {
+            //     mouseUi.Click(_mouseState);
+            // }
+        }
+
+        _lastMouseButton = mouseRecord.ButtonState;
+        
+        if (_lastMouseButton == (ulong) MouseWheelState.Down || _lastMouseButton == (ulong) MouseWheelState.Up)
+            MouseWheelEvent?.Invoke((MouseWheelState) _lastMouseButton);
+        
+        MouseEvent?.Invoke(_mouseState);
+        
+        // foreach (var mouseUi in MouseUi)
+        // {
+        //     mouseUi.CursorMove(_mouseState);
+        // }
     }
 
     internal static void Stop() => _running = false;
@@ -159,7 +194,7 @@ internal struct KeyboardState
     }
 }
 
-internal struct MouseState
+public struct MouseState
 {
     public Coord Position;
     public MouseButtonState Buttons;
@@ -188,4 +223,10 @@ public enum MouseEventFlags
     DoubleClicked = 1 << 1,
     Wheeled = 1 << 2,
     HorizontalWheeled = 1 << 3
+}
+
+public enum MouseWheelState : ulong
+{
+    Down = 0xff880000,
+    Up = 0x780000
 }
