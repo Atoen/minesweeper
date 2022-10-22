@@ -5,8 +5,6 @@ public static class Grid
     public static short Width { get; private set; }
     public static short Height { get; private set; }
 
-    private static bool[,] _bombArray = null!;
-
     private static Tile[,] _tiles = null!;
 
     private static Coord _printOffset;
@@ -21,15 +19,20 @@ public static class Grid
         
         Center();
         
-        var random = new Random();
+        var random = new Random(10);
         _tiles = new Tile[width, height];
 
-        for (var x = 0; x < width; x++)
-        for (var y = 0; y < height; y++)
+        for (short x = 0; x < width; x++)
+        for (short y = 0; y < height; y++)
         {
-            _tiles[x, y] = new Tile();
+            _tiles[x, y] = new Tile {Pos = {X = x, Y = y}};
 
-            if (random.NextDouble() > 0.9) _tiles[x, y].HasBomb = true;
+            if (random.NextDouble() > 0.8) _tiles[x, y].HasBomb = true;
+        }
+
+        foreach (var tile in _tiles)
+        {
+            CheckSurrounding(tile.Pos);
         }
 
         if (display) Print();
@@ -46,10 +49,13 @@ public static class Grid
         {
             if (clickedTile.Flagged) return;
 
-            clickedTile.Revealed = true;
-            
-            var tile = Tiles.GetTile(CheckSurrounding(pos));
-            Display.Print(pos, tile);
+            if (clickedTile.HasBomb)
+            {
+                DisplayAllBombs();
+                return;
+            };
+
+            RevealNearbyTiles(clickedTile);
             
             return;
         }
@@ -68,12 +74,11 @@ public static class Grid
         clickedTile.Flagged = false;
     }
 
-    private static int CheckSurrounding(Coord pos)
+    private static void CheckSurrounding(Coord arrayPos)
     {
-        var arrayPos = pos - _printOffset;
-        
-        if (_tiles[arrayPos.X, arrayPos.Y].HasBomb) return -1;
-        
+        var tile = GetTile(arrayPos);
+        if (tile.HasBomb) return;
+
         var bombCount = 0;
         
         for (var x = -1; x < 2; x++)
@@ -84,14 +89,50 @@ public static class Grid
             
             if (tileX < 0 || tileX >= Width || tileY < 0 || tileY >= Height) continue;
             
+            if (x != 0 || y != 0) tile.Neighbours.Add(_tiles[tileX, tileY]);
+            
             if (_tiles[tileX, tileY].HasBomb) bombCount++;
         }
 
-        _tiles[arrayPos.X, arrayPos.Y].NeighbouringBombs = bombCount;
-        
-        return bombCount;
+        tile.NeighbouringBombs = bombCount;
     }
 
+    private static void RevealNearbyTiles(Tile tile)
+    {
+        var tilesToReveal = new List<Tile> {tile};
+
+        // Iterative way of searching for next tiles to reveal
+        while (true)
+        {
+            var newTiles = new List<Tile>();
+
+            foreach (var tileToReveal in tilesToReveal)
+            {
+                if (tileToReveal.HasBomb || tileToReveal.Flagged || tileToReveal.Revealed) continue;
+
+                tileToReveal.Revealed = true;
+                
+                // If tile is empty then its neighbours are searched too 
+                if (tileToReveal.NeighbouringBombs == 0) newTiles.AddRange(tileToReveal.Neighbours);
+                
+                Display.Print(tileToReveal.Pos + _printOffset, Tiles.GetTile(tileToReveal.NeighbouringBombs));
+            }
+
+            if (newTiles.Count == 0) break;
+            
+            tilesToReveal.Clear();
+            tilesToReveal = newTiles;
+        }
+    }
+
+    private static void DisplayAllBombs()
+    {
+        foreach (var tile in _tiles)
+        {
+            if (tile.HasBomb) Display.Print(tile.Pos + _printOffset, Tiles.Bomb);
+        }
+    }
+    
     public static void Print()
     {
         for (var x = 0; x < Width; x++)
@@ -100,6 +141,8 @@ public static class Grid
             Display.Print(x + _printOffset.X, y + _printOffset.Y, Tiles.Default);
         }
     }
+
+    private static Tile GetTile(Coord pos) => _tiles[pos.X, pos.Y];
 
     private static bool IsInside(Coord pos)
     {

@@ -6,28 +6,29 @@ public static class Input
 {
     internal static event Action<KeyboardState> KeyEvent = null!;
     internal static event Action<MouseState> MouseEvent = null!;
+    internal static event Action<MouseState> MouseClickEvent = null!;
     internal static event Action<WindowBufferSizeRecord> WindowEvent = null!;
-        
+
     private static bool _running;
 
     internal static void Init()
     {
         if (_running) return;
         _running = true;
-            
+
         var inHandle = GetStdHandle(STD_INPUT_HANDLE);
-            
+
         uint mode = 0;
         GetConsoleMode(inHandle, ref mode);
-            
+
         mode &= ~ENABLE_QUICK_EDIT_MODE;
         mode |= ENABLE_WINDOW_INPUT;
         mode |= ENABLE_MOUSE_INPUT;
         SetConsoleMode(inHandle, mode);
-            
+
         new Thread(HandleInput).Start();
     }
-        
+
     private static void HandleInput()
     {
         var handleIn = GetStdHandle(STD_INPUT_HANDLE);
@@ -35,32 +36,39 @@ public static class Input
 
         var mouseState = new MouseState();
         var keyboardState = new KeyboardState();
-        
+
+        var lastMouseButton = 0u;
+
         while (_running)
         {
             uint numRead = 0;
             ReadConsoleInput(handleIn, recordArray, 1, ref numRead);
 
             var record = recordArray[0];
-                
+
             switch (record.EventType)
             {
                 case MOUSE_EVENT:
+
                     mouseState.Assign(record.MouseEventRecord);
+                    if (lastMouseButton == 0) MouseClickEvent?.Invoke(mouseState);
+
+                    lastMouseButton = record.MouseEventRecord.ButtonState;
+
                     MouseEvent?.Invoke(mouseState);
                     break;
-                    
+
                 case KEY_EVENT:
                     keyboardState.Assign(record.KeyEventRecord);
                     KeyEvent?.Invoke(keyboardState);
                     break;
-                    
+
                 case WINDOW_BUFFER_SIZE_EVENT:
                     WindowEvent?.Invoke(record.WindowBufferSizeEventRecord);
                     break;
             }
         }
-            
+
         uint numWritten = 0;
         WriteConsoleInput(handleIn, recordArray, 1, ref numWritten);
     }
@@ -68,17 +76,17 @@ public static class Input
     internal static void Stop() => _running = false;
 
     #region NativeMethods
-        
-    private const uint STD_INPUT_HANDLE = unchecked((uint)-10),
-        STD_OUTPUT_HANDLE = unchecked((uint)-11),
-        STD_ERROR_HANDLE = unchecked((uint)-12);
+
+    private const uint STD_INPUT_HANDLE = unchecked((uint) -10),
+        STD_OUTPUT_HANDLE = unchecked((uint) -11),
+        STD_ERROR_HANDLE = unchecked((uint) -12);
 
     private const uint ENABLE_MOUSE_INPUT = 0x0010,
         ENABLE_QUICK_EDIT_MODE = 0x0040,
         ENABLE_EXTENDED_FLAGS = 0x0080,
         ENABLE_ECHO_INPUT = 0x0004,
         ENABLE_WINDOW_INPUT = 0x0008;
-        
+
     private const ushort KEY_EVENT = 0x0001,
         MOUSE_EVENT = 0x0002,
         WINDOW_BUFFER_SIZE_EVENT = 0x0004;
@@ -125,12 +133,14 @@ public static class Input
 
     [DllImport("kernel32.dll")]
     private static extern bool SetConsoleMode(IntPtr hConsoleInput, uint dwMode);
-        
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-    private static extern bool ReadConsoleInput(IntPtr hConsoleInput, [Out] InputRecord[] lpBuffer, uint nLength, ref uint lpNumberOfEventsRead);
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-    private static extern bool WriteConsoleInput(IntPtr hConsoleInput, InputRecord[] lpBuffer, uint nLength, ref uint lpNumberOfEventsWritten);
+    private static extern bool ReadConsoleInput(IntPtr hConsoleInput, [Out] InputRecord[] lpBuffer, uint nLength,
+        ref uint lpNumberOfEventsRead);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+    private static extern bool WriteConsoleInput(IntPtr hConsoleInput, InputRecord[] lpBuffer, uint nLength,
+        ref uint lpNumberOfEventsWritten);
 
     #endregion
 }

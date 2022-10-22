@@ -221,7 +221,7 @@ public struct Coord
 
     public override string ToString() => $"({X} {Y})";
     
-    public static Coord operator +(Coord a, Coord b) => new((short) (a.X + b.X), (short) (a.X + b.Y));
+    public static Coord operator +(Coord a, Coord b) => new((short) (a.X + b.X), (short) (a.Y + b.Y));
     public static Coord operator -(Coord a, Coord b) => new((short) (a.X - b.X), (short) (a.Y - b.Y));
 
 }

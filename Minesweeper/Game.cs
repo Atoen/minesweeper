@@ -15,7 +15,8 @@ public static class Game
         _isRunning = true;
 
         Input.Init();
-        Input.MouseEvent += InputOnMouseEvent;
+        Input.MouseClickEvent += InputOnMouseClickEvent;
+        // Input.MouseEvent += InputOnMouseClickEvent;
 
 #pragma warning disable CA1416
         Display.Init(50, 20);
@@ -26,17 +27,23 @@ public static class Game
         MainLoop();
     }
 
+    private static void InputOnMouseClickEvent(MouseState state)
+    {
+        if (state.Buttons != 0) Grid.ClickTile(state.Position, state.Buttons);
+
+    }
+
     public static void Stop()
     {
         Input.Stop();
         _isRunning = false;
     }
 
-    private static void InputOnMouseEvent(MouseState state)
-    {
-        if (state.Buttons != 0) Grid.ClickTile(state.Position, state.Buttons);
-        
-    }
+    // private static void InputOnMouseEvent(MouseState state)
+    // {
+    //     if (state.Buttons != 0) Grid.ClickTile(state.Position, state.Buttons);
+    //     
+    // }
 
     private static void MainLoop()
     {
