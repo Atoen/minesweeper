@@ -9,18 +9,15 @@ public static class Game
 
     private static bool _isRunning;
 
-    public static void Start()
+    public static void Start(short bombs, short width, short height)
     {
         if (_isRunning) return;
         _isRunning = true;
 
-        Input.MouseClickEvent += InputOnMouseClickEvent;
+        Input.MouseLeftClick += InputOnMouseLeftClick;
         Input.MouseWheelEvent += InputOnMouseWheelEvent;
-
-
-        Grid.Generate(40, 15);
-
-        MainLoop();
+        
+        Grid.Generate(width, height);
     }
 
     private static void InputOnMouseWheelEvent(MouseWheelState state)
@@ -28,7 +25,7 @@ public static class Game
         Console.Write($"\r{state}");
     }
 
-    private static void InputOnMouseClickEvent(MouseState state)
+    private static void InputOnMouseLeftClick(MouseState state)
     {
         if (state.Buttons != 0) Grid.ClickTile(state.Position, state.Buttons);
     }
@@ -37,23 +34,5 @@ public static class Game
     {
         Input.Stop();
         _isRunning = false;
-    }
-
-    private static void MainLoop()
-    {
-        var stopwatch = new Stopwatch();
-
-        while (_isRunning)
-        {
-            stopwatch.Start();
-
-            // Display.Update();
-            
-            stopwatch.Stop();
-            var sleepTime = TickLenght - (int) stopwatch.ElapsedMilliseconds;
-            stopwatch.Reset();
-            
-            if (sleepTime > 0) Thread.Sleep(sleepTime);
-        }
     }
 }

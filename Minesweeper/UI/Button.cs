@@ -1,6 +1,6 @@
 ﻿namespace Minesweeper.UI;
 
-public sealed class Button : IRenderable, IInteractable
+public sealed class Button : IRenderable
 {
     public Coord Pos;
     public Coord Size;
@@ -15,23 +15,28 @@ public sealed class Button : IRenderable, IInteractable
     public Alignment Alignment;
 
     private ConsoleColor _currentColor;
-    public ButtonState State;
+    private ButtonState _state;
+    private Coord _center;
 
     public Button(string text = "", Alignment alignment = Alignment.Center)
     {
+        // Pos = pos;
+        // Size = size;
+        // _center.X =  (short) (Pos.X + Size.X / 2);
+        // _center.Y =  (short) (Pos.Y + Size.Y / 2);
+
         Text = text;
         Alignment = alignment;
-        
+
         Display.AddToRenderList(this);
-        Input.RegisterMouseUiElement(this);
-        
-        Input.MouseClickEvent += Click;
+
+        Input.MouseLeftClick += Click;
         Input.MouseEvent += CursorMove;
     }
 
     public void Render()
     {
-        _currentColor = State switch
+        _currentColor = _state switch
         {
             ButtonState.Pressed => PressedColor,
             ButtonState.Highlighted => HighlightedColor,
@@ -47,14 +52,29 @@ public sealed class Button : IRenderable, IInteractable
         RenderText();
     }
 
+    public void Destroy()
+    {
+        Display.RemoveFromRenderList(this);
+        Input.MouseLeftClick -= Click;
+        Input.MouseEvent -= CursorMove;
+
+        for (var x = Pos.X; x < Pos.X + Size.X; x++)
+        for (var y = Pos.Y; y < Pos.Y + Size.Y; y++)
+        {
+            Display.Draw(x, y, ' ', ConsoleColor.White, ConsoleColor.Black);
+        }
+    }
+
     private void RenderText()
     {
         var centerX = Pos.X + Size.X / 2;
         var centerY = Pos.Y + Size.Y / 2;
         
         Display.Print(centerX, centerY, Text, ConsoleColor.Black, _currentColor, Alignment);
+        
+        // Display.Print(_center.X, _center.Y, Text, ConsoleColor.Black, _currentColor, Alignment);
     }
-
+    
     private bool IsOver(Coord pos)
     {
         return pos.X >= Pos.X && pos.X < Pos.X + Size.X &&
@@ -63,24 +83,21 @@ public sealed class Button : IRenderable, IInteractable
 
     public void Click(MouseState state)
     {
-        if (IsOver(state.Position)) State = ButtonState.Pressed;
+        if (!IsOver(state.Position)) return;
+        
+        _state = ButtonState.Pressed;
         ClickAction?.Invoke();
     }
 
     public void CursorMove(MouseState state)
     {
         if (IsOver(state.Position))
-        {
-            if (state.Buttons == 0) State = ButtonState.Highlighted;
+        { 
+            if (state.Buttons == 0) _state = ButtonState.Highlighted;
             return;
         }
         
-        State = ButtonState.Default;
-    }
-
-    public void Update()
-    {
-        
+        _state = ButtonState.Default;
     }
 }
 

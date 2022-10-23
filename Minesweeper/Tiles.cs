@@ -40,9 +40,8 @@ public sealed class Tile
     public bool Flagged;
     public bool HasBomb;
     public int NeighbouringBombs;
-
-    // public WeakReference<Tile>[] Neighbours = Array.Empty<WeakReference<Tile>>();
-    public List<Tile> Neighbours = new(8);
+    
+    public readonly List<Tile> Neighbours = new(8);
 
     public short PosX;
     public short PosY;

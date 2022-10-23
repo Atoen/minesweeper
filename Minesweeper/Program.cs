@@ -7,4 +7,3 @@ Display.Init(50, 20);
 Input.Init();
 
 MainMenu.Display();
-// Game.Start();

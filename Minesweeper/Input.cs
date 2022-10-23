@@ -7,7 +7,8 @@ public static class Input
 {
     internal static event Action<KeyboardState>? KeyEvent;
     internal static event Action<MouseState>? MouseEvent;
-    internal static event Action<MouseState>? MouseClickEvent;
+    internal static event Action<MouseState>? MouseLeftClick;
+    internal static event Action<MouseState>? DoubleClick; 
     internal static event Action<MouseWheelState>? MouseWheelEvent; 
     internal static event Action<WindowBufferSizeRecord>? WindowEvent;
 
@@ -48,14 +49,8 @@ public static class Input
         var handleIn = GetStdHandle(STD_INPUT_HANDLE);
         var recordArray = new[] {new InputRecord()};
         
-        
         while (_running)
         {
-            foreach (var mouseUi in MouseUi)
-            {
-                mouseUi.Update();
-            }
-            
             uint numRead = 0;
             ReadConsoleInput(handleIn, recordArray, 1, ref numRead);
 
@@ -85,27 +80,19 @@ public static class Input
     private static void HandleMouse(MouseEventRecord mouseRecord)
     {
         _mouseState.Assign(mouseRecord);
-        if (_lastMouseButton == 0 && _mouseState.Buttons != 0)
+        if (_lastMouseButton == 0 && (_mouseState.Buttons & MouseButtonState.Left) != 0)
         {
-            MouseClickEvent?.Invoke(_mouseState);
+            MouseLeftClick?.Invoke(_mouseState);
+        }
 
-            // foreach (var mouseUi in MouseUi)
-            // {
-            //     mouseUi.Click(_mouseState);
-            // }
+        if (mouseRecord.EventFlags == (ulong) MouseEventFlags.DoubleClicked)
+        {
+            DoubleClick?.Invoke(_mouseState);
         }
 
         _lastMouseButton = mouseRecord.ButtonState;
-        
-        if (_lastMouseButton == (ulong) MouseWheelState.Down || _lastMouseButton == (ulong) MouseWheelState.Up)
-            MouseWheelEvent?.Invoke((MouseWheelState) _lastMouseButton);
-        
+
         MouseEvent?.Invoke(_mouseState);
-        
-        // foreach (var mouseUi in MouseUi)
-        // {
-        //     mouseUi.CursorMove(_mouseState);
-        // }
     }
 
     internal static void Stop() => _running = false;
@@ -199,11 +186,15 @@ public struct MouseState
     public Coord Position;
     public MouseButtonState Buttons;
     public MouseEventFlags Flags;
+    public MouseWheelState Wheel;
 
     public void Assign(Input.MouseEventRecord record)
     {
         Position = record.MousePosition;
         Buttons = (MouseButtonState) record.ButtonState;
+
+        Wheel = (MouseWheelState) record.ButtonState;
+        
         Flags = (MouseEventFlags) record.EventFlags;
     }
 }

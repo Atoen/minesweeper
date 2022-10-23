@@ -3,4 +3,6 @@
 internal interface IRenderable
 {
     void Render();
+
+    void Destroy();
 }
