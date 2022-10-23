@@ -24,6 +24,7 @@ public static class Display
     private static bool _refreshing;
 
     private static readonly List<IRenderable> Renderables = new();
+    private static readonly List<IRenderable> AddedRenderables = new();
 
     [SupportedOSPlatform("windows")]
     internal static void Init(short width, short height, int refreshRate = 20)
@@ -89,6 +90,9 @@ public static class Display
         {
             stopwatch.Start();
 
+            Renderables.RemoveAll(r => r.ShouldRemove);
+            Console.Title = Renderables.Count.ToString();
+            
             foreach (var renderable in Renderables)
             {
                 renderable.Render();
@@ -100,6 +104,10 @@ public static class Display
                 _modified = false;
             }
             
+            Renderables.AddRange(AddedRenderables);
+            AddedRenderables.Clear();
+
+            
             stopwatch.Stop();
             var sleepTime = tickLenght - (int) stopwatch.ElapsedMilliseconds;
             stopwatch.Reset();
@@ -110,9 +118,9 @@ public static class Display
 
     internal static void Stop() => _refreshing = false;
 
-    internal static void AddToRenderList(IRenderable renderable) => Renderables.Add(renderable);
+    internal static void AddToRenderList(IRenderable renderable) => AddedRenderables.Add(renderable);
 
-    internal static void RemoveFromRenderList(IRenderable renderable) => Renderables.Remove(renderable);
+    // internal static void RemoveFromRenderList(IRenderable renderable) => renderable.ShouldRemove = true;
 
     internal static void Update()
     {
@@ -157,7 +165,7 @@ public static class Display
         var bufferIndex = posY * Width + posX;
 
         _buffer[bufferIndex].Symbol = (byte) ' ';
-        _buffer[bufferIndex].Color = (short) ConsoleColor.White;
+        _buffer[bufferIndex].Color = 15;
 
         _modified = true;
     }

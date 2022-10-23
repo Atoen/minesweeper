@@ -8,8 +8,8 @@ public static class Input
     internal static event Action<KeyboardState>? KeyEvent;
     internal static event Action<MouseState>? MouseEvent;
     internal static event Action<MouseState>? MouseLeftClick;
-    internal static event Action<MouseState>? DoubleClick; 
-    internal static event Action<MouseWheelState>? MouseWheelEvent; 
+    internal static event Action<MouseState>? MouseRightClick; 
+    internal static event Action<MouseState>? DoubleClick;
     internal static event Action<WindowBufferSizeRecord>? WindowEvent;
 
     private static bool _running;
@@ -17,9 +17,6 @@ public static class Input
     
     private static MouseState _mouseState;
     private static KeyboardState _keyboardState;
-
-    private static readonly List<IInteractable> MouseUi = new();
-    private static readonly List<IInteractable> KeyboardUi = new();
 
     internal static void Init()
     {
@@ -38,11 +35,6 @@ public static class Input
 
         new Thread(HandleInput).Start();
     }
-
-    internal static void RegisterMouseUiElement(IInteractable mouseUi) => MouseUi.Add(mouseUi);
-    internal static void UnregisterMouseUiElement(IInteractable mouseUi) => MouseUi.Remove(mouseUi);
-    internal static void RegisterKeyboardUiElement(IInteractable mouseUi) => KeyboardUi.Add(mouseUi);
-    internal static void UnregisterKeyboardUiElement(IInteractable mouseUi) => KeyboardUi.Remove(mouseUi);
 
     private static void HandleInput()
     {
@@ -80,9 +72,17 @@ public static class Input
     private static void HandleMouse(MouseEventRecord mouseRecord)
     {
         _mouseState.Assign(mouseRecord);
-        if (_lastMouseButton == 0 && (_mouseState.Buttons & MouseButtonState.Left) != 0)
+        if (_lastMouseButton == 0)
         {
-            MouseLeftClick?.Invoke(_mouseState);
+            if ((_mouseState.Buttons & MouseButtonState.Left) != 0)
+            {
+                MouseLeftClick?.Invoke(_mouseState);
+            }
+
+            if ((_mouseState.Buttons & MouseButtonState.Right) != 0)
+            {
+                MouseRightClick?.Invoke(_mouseState);
+            }
         }
 
         if (mouseRecord.EventFlags == (ulong) MouseEventFlags.DoubleClicked)

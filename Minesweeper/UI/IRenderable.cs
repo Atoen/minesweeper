@@ -4,5 +4,7 @@ internal interface IRenderable
 {
     void Render();
 
-    void Destroy();
+    void Remove();
+
+    bool ShouldRemove { get; }
 }

@@ -4,7 +4,7 @@ public static class Tiles
 {
     public static readonly TileDisplay Default = new(ConsoleColor.Gray, ConsoleColor.Gray, ' ');
     public static readonly TileDisplay Empty = new(ConsoleColor.DarkGray, ConsoleColor.DarkGray, ' ');
-    public static readonly TileDisplay Flag = new(ConsoleColor.Red, ConsoleColor.DarkGray, '?');
+    public static readonly TileDisplay Flag = new(ConsoleColor.Red, ConsoleColor.DarkGray, '^');
     public static readonly TileDisplay Bomb = new(ConsoleColor.Black, ConsoleColor.Red, '@');
 
     public static readonly TileDisplay One = new(ConsoleColor.Blue, ConsoleColor.DarkGray, '1');
