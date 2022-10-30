@@ -9,7 +9,7 @@ public static class Game
         Input.MouseLeftClick += InputOnMouseClick;
         Input.MouseRightClick += InputOnMouseClick;
 
-        Grid.Generate(width, height);
+        Grid.Generate(bombs, width, height);
     }
 
     private static void InputOnMouseClick(MouseState state)

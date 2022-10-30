@@ -42,7 +42,7 @@ public static class Display
         _screenRect = new DisplayRect {Left = 0, Top = 0, Right = Width, Bottom = Height};
         
         Console.Title = "Minesweeper";
-        Console.SetWindowSize(Width - 2, height);
+        Console.SetWindowSize(Width, Height);
         Console.SetBufferSize(Width, Height);
         Console.CursorVisible = false;
         
@@ -56,14 +56,14 @@ public static class Display
         }
 
         // Hiding scrollbars
-        var windowHandle = GetStdHandle(-11);
-        var bufferInfo = new ConsoleScreenBufferInfoEx();
-        bufferInfo.cbSize = (uint) Marshal.SizeOf(bufferInfo);
-        
-        GetConsoleScreenBufferInfoEx(windowHandle, ref bufferInfo);
-        bufferInfo.srWindow.Right++;
-        bufferInfo.srWindow.Bottom++;
-        SetConsoleScreenBufferInfoEx(windowHandle, ref bufferInfo);
+        // var windowHandle = GetStdHandle(-11);
+        // var bufferInfo = new ConsoleScreenBufferInfoEx();
+        // bufferInfo.cbSize = (uint) Marshal.SizeOf(bufferInfo);
+        //
+        // GetConsoleScreenBufferInfoEx(windowHandle, ref bufferInfo);
+        // bufferInfo.srWindow.Right++;
+        // bufferInfo.srWindow.Bottom++;
+        // SetConsoleScreenBufferInfoEx(windowHandle, ref bufferInfo);
         
         // file handle for faster console printing
         _fileHandle = CreateFile("CONOUT$",
@@ -91,7 +91,6 @@ public static class Display
             stopwatch.Start();
 
             Renderables.RemoveAll(r => r.ShouldRemove);
-            Console.Title = Renderables.Count.ToString();
             
             foreach (var renderable in Renderables)
             {
@@ -107,7 +106,6 @@ public static class Display
             Renderables.AddRange(AddedRenderables);
             AddedRenderables.Clear();
 
-            
             stopwatch.Stop();
             var sleepTime = tickLenght - (int) stopwatch.ElapsedMilliseconds;
             stopwatch.Reset();
@@ -119,8 +117,6 @@ public static class Display
     internal static void Stop() => _refreshing = false;
 
     internal static void AddToRenderList(IRenderable renderable) => AddedRenderables.Add(renderable);
-
-    // internal static void RemoveFromRenderList(IRenderable renderable) => renderable.ShouldRemove = true;
 
     internal static void Update()
     {

@@ -1,16 +1,14 @@
-﻿using System.Runtime.CompilerServices;
-using Minesweeper;
-using Minesweeper.UI;
+﻿using Minesweeper.UI;
 
 namespace Minesweeper;
 
 public static class MainMenu
 {
-    private static short GridWidth;
-    private static short GridHeight;
-    private static short BombAmount;
+    private static short _gridWidth;
+    private static short _gridHeight;
+    private static short _bombAmount;
 
-    private static readonly List<IRenderable> Ui = new();
+    private static Frame _menuFrame = new();
 
     public static void Display()
     {
@@ -20,46 +18,39 @@ public static class MainMenu
             Size = new Coord(13, 2),
             DefaultColor = ConsoleColor.Gray
         };
-        Ui.Add(bombLabel);
-        
+
         var widthLabel = new Label(ConsoleColor.Gray, "Width")
         {
             Pos = new Coord(20, 2),
             Size = new Coord(8, 2),
             DefaultColor = ConsoleColor.Gray
         };
-        Ui.Add(widthLabel);
-        
+
         var heightLabel = new Label(ConsoleColor.Gray, "Height")
         {
             Pos = new Coord(30, 2),
             Size = new Coord(8, 2),
             DefaultColor = ConsoleColor.Gray
         };
-        Ui.Add(heightLabel);
-        
-        var bombSpinbox = new Spinbox(ConsoleColor.Cyan, 0, 20, 5)
+
+        var bombSpinbox = new Spinbox(ConsoleColor.Cyan, 0, 50, 5)
         {
             Pos = new Coord(7, 5),
             Size = new Coord(6, 1),
             DefaultColor = ConsoleColor.Cyan
         };
-        Ui.Add(bombSpinbox);
-        
+
         var gridWidth = new Spinbox(ConsoleColor.Cyan, 3, 80, 40)
         {
             Pos = new Coord(20, 5),
             Size = new Coord(6, 1),
         };
-        Ui.Add(gridWidth);
-        
+
         var gridHeight = new Spinbox(ConsoleColor.Cyan, 3, 20, 15)
         {
             Pos = new Coord(30, 5),
             Size = new Coord(6, 1),
         };
-        Ui.Add(gridHeight);
-
 
         var playButton = new Button(ConsoleColor.Gray ,"PLAY")
         {
@@ -69,13 +60,14 @@ public static class MainMenu
             PressedColor = ConsoleColor.Yellow,
             OnClick = ClickAction,
         };
-        Ui.Add(playButton);
-        
+
+        _menuFrame.Add(bombLabel, bombSpinbox, gridHeight, gridWidth, heightLabel, playButton, widthLabel);
+
         void ClickAction()
         {
-            BombAmount = bombSpinbox.CurrentVal;
-            GridWidth = gridWidth.CurrentVal;
-            GridHeight = gridHeight.CurrentVal;
+            _bombAmount = bombSpinbox.CurrentVal;
+            _gridWidth = gridWidth.CurrentVal;
+            _gridHeight = gridHeight.CurrentVal;
 
             StartGame();
         }
@@ -83,12 +75,9 @@ public static class MainMenu
 
     private static void StartGame()
     {
-        foreach (var ui in Ui)
-        {
-            ui.Remove();
-        }
+        _menuFrame.Clear();
         
-        Game.Start(BombAmount, GridWidth, GridHeight);
+        Game.Start(_bombAmount, _gridWidth, _gridHeight);
     }
 }
     

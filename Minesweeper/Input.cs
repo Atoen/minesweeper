@@ -169,13 +169,13 @@ public static class Input
 
 internal struct KeyboardState
 {
-    public ushort KeyCode;
+    public ConsoleKey Key;
     public char Char;
     public bool Pressed;
 
     public void Assign(Input.KeyEventRecord record)
     {
-        KeyCode = record.VirtualKeyCode;
+        Key = (ConsoleKey) record.VirtualKeyCode;
         Pressed = record.KeyDown;
         Char = record.UnicodeChar;
     }

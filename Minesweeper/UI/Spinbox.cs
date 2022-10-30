@@ -55,7 +55,7 @@ public class Spinbox : Widget
     {
         if (!_inKeyboardMode || !state.Pressed) return;
 
-        if (state.KeyCode == (int) ConsoleKey.Enter)
+        if (state.Key == ConsoleKey.Enter)
         {
             ExitKeyboardMode();
             return;
