@@ -28,70 +28,61 @@ public static class Grid
         }
 
         Center();
+        Input.WindowEvent += delegate
+        {
+            Center();
+            Draw();
+        };
 
         if (display) Draw();
     }
 
-    private static void GenerateBombs(Coord clickPos)
+    private static void GenerateBombsF(Coord clickPos)
     {
-        var nearCoords = new List<Coord>();
+        var nearTiles = new List<Tile>();
+        var arrayPos = clickPos - _printOffset;
         
         for (var x = -1; x < 2; x++)
         for (var y = -1; y < 2; y++)
         {
-            var tileX = clickPos.X + x;
-            var tileY = clickPos.Y + y;
+            var tileX = arrayPos.X + x;
+            var tileY = arrayPos.Y + y;
             
             if (tileX < 0 || tileX >= Width || tileY < 0 || tileY >= Height) continue;
             
-            nearCoords.Add(_tiles[tileX, tileY].Pos);
+            nearTiles.Add(_tiles[tileX, tileY]);
         }
+
+        var random = new Random();
+        var bombSpots = Width * Height - nearTiles.Count;
+
+        if (_bombs > bombSpots) _bombs = bombSpots;
         
-        var random = new Random(5);
-        var bombSpots = Width * Height;
         var flatList = new Tile[bombSpots];
 
-        // Converting the 2D array to 1D
+        var i = 0;
         for (short x = 0; x < Width; x++)
         for (short y = 0; y < Height; y++)
         {
-            flatList[x + Width * y] = _tiles[x, y];
+            if (nearTiles.Contains(_tiles[x, y])) continue;
+            
+            flatList[i] = _tiles[x, y];
+            i++;
         }
 
-        if (_bombs >= bombSpots) _bombs = bombSpots - 1;
-
-        var setSize = 21;
-        if (_bombs > 5) setSize += (int) Math.Pow(4, Math.Ceiling(Math.Log(_bombs * 3, 4)));
-
-        if (bombSpots <= setSize)
+        for (i = 0; i < _bombs; i++)
         {
-            for (var i = 0; i < _bombs; i++)
+            var j = random.Next(0, bombSpots);
+            if (flatList[j].HasBomb)
             {
-                var j = random.Next(0, _bombs - i);
-
-                flatList[j].HasBomb = true;
-                flatList[j] = flatList[_bombs - i - 1];
+                i--;
+                continue;
             }
-        }
-        else
-        {
-            var selected = new List<int>();
 
-            for (var i = 0; i < _bombs; i++)
-            {
-                var j = random.Next(0, bombSpots);
-
-                while (selected.Contains(j)) j = random.Next(0, bombSpots);
-
-                selected.Add(j);
-                flatList[j].HasBomb = true;
-            }
+            flatList[j].HasBomb = true;
         }
 
-        Parallel.ForEach(flatList, tile =>
-        {
-            CheckSurrounding(tile.Pos);
-        });
+        Parallel.ForEach(flatList.Concat(nearTiles), CheckSurrounding);
     }
 
     public static void ClickTile(Coord pos, MouseButtonState buttonState)
@@ -100,7 +91,7 @@ public static class Grid
 
         if (_firstClick)
         {
-            GenerateBombs(pos);
+            GenerateBombsF(pos);
             _firstClick = false;
         }
         
@@ -136,18 +127,21 @@ public static class Grid
         clickedTile.Flagged = false;
     }
 
-    private static void CheckSurrounding(Coord arrayPos)
+    private static void CheckSurrounding(Tile tile)
     {
-        var tile = GetTile(arrayPos);
-        if (tile.HasBomb) return;
+        if (tile.HasBomb)
+        {
+            tile.NeighbouringBombs = -1;
+            return;
+        };
 
         var bombCount = 0;
         
         for (var x = -1; x < 2; x++)
         for (var y = -1; y < 2; y++)
         {
-            var tileX = arrayPos.X + x;
-            var tileY = arrayPos.Y + y;
+            var tileX = tile.Pos.X + x;
+            var tileY = tile.Pos.Y + y;
             
             if (tileX < 0 || tileX >= Width || tileY < 0 || tileY >= Height) continue;
             
@@ -195,6 +189,7 @@ public static class Grid
         {
             if (tile.HasBomb)
             {
+                tile.Revealed = true;
                 Display.Draw(tile.Pos + _printOffset, Tiles.Bomb);
                 bombs++;
             }
@@ -208,7 +203,14 @@ public static class Grid
         for (var x = 0; x < Width; x++)
         for (var y = 0; y < Height; y++)
         {
-            Display.Draw(x + _printOffset.X, y + _printOffset.Y, Tiles.Default);
+            var tile = _tiles[x, y];
+
+            if (tile.Revealed)
+                Display.Draw(x + _printOffset.X, y + _printOffset.Y, Tiles.GetTile(tile.NeighbouringBombs));
+            else if (tile.Flagged)
+                Display.Draw(x + _printOffset.X, y + _printOffset.Y, Tiles.Flag);
+            else
+                Display.Draw(x + _printOffset.X, y + _printOffset.Y, Tiles.Default);
         }
     }
 

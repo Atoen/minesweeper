@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Text;
 using Microsoft.Win32.SafeHandles;
 using Minesweeper.UI;
 
@@ -45,15 +46,15 @@ public static class Display
         Console.SetWindowSize(Width, Height);
         Console.SetBufferSize(Width, Height);
         Console.CursorVisible = false;
-        
+
         // Disabling window resizing
-        var consoleHandle = GetConsoleWindow();
-        var sysMenu = GetSystemMenu(consoleHandle, false);
-        if (consoleHandle != IntPtr.Zero)
-        {
-            DeleteMenu(sysMenu, 0xF030, 0); // Maximize
-            DeleteMenu(sysMenu, 0xF000, 0); // Resize
-        }
+        // var consoleHandle = GetConsoleWindow();
+        // var sysMenu = GetSystemMenu(consoleHandle, false);
+        // if (consoleHandle != IntPtr.Zero)
+        // {
+        //     DeleteMenu(sysMenu, 0xF030, 0); // Maximize
+        //     DeleteMenu(sysMenu, 0xF000, 0); // Resize
+        // }
 
         // Hiding scrollbars
         // var windowHandle = GetStdHandle(-11);
@@ -79,8 +80,15 @@ public static class Display
         new Thread(Start).Start();
     }
 
+    private static void InputOnWindowEvent(Input.WindowState state)
+    {
+        Resize(state.Size);
+    }
+
     internal static void Start()
     {
+        Input.WindowEvent += InputOnWindowEvent;
+
         var tickLenght = 1000 / RefreshRate; // ms
         var stopwatch = new Stopwatch();
 
@@ -115,6 +123,24 @@ public static class Display
     }
 
     internal static void Stop() => _refreshing = false;
+
+    internal static void Resize(Coord size)
+    {
+        Console.Title = size.ToString();
+        
+        if (size.X < 40) size.X = 40;
+        else if (size.X > 200) size.X = 200;
+        
+        if (size.Y < 20) size.Y = 20;
+        else if (size.Y > 70) size.Y = 70;
+
+        Width = size.X;
+        Height = size.Y;
+        
+        _buffer = new CharInfo[Width * Height];
+        _screenSize = new Coord {X = Width, Y = Height};
+        _screenRect = new DisplayRect {Left = 0, Top = 0, Right = Width, Bottom = Height};
+    }
 
     internal static void AddToRenderList(IRenderable renderable) => AddedRenderables.Add(renderable);
 
@@ -281,7 +307,7 @@ public static class Display
 }
 
 [StructLayout(LayoutKind.Sequential)]
-public struct Coord
+public struct Coord : IEquatable<Coord>
 {
     public short X;
     public short Y;
@@ -291,9 +317,31 @@ public struct Coord
         X = x;
         Y = y;
     }
+    
+    public Coord(int x, int y)
+    {
+        if (x > short.MaxValue || y > short.MaxValue)
+        {
+            throw new ArgumentException("Position argument is invalid (over the short max value)");
+        }
+
+        X = (short) x;
+        Y = (short) y;
+    }
 
     public override string ToString() => $"({X} {Y})";
     
     public static Coord operator +(Coord a, Coord b) => new((short) (a.X + b.X), (short) (a.Y + b.Y));
+    
     public static Coord operator -(Coord a, Coord b) => new((short) (a.X - b.X), (short) (a.Y - b.Y));
+
+    public bool Equals(Coord other) => X == other.X && Y == other.Y;
+
+    public override bool Equals(object? obj) => obj is Coord other && Equals(other);
+
+    public override int GetHashCode() => HashCode.Combine(X, Y);
+
+    public static bool operator ==(Coord left, Coord right) => left.Equals(right);
+
+    public static bool operator !=(Coord left, Coord right) => !(left == right);
 }

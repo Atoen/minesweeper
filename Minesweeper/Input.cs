@@ -10,7 +10,7 @@ public static class Input
     internal static event Action<MouseState>? MouseLeftClick;
     internal static event Action<MouseState>? MouseRightClick; 
     internal static event Action<MouseState>? DoubleClick;
-    internal static event Action<WindowBufferSizeRecord>? WindowEvent;
+    internal static event Action<WindowState>? WindowEvent;
 
     private static bool _running;
     private static uint _lastMouseButton = unchecked((uint) -1);
@@ -119,7 +119,7 @@ public static class Input
         [FieldOffset(0)] public readonly ushort EventType;
         [FieldOffset(4)] public readonly KeyEventRecord KeyEventRecord;
         [FieldOffset(4)] public readonly MouseEventRecord MouseEventRecord;
-        [FieldOffset(4)] public readonly WindowBufferSizeRecord WindowBufferSizeEventRecord;
+        [FieldOffset(4)] public readonly WindowState WindowBufferSizeEventRecord;
     }
 
     [StructLayout(LayoutKind.Explicit)]
@@ -142,7 +142,7 @@ public static class Input
         [FieldOffset(12)] public readonly uint ControlKeyState;
     }
 
-    public struct WindowBufferSizeRecord
+    public struct WindowState
     {
         public Coord Size;
     }

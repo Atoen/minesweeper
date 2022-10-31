@@ -1,13 +1,19 @@
-﻿namespace Minesweeper.UI;
+﻿using System.Collections;
 
-public class Spinbox : Widget
+namespace Minesweeper.UI;
+
+public sealed class Spinbox : Widget
 {
     public short CurrentVal;
     public short MaxVal;
     public short MinVal;
+
+    public char TextCycleSymbol = '_';
     
     private string _keyboardText = string.Empty;
     private bool _inKeyboardMode;
+    private readonly IEnumerator _textCycle;
+    private bool _displayingPlaceholder;
 
     public Spinbox(ConsoleColor color, short minVal, short maxVal, short defaultVal,
         Alignment alignment = Alignment.Center) : base(color, "", alignment)
@@ -26,6 +32,8 @@ public class Spinbox : Widget
         Input.MouseLeftClick += LeftClick;
         Input.DoubleClick += DoubleClick;
         Input.KeyEvent += KeyEvent;
+
+        _textCycle = CycleText();
     }
 
     public override void Remove()
@@ -35,9 +43,30 @@ public class Spinbox : Widget
         Input.DoubleClick -= DoubleClick;
         Input.KeyEvent -= KeyEvent;
         
+        ExitKeyboardMode();
+        
         base.Remove();
     }
 
+    private IEnumerator CycleText()
+    {
+        var i = 0;
+
+        while (!ShouldRemove)
+        {
+            if (!_inKeyboardMode) yield return null;
+            
+            i++;
+            if (i > 8)
+            {
+                _displayingPlaceholder = !_displayingPlaceholder;
+                i = 0;
+            }
+
+            yield return null;
+        }
+    }
+    
     protected override void RenderText()
     {
         var centerX = Pos.X + Size.X / 2;
@@ -46,7 +75,10 @@ public class Spinbox : Widget
         Display.Draw(Pos.X, centerY, '<', ConsoleColor.White, DefaultColor);
         Display.Draw(Pos.X + Size.X - 1, centerY, '>', ConsoleColor.White, DefaultColor);
 
-        var text = _inKeyboardMode ? _keyboardText : CurrentVal.ToString();
+        _textCycle.MoveNext();
+
+        var keyboardText = _displayingPlaceholder ? new string(TextCycleSymbol, _keyboardText.Length) : _keyboardText;
+        var text = _inKeyboardMode ? keyboardText : CurrentVal.ToString();
         
         Display.Print(centerX, centerY, text, ConsoleColor.Black, DefaultColor, Alignment);
     }
@@ -61,15 +93,21 @@ public class Spinbox : Widget
             return;
         }
 
-        if (char.IsDigit(state.Char))
+        if (char.IsDigit(state.Char) && _keyboardText.Length < 4)
         {
             _keyboardText += state.Char;
+            return;
+        }
+
+        if (state.Key == ConsoleKey.Backspace && _keyboardText.Length > 0)
+        {
+            _keyboardText = _keyboardText.Remove(_keyboardText.Length - 1);
         }
     }
     
     private void ExitKeyboardMode()
     {
-        short val = 0;
+        var val = CurrentVal;
         if (!string.IsNullOrWhiteSpace(_keyboardText))
         {
             val = short.Parse(_keyboardText);
@@ -85,15 +123,15 @@ public class Spinbox : Widget
     
     private void DoubleClick(MouseState state)
     {
-        if (IsCursorOver(state.Position))
-        {
-            _inKeyboardMode = !_inKeyboardMode;
-        }
+        if (!IsCursorOver(state.Position)) return;
+        
+        _inKeyboardMode = !_inKeyboardMode;
+        if (!_inKeyboardMode) ExitKeyboardMode();
     }
 
     private void LeftClick(MouseState state)
     {
-        if (!IsCursorOver(state.Position)) _inKeyboardMode = false;
+        if (!IsCursorOver(state.Position)) ExitKeyboardMode();
         
         if (state.Position.Y != Pos.Y + Size.Y / 2) return;
         

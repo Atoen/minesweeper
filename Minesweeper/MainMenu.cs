@@ -8,7 +8,7 @@ public static class MainMenu
     private static short _gridHeight;
     private static short _bombAmount;
 
-    private static Frame _menuFrame = new();
+    private static readonly Frame MenuFrame = new();
 
     public static void Display()
     {
@@ -33,7 +33,7 @@ public static class MainMenu
             DefaultColor = ConsoleColor.Gray
         };
 
-        var bombSpinbox = new Spinbox(ConsoleColor.Cyan, 0, 50, 5)
+        var bombSpinbox = new Spinbox(ConsoleColor.Cyan, 0, 500, 15)
         {
             Pos = new Coord(7, 5),
             Size = new Coord(6, 1),
@@ -61,7 +61,7 @@ public static class MainMenu
             OnClick = ClickAction,
         };
 
-        _menuFrame.Add(bombLabel, bombSpinbox, gridHeight, gridWidth, heightLabel, playButton, widthLabel);
+        MenuFrame.Add(bombLabel, bombSpinbox, gridHeight, gridWidth, heightLabel, playButton, widthLabel);
 
         void ClickAction()
         {
@@ -75,7 +75,7 @@ public static class MainMenu
 
     private static void StartGame()
     {
-        _menuFrame.Clear();
+        MenuFrame.Clear();
         
         Game.Start(_bombAmount, _gridWidth, _gridHeight);
     }

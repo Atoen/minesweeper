@@ -9,7 +9,7 @@ public abstract class Widget : IRenderable
 
     public Alignment Alignment;
     public string Text;
-    
+
     public bool ShouldRemove { get; set; }
 
     protected ConsoleColor CurrentColor;
