@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using Minesweeper.UI;
 
 namespace Minesweeper;
 
@@ -23,14 +22,14 @@ public static class Input
         if (_running) return;
         _running = true;
 
-        var inHandle = GetStdHandle(STD_INPUT_HANDLE);
+        var inHandle = GetStdHandle(StdInputHandle);
 
         uint mode = 0;
         GetConsoleMode(inHandle, ref mode);
 
-        mode &= ~ENABLE_QUICK_EDIT_MODE;
-        mode |= ENABLE_WINDOW_INPUT;
-        mode |= ENABLE_MOUSE_INPUT;
+        mode &= ~EnableQuickEditMode;
+        mode |= EnableWindowInput;
+        mode |= EnableMouseInput;
         SetConsoleMode(inHandle, mode);
 
         new Thread(HandleInput).Start();
@@ -38,7 +37,7 @@ public static class Input
 
     private static void HandleInput()
     {
-        var handleIn = GetStdHandle(STD_INPUT_HANDLE);
+        var handleIn = GetStdHandle(StdInputHandle);
         var recordArray = new[] {new InputRecord()};
         
         while (_running)
@@ -50,16 +49,16 @@ public static class Input
 
             switch (record.EventType)
             {
-                case MOUSE_EVENT:
+                case _MouseEvent:
                     HandleMouse(record.MouseEventRecord);
                     break;
 
-                case KEY_EVENT:
+                case _KeyEvent:
                     _keyboardState.Assign(record.KeyEventRecord);
                     KeyEvent?.Invoke(_keyboardState);
                     break;
 
-                case WINDOW_BUFFER_SIZE_EVENT:
+                case WindowBufferSizeEvent:
                     WindowEvent?.Invoke(record.WindowBufferSizeEventRecord);
                     break;
             }
@@ -99,19 +98,15 @@ public static class Input
 
     #region NativeMethods
 
-    private const uint STD_INPUT_HANDLE = unchecked((uint) -10),
-        STD_OUTPUT_HANDLE = unchecked((uint) -11),
-        STD_ERROR_HANDLE = unchecked((uint) -12);
+    private const uint StdInputHandle = unchecked((uint) -10);
 
-    private const uint ENABLE_MOUSE_INPUT = 0x0010,
-        ENABLE_QUICK_EDIT_MODE = 0x0040,
-        ENABLE_EXTENDED_FLAGS = 0x0080,
-        ENABLE_ECHO_INPUT = 0x0004,
-        ENABLE_WINDOW_INPUT = 0x0008;
+    private const uint EnableMouseInput = 0x0010,
+        EnableQuickEditMode = 0x0040,
+        EnableWindowInput = 0x0008;
 
-    private const ushort KEY_EVENT = 0x0001,
-        MOUSE_EVENT = 0x0002,
-        WINDOW_BUFFER_SIZE_EVENT = 0x0004;
+    private const ushort _KeyEvent = 0x0001,
+        _MouseEvent = 0x0002,
+        WindowBufferSizeEvent = 0x0004;
 
     [StructLayout(LayoutKind.Explicit)]
     private struct InputRecord

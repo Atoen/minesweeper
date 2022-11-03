@@ -43,9 +43,6 @@ public sealed class Tile
     
     public readonly List<Tile> Neighbours = new(8);
 
-    public short PosX;
-    public short PosY;
-
     public Coord Pos;
 }
 

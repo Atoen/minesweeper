@@ -18,40 +18,40 @@ public static class MainMenu
             Size = new Coord(13, 2),
             DefaultColor = ConsoleColor.Gray
         };
-
+        
         var widthLabel = new Label(ConsoleColor.Gray, "Width")
         {
             Pos = new Coord(20, 2),
             Size = new Coord(8, 2),
             DefaultColor = ConsoleColor.Gray
         };
-
+        
         var heightLabel = new Label(ConsoleColor.Gray, "Height")
         {
             Pos = new Coord(30, 2),
             Size = new Coord(8, 2),
             DefaultColor = ConsoleColor.Gray
         };
-
+        
         var bombSpinbox = new Spinbox(ConsoleColor.Cyan, 0, 500, 15)
         {
             Pos = new Coord(7, 5),
             Size = new Coord(6, 1),
             DefaultColor = ConsoleColor.Cyan
         };
-
+        
         var gridWidth = new Spinbox(ConsoleColor.Cyan, 3, 80, 40)
         {
             Pos = new Coord(20, 5),
             Size = new Coord(6, 1),
         };
-
+        
         var gridHeight = new Spinbox(ConsoleColor.Cyan, 3, 20, 15)
         {
             Pos = new Coord(30, 5),
             Size = new Coord(6, 1),
         };
-
+        
         var playButton = new Button(ConsoleColor.Gray ,"PLAY")
         {
             Pos = new Coord(18, 15),
@@ -60,15 +60,15 @@ public static class MainMenu
             PressedColor = ConsoleColor.Yellow,
             OnClick = ClickAction,
         };
-
+        
         MenuFrame.Add(bombLabel, bombSpinbox, gridHeight, gridWidth, heightLabel, playButton, widthLabel);
-
+        
         void ClickAction()
         {
             _bombAmount = bombSpinbox.CurrentVal;
             _gridWidth = gridWidth.CurrentVal;
             _gridHeight = gridHeight.CurrentVal;
-
+        
             StartGame();
         }
     }

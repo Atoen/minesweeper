@@ -28,6 +28,7 @@ public static class Grid
         }
 
         Center();
+        
         Input.WindowEvent += delegate
         {
             Center();
@@ -37,7 +38,7 @@ public static class Grid
         if (display) Draw();
     }
 
-    private static void GenerateBombsF(Coord clickPos)
+    private static void GenerateBombs(Coord clickPos)
     {
         var nearTiles = new List<Tile>();
         var arrayPos = clickPos - _printOffset;
@@ -91,7 +92,7 @@ public static class Grid
 
         if (_firstClick)
         {
-            GenerateBombsF(pos);
+            GenerateBombs(pos);
             _firstClick = false;
         }
         
@@ -133,7 +134,7 @@ public static class Grid
         {
             tile.NeighbouringBombs = -1;
             return;
-        };
+        }
 
         var bombCount = 0;
         
@@ -161,7 +162,7 @@ public static class Grid
         while (true)
         {
             var newTiles = new List<Tile>();
-
+            
             foreach (var tileToReveal in tilesToReveal)
             {
                 if (tileToReveal.HasBomb || tileToReveal.Flagged || tileToReveal.Revealed) continue;
@@ -213,8 +214,6 @@ public static class Grid
                 Display.Draw(x + _printOffset.X, y + _printOffset.Y, Tiles.Default);
         }
     }
-
-    private static Tile GetTile(Coord pos) => _tiles[pos.X, pos.Y];
 
     private static bool IsInside(Coord pos)
     {

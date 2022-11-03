@@ -16,6 +16,7 @@ public class Frame
 
     public void Remove(Widget widget)
     {
+        widget.Remove();
         _widgets.Remove(widget);
     }
 
