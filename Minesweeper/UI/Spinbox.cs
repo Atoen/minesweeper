@@ -72,15 +72,15 @@ public sealed class Spinbox : Widget
         var centerX = Pos.X + Size.X / 2;
         var centerY = Pos.Y + Size.Y / 2;
         
-        Display.Draw(Pos.X, centerY, '<', ConsoleColor.White, DefaultColor);
-        Display.Draw(Pos.X + Size.X - 1, centerY, '>', ConsoleColor.White, DefaultColor);
+        NativeDisplay.Draw(Pos.X, centerY, '<', ConsoleColor.White, DefaultColor);
+        NativeDisplay.Draw(Pos.X + Size.X - 1, centerY, '>', ConsoleColor.White, DefaultColor);
 
         _textCycle.MoveNext();
 
         var keyboardText = _displayingPlaceholder ? new string(TextCycleSymbol, _keyboardText.Length) : _keyboardText;
         var text = _inKeyboardMode ? keyboardText : CurrentVal.ToString();
         
-        Display.Print(centerX, centerY, text, ConsoleColor.Black, DefaultColor, Alignment);
+        NativeDisplay.Print(centerX, centerY, text, ConsoleColor.Black, DefaultColor, Alignment);
     }
     
     private void KeyEvent(KeyboardState state)

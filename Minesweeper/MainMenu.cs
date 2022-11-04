@@ -18,7 +18,7 @@ public static class MainMenu
             Size = new Coord(13, 2),
             DefaultColor = ConsoleColor.Gray
         };
-        
+
         var widthLabel = new Label(ConsoleColor.Gray, "Width")
         {
             Pos = new Coord(20, 2),
@@ -33,20 +33,20 @@ public static class MainMenu
             DefaultColor = ConsoleColor.Gray
         };
         
-        var bombSpinbox = new Spinbox(ConsoleColor.Cyan, 0, 500, 15)
+        var bombSpinbox = new Spinbox(ConsoleColor.Cyan, 0, 1000, 15)
         {
             Pos = new Coord(7, 5),
             Size = new Coord(6, 1),
             DefaultColor = ConsoleColor.Cyan
         };
         
-        var gridWidth = new Spinbox(ConsoleColor.Cyan, 3, 80, 40)
+        var gridWidth = new Spinbox(ConsoleColor.Cyan, 3, 100, 40)
         {
             Pos = new Coord(20, 5),
             Size = new Coord(6, 1),
         };
         
-        var gridHeight = new Spinbox(ConsoleColor.Cyan, 3, 20, 15)
+        var gridHeight = new Spinbox(ConsoleColor.Cyan, 3, 40, 15)
         {
             Pos = new Coord(30, 5),
             Size = new Coord(6, 1),

@@ -7,8 +7,6 @@ public static class Game
         Input.MouseLeftClick += InputOnMouseClick;
         Input.MouseRightClick += InputOnMouseClick;
 
-        Display.SetSize(width + 10, height + 10);
-
         Grid.Generate(bombs, width, height);
     }
 

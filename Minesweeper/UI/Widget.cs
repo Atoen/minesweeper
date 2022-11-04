@@ -22,7 +22,7 @@ public abstract class Widget : IRenderable
         CurrentColor = color;
         DefaultColor = color;
         
-        Display.AddToRenderList(this);
+        NativeDisplay.AddToRenderList(this);
     }
 
     public virtual void Render()
@@ -30,7 +30,7 @@ public abstract class Widget : IRenderable
         for (var x = Pos.X; x < Pos.X + Size.X; x++)
         for (var y = Pos.Y; y < Pos.Y + Size.Y; y++)
         {
-            Display.Draw(x, y, ' ', ConsoleColor.White, CurrentColor);
+            NativeDisplay.Draw(x, y, ' ', ConsoleColor.White, CurrentColor);
         }
         
         RenderText();
@@ -43,7 +43,7 @@ public abstract class Widget : IRenderable
         for (var x = Pos.X; x < Pos.X + Size.X; x++)
         for (var y = Pos.Y; y < Pos.Y + Size.Y; y++)
         {
-            Display.ClearAt(x, y);
+            NativeDisplay.ClearAt(x, y);
         }
     }
 
@@ -52,7 +52,7 @@ public abstract class Widget : IRenderable
         var centerX = Pos.X + Size.X / 2;
         var centerY = Pos.Y + Size.Y / 2;
         
-        Display.Print(centerX, centerY, Text, ConsoleColor.Black, CurrentColor, Alignment);
+        NativeDisplay.Print(centerX, centerY, Text, ConsoleColor.Black, CurrentColor, Alignment);
     }
 
     protected bool IsCursorOver(Coord pos)

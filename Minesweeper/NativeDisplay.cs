@@ -6,12 +6,13 @@ using Minesweeper.UI;
 
 namespace Minesweeper;
 
-public static class Display
+public static class NativeDisplay
 {
     public static short Width { get; private set; }
     public static short Height { get; private set; }
-    
-    public static int RefreshRate { get; set; }
+    public static int RefreshRate { get; set; } = 1;
+
+    public static event Action? OnResize;
     
     private static SafeFileHandle _fileHandle = null!;
     
@@ -22,6 +23,7 @@ public static class Display
 
     private static bool _modified;
     private static bool _refreshing;
+    private static bool _resizable;
 
     private static readonly List<IRenderable> Renderables = new();
     private static readonly List<IRenderable> AddedRenderables = new();
@@ -29,21 +31,36 @@ public static class Display
     [SupportedOSPlatform("windows")]
     internal static void Init(short width, short height, int refreshRate = 20)
     {
+        Console.Clear();
+        
         if (width < 40) width = 40;
         if (height < 20) height = 20;
 
-        Width = width;
-        Height = height;
         RefreshRate = refreshRate;
+        
+        CheckIfResizable();
 
+        if (_resizable)
+        {
+            Width = width;
+            Height = height;
+
+            Console.SetWindowSize(Width, Height);
+            Console.SetBufferSize(Width, Height);
+        }
+
+        else
+        {
+            Width = (short) Console.WindowWidth;
+            Height = (short) Console.WindowHeight;
+        }
+        
         // Displaying stuff on the screen
         _buffer = new CharInfo[Width * Height];
         _screenSize = new Coord {X = Width, Y = Height};
         _screenRect = new DisplayRect {Left = 0, Top = 0, Right = Width, Bottom = Height};
-        
-        Console.Title = "Minesweeper";
-        Console.SetWindowSize(Width, Height);
-        Console.SetBufferSize(Width, Height);
+
+        // Console.Title = "Minesweeper";
         Console.CursorVisible = false;
 
         // file handle for faster console printing
@@ -102,6 +119,26 @@ public static class Display
 
     internal static void Stop() => _refreshing = false;
 
+    private static void CheckIfResizable()
+    {
+        var original = Console.WindowWidth;
+        var resizable = false;
+        
+        try
+        {
+            Console.WindowWidth += Console.LargestWindowWidth;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            resizable = true;
+        }
+
+        Console.WindowWidth = original;
+        
+        Console.Title = resizable ? "Resizable" : "Not Resizable";
+        _resizable = false;
+    }
+
     [SupportedOSPlatform("windows")]
     private static void CheckBufferSize()
     {
@@ -118,9 +155,20 @@ public static class Display
     {
         if (width > Console.LargestWindowWidth) width = Console.LargestWindowWidth;
         if (height > Console.LargestWindowHeight) height = Console.LargestWindowHeight;
-        
-        Console.SetWindowSize(width, height);
+
+        Width = (short) width;
+        Height = (short) height;
+
+        if (_resizable)
+        {
+            Console.SetWindowSize(width, height);
+            Console.SetBufferSize(width, height);
+            
+            ResizeBuffer();
+        }
     }
+
+    private static void ResizeBuffer() => ResizeBuffer(new Coord(Width, Height));
 
     private static void ResizeBuffer(Coord size)
     {
@@ -136,6 +184,8 @@ public static class Display
         _buffer = new CharInfo[Width * Height];
         _screenSize = new Coord {X = Width, Y = Height};
         _screenRect = new DisplayRect {Left = 0, Top = 0, Right = Width, Bottom = Height};
+        
+        OnResize?.Invoke();
     }
 
     internal static void AddToRenderList(IRenderable renderable) => AddedRenderables.Add(renderable);
