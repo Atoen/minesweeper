@@ -63,9 +63,6 @@ public static class Input
                     break;
             }
         }
-
-        uint numWritten = 0;
-        WriteConsoleInput(handleIn, recordArray, 1, ref numWritten);
     }
 
     private static void HandleMouse(MouseEventRecord mouseRecord)

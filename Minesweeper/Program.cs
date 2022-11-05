@@ -1,22 +1,16 @@
-﻿using System.Text;
+﻿using System.Drawing;
 using Minesweeper;
 using Minesweeper.UI;
 
+// var text = "Enter".Pastel(Color.Blue);
+// var text2 = "Oro".Color(Color.PaleVioletRed, Color.Cornsilk);
+//
+// Console.WriteLine(text);
+// Console.WriteLine(text2);
+
 var display = new AnsiDisplay();
 
-// display.Draw(5, 3, '4', ConsoleColor.Black, ConsoleColor.Black);
-
-// var stdout = Console.OpenStandardOutput();
-// var con = new StreamWriter(stdout, Encoding.ASCII);
-// con.AutoFlush = true;
-// Console.SetOut(con);
-
-Console.WriteLine("\x1b[36mTEST\x1b[0m");
-
-for (var i = 0; i < 255; i++)
-{
-    display.Draw2(i, 2, i.ToString(), (ConsoleColor) i, ConsoleColor.Black);
-}
+display.DrawRect(new Coord(0, 0), new Coord(100, 300), Color.Aqua, Color.Brown);
 
 // #pragma warning disable CA1416
 // NativeDisplay.Init(50, 20);

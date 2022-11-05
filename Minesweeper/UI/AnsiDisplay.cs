@@ -1,56 +1,18 @@
-﻿using System.Text;
+﻿using System.Drawing;
+using System.Text;
 
 namespace Minesweeper.UI;
 
-internal class AnsiDisplay : IDisplayProvider
+internal class AnsiDisplay
 {
-    public AnsiDisplay()
+    public void DrawRect(Coord pos, Coord size, Color fg, Color bg, char symbol = ' ')
     {
-        // var stdout = Console.OpenStandardOutput();
-        // var con = new StreamWriter(stdout, Encoding.ASCII);
-        // con.AutoFlush = true;
-        // Console.SetOut(con);
-    }
-    
-    public void Draw(Coord pos, TileDisplay tileDisplay)
-    {
-
-    }
-
-    public void Draw(int posX, int posY, TileDisplay tileDisplay)
-    {
-
-    }
-
-    public void Draw(int posX, int posY, char symbol, ConsoleColor foreground, ConsoleColor background)
-    {
-
-    }
-
-    public void Draw2(int posX, int posY, string symbol, ConsoleColor foreground, ConsoleColor background)
-    {
-        var f = (int) foreground;
+        var colored = new string(symbol, size.X).Color(fg, bg);
         
-        Console.WriteLine($"\x1b[{f}m{symbol}");
-    }
-
-    public void ClearAt(Coord pos)
-    {
-
-    }
-
-    public void ClearAt(int posX, int posY)
-    {
-
-    }
-
-    public void Print(int posX, int posY, string text, ConsoleColor foreground, ConsoleColor background, Alignment alignment)
-    {
-
-    }
-
-    public void AddToRenderList(IRenderable renderable)
-    {
-
+        for (var i = 0; i < size.Y; i++)
+        {
+            var str = $"\x1b[{pos.Y + i};{pos.X}f{colored}";
+            Console.Write(str);
+        }
     }
 }

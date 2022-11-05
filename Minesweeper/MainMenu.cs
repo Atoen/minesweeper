@@ -1,4 +1,5 @@
-﻿using Minesweeper.UI;
+﻿using System.Diagnostics;
+using Minesweeper.UI;
 
 namespace Minesweeper;
 
