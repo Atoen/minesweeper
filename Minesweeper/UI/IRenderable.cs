@@ -1,6 +1,6 @@
 ﻿namespace Minesweeper.UI;
 
-internal interface IRenderable
+public interface IRenderable
 {
     void Render();
 

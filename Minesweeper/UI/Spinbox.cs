@@ -15,7 +15,7 @@ public sealed class Spinbox : Widget
     private readonly IEnumerator _textCycle;
     private bool _displayingPlaceholder;
 
-    public Spinbox(ConsoleColor color, short minVal, short maxVal, short defaultVal,
+    public Spinbox(Color color, short minVal, short maxVal, short defaultVal,
         Alignment alignment = Alignment.Center) : base(color, "", alignment)
     {
         if (minVal > maxVal)
@@ -72,15 +72,15 @@ public sealed class Spinbox : Widget
         var centerX = Pos.X + Size.X / 2;
         var centerY = Pos.Y + Size.Y / 2;
         
-        NativeDisplay.Draw(Pos.X, centerY, '<', ConsoleColor.White, DefaultColor);
-        NativeDisplay.Draw(Pos.X + Size.X - 1, centerY, '>', ConsoleColor.White, DefaultColor);
+        Display.Draw(Pos.X, centerY, '<', Color.White, DefaultColor);
+        Display.Draw(Pos.X + Size.X - 1, centerY, '>', Color.White, DefaultColor);
 
         _textCycle.MoveNext();
 
         var keyboardText = _displayingPlaceholder ? new string(TextCycleSymbol, _keyboardText.Length) : _keyboardText;
         var text = _inKeyboardMode ? keyboardText : CurrentVal.ToString();
         
-        NativeDisplay.Print(centerX, centerY, text, ConsoleColor.Black, DefaultColor, Alignment);
+        Display.Print(centerX, centerY, text, Color.Black, DefaultColor, Alignment);
     }
     
     private void KeyEvent(KeyboardState state)

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Minesweeper.UI;
+﻿using Minesweeper.UI;
 
 namespace Minesweeper;
 
@@ -13,52 +12,52 @@ public static class MainMenu
 
     public static void Display()
     {
-        var bombLabel = new Label(ConsoleColor.Gray,"Bomb Amount")
+        var bombLabel = new Label(Color.Gray,"Bomb Amount")
         {
             Pos = new Coord(4, 2),
             Size = new Coord(13, 2),
-            DefaultColor = ConsoleColor.Gray
+            DefaultColor = Color.Gray
         };
 
-        var widthLabel = new Label(ConsoleColor.Gray, "Width")
+        var widthLabel = new Label(Color.Gray, "Width")
         {
             Pos = new Coord(20, 2),
             Size = new Coord(8, 2),
-            DefaultColor = ConsoleColor.Gray
+            DefaultColor = Color.Gray
         };
         
-        var heightLabel = new Label(ConsoleColor.Gray, "Height")
+        var heightLabel = new Label(Color.Gray, "Height")
         {
             Pos = new Coord(30, 2),
             Size = new Coord(8, 2),
-            DefaultColor = ConsoleColor.Gray
+            DefaultColor = Color.Gray
         };
         
-        var bombSpinbox = new Spinbox(ConsoleColor.Cyan, 0, 1000, 15)
+        var bombSpinbox = new Spinbox(Color.Cyan, 0, 1000, 15)
         {
             Pos = new Coord(7, 5),
             Size = new Coord(6, 1),
-            DefaultColor = ConsoleColor.Cyan
+            DefaultColor = Color.Cyan
         };
         
-        var gridWidth = new Spinbox(ConsoleColor.Cyan, 3, 100, 40)
+        var gridWidth = new Spinbox(Color.Cyan, 3, 100, 40)
         {
             Pos = new Coord(20, 5),
             Size = new Coord(6, 1),
         };
         
-        var gridHeight = new Spinbox(ConsoleColor.Cyan, 3, 40, 15)
+        var gridHeight = new Spinbox(Color.Cyan, 3, 40, 15)
         {
             Pos = new Coord(30, 5),
             Size = new Coord(6, 1),
         };
         
-        var playButton = new Button(ConsoleColor.Gray ,"PLAY")
+        var playButton = new Button(Color.Gray ,"PLAY")
         {
             Pos = new Coord(18, 15),
             Size = new Coord(12, 3),
-            HighlightedColor = ConsoleColor.Green,
-            PressedColor = ConsoleColor.Yellow,
+            HighlightedColor = Color.Green,
+            PressedColor = Color.Yellow,
             OnClick = ClickAction,
         };
         

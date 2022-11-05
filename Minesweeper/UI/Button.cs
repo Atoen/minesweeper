@@ -2,13 +2,13 @@
 
 public sealed class Button : Widget
 {
-    public ConsoleColor HighlightedColor = ConsoleColor.Cyan;
-    public ConsoleColor PressedColor = ConsoleColor.White;
+    public Color HighlightedColor = Color.Cyan;
+    public Color PressedColor = Color.White;
     public Action? OnClick;
 
     private WidgetState _uiState = WidgetState.Default;
     
-    public Button(ConsoleColor color, string text, Alignment alignment = Alignment.Center) : base(color, text, alignment)
+    public Button(Color color, string text, Alignment alignment = Alignment.Center) : base(color, text, alignment)
     {
         Input.MouseLeftClick += LeftClick;
         Input.MouseEvent += MouseMove;

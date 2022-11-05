@@ -5,16 +5,16 @@ public abstract class Widget : IRenderable
     public Coord Pos;
     public Coord Size;
 
-    public ConsoleColor DefaultColor;
+    public Color DefaultColor;
 
     public Alignment Alignment;
     public string Text;
 
     public bool ShouldRemove { get; set; }
 
-    protected ConsoleColor CurrentColor;
+    protected Color CurrentColor;
 
-    protected Widget(ConsoleColor color, string text, Alignment alignment)
+    protected Widget(Color color, string text, Alignment alignment)
     {
         Text = text;
         Alignment = alignment;
@@ -22,7 +22,7 @@ public abstract class Widget : IRenderable
         CurrentColor = color;
         DefaultColor = color;
         
-        NativeDisplay.AddToRenderList(this);
+        Display.AddToRenderList(this);
     }
 
     public virtual void Render()
@@ -30,7 +30,7 @@ public abstract class Widget : IRenderable
         for (var x = Pos.X; x < Pos.X + Size.X; x++)
         for (var y = Pos.Y; y < Pos.Y + Size.Y; y++)
         {
-            NativeDisplay.Draw(x, y, ' ', ConsoleColor.White, CurrentColor);
+            Display.Draw(x, y, ' ', Color.White, CurrentColor);
         }
         
         RenderText();
@@ -43,7 +43,7 @@ public abstract class Widget : IRenderable
         for (var x = Pos.X; x < Pos.X + Size.X; x++)
         for (var y = Pos.Y; y < Pos.Y + Size.Y; y++)
         {
-            NativeDisplay.ClearAt(x, y);
+            Display.ClearAt(x, y);
         }
     }
 
@@ -52,7 +52,7 @@ public abstract class Widget : IRenderable
         var centerX = Pos.X + Size.X / 2;
         var centerY = Pos.Y + Size.Y / 2;
         
-        NativeDisplay.Print(centerX, centerY, Text, ConsoleColor.Black, CurrentColor, Alignment);
+        Display.Print(centerX, centerY, Text, Color.Black, CurrentColor, Alignment);
     }
 
     protected bool IsCursorOver(Coord pos)

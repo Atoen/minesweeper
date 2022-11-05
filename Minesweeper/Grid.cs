@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Minesweeper;
+﻿namespace Minesweeper;
 
 public static class Grid
 {
@@ -29,14 +27,14 @@ public static class Grid
             _tiles[x, y] = new Tile{Pos = {X = x, Y = y}};
         }
         
-        NativeDisplay.SetSize(width + 10, height + 10);
+        // Display.SetSize(width + 10, height + 10);
         Draw();
 
-        NativeDisplay.OnResize += delegate
-        {
-            Center();
-            Draw();
-        };
+        // NativeDisplay.OnResize += delegate
+        // {
+        //     Center();
+        //     Draw();
+        // };
     }
 
     private static void GenerateBombs(Coord clickPos)
@@ -124,13 +122,13 @@ public static class Grid
         
         if (!clickedTile.Flagged)
         {
-            NativeDisplay.Draw(pos, Tiles.Flag);
+            Display.Draw(pos, Tiles.Flag);
             clickedTile.Flagged = true;
                 
             return;
         }
             
-        NativeDisplay.Draw(pos, Tiles.Default);
+        Display.Draw(pos, Tiles.Default);
         clickedTile.Flagged = false;
     }
 
@@ -178,7 +176,7 @@ public static class Grid
                 // If tile is empty then its neighbours are searched too 
                 if (tileToReveal.NeighbouringBombs == 0) newTiles.AddRange(tileToReveal.Neighbours);
                 
-                NativeDisplay.Draw(tileToReveal.Pos + _printOffset, Tiles.GetTile(tileToReveal.NeighbouringBombs));
+                Display.Draw(tileToReveal.Pos + _printOffset, Tiles.GetTile(tileToReveal.NeighbouringBombs));
             }
 
             if (newTiles.Count == 0) break;
@@ -190,19 +188,14 @@ public static class Grid
 
     private static void DisplayAllBombs()
     {
-        var bombs = 0;
-        
         foreach (var tile in _tiles)
         {
-            if (tile.HasBomb)
-            {
-                tile.Revealed = true;
-                NativeDisplay.Draw(tile.Pos + _printOffset, Tiles.Bomb);
-                bombs++;
-            }
+            if (!tile.HasBomb) continue;
+            
+            tile.Revealed = true;
+            Display.Draw(tile.Pos + _printOffset, Tiles.Bomb);
         }
-
-        Console.Title = bombs.ToString();
+        
     }
     
     public static void Draw()
@@ -213,11 +206,11 @@ public static class Grid
             var tile = _tiles[x, y];
 
             if (tile.Revealed)
-                NativeDisplay.Draw(x + _printOffset.X, y + _printOffset.Y, Tiles.GetTile(tile.NeighbouringBombs));
+                Display.Draw(x + _printOffset.X, y + _printOffset.Y, Tiles.GetTile(tile.NeighbouringBombs));
             else if (tile.Flagged)
-                NativeDisplay.Draw(x + _printOffset.X, y + _printOffset.Y, Tiles.Flag);
+                Display.Draw(x + _printOffset.X, y + _printOffset.Y, Tiles.Flag);
             else
-                NativeDisplay.Draw(x + _printOffset.X, y + _printOffset.Y, Tiles.Default);
+                Display.Draw(x + _printOffset.X, y + _printOffset.Y, Tiles.Default);
         }
     }
 

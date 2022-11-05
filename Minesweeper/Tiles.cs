@@ -2,21 +2,21 @@
 
 public static class Tiles
 {
-    public static readonly TileDisplay Default = new(ConsoleColor.Gray, ConsoleColor.Gray, ' ');
-    public static readonly TileDisplay Empty = new(ConsoleColor.DarkGray, ConsoleColor.DarkGray, ' ');
-    public static readonly TileDisplay Flag = new(ConsoleColor.Red, ConsoleColor.DarkGray, '^');
-    public static readonly TileDisplay Bomb = new(ConsoleColor.Black, ConsoleColor.Red, '@');
+    public static readonly TileDisplay Default = new(Color.Gray, Color.Gray, ' ');
+    public static readonly TileDisplay Empty = new(Color.DarkGray, Color.DarkGray, ' ');
+    public static readonly TileDisplay Flag = new(Color.Red, Color.DarkGray, '^');
+    public static readonly TileDisplay Bomb = new(Color.Black, Color.Red, '@');
 
-    public static readonly TileDisplay One = new(ConsoleColor.Blue, ConsoleColor.DarkGray, '1');
-    public static readonly TileDisplay Two = new(ConsoleColor.Green, ConsoleColor.DarkGray, '2');
-    public static readonly TileDisplay Three = new(ConsoleColor.Red, ConsoleColor.DarkGray, '3');
-    public static readonly TileDisplay Four = new(ConsoleColor.DarkBlue, ConsoleColor.DarkGray, '4');
-    public static readonly TileDisplay Five = new(ConsoleColor.DarkRed, ConsoleColor.DarkGray, '5');
-    public static readonly TileDisplay Six = new(ConsoleColor.Cyan, ConsoleColor.DarkGray, '6');
-    public static readonly TileDisplay Seven = new(ConsoleColor.Gray, ConsoleColor.DarkGray, '7');
-    public static readonly TileDisplay Eight = new(ConsoleColor.Black, ConsoleColor.DarkGray, '8');
+    public static readonly TileDisplay One = new(Color.Blue, Color.DarkGray, '1');
+    public static readonly TileDisplay Two = new(Color.Green, Color.DarkGray, '2');
+    public static readonly TileDisplay Three = new(Color.Red, Color.DarkGray, '3');
+    public static readonly TileDisplay Four = new(Color.DarkBlue, Color.DarkGray, '4');
+    public static readonly TileDisplay Five = new(Color.DarkRed, Color.DarkGray, '5');
+    public static readonly TileDisplay Six = new(Color.Cyan, Color.DarkGray, '6');
+    public static readonly TileDisplay Seven = new(Color.Gray, Color.DarkGray, '7');
+    public static readonly TileDisplay Eight = new(Color.Black, Color.DarkGray, '8');
 
-    private static readonly TileDisplay ErrorTileDisplay = new(ConsoleColor.Magenta, ConsoleColor.Green, 'E');
+    private static readonly TileDisplay ErrorTileDisplay = new(Color.Magenta, Color.Green, 'E');
 
     private static readonly TileDisplay[] RevealedTiles =
     {
@@ -48,11 +48,11 @@ public sealed class Tile
 
 public struct TileDisplay
 {
-    public readonly ConsoleColor Foreground;
-    public readonly ConsoleColor Background;
+    public readonly Color Foreground;
+    public readonly Color Background;
     public readonly char Symbol;
 
-    public TileDisplay(ConsoleColor foreground, ConsoleColor background, char symbol)
+    public TileDisplay(Color foreground, Color background, char symbol)
     {
         Foreground = foreground;
         Background = background;

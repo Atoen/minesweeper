@@ -2,5 +2,5 @@
 
 public sealed class Label : Widget
 {
-    public Label( ConsoleColor color, string text, Alignment alignment = Alignment.Center) : base(color, text, alignment) { }
+    public Label(Color color, string text, Alignment alignment = Alignment.Center) : base(color, text, alignment) { }
 }

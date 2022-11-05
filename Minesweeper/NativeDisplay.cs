@@ -1,69 +1,32 @@
-﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
+﻿using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Minesweeper.UI;
 
 namespace Minesweeper;
 
-public static class NativeDisplay
+internal sealed class NativeDisplay : IDisplayProvider
 {
     public static short Width { get; private set; }
     public static short Height { get; private set; }
-    public static int RefreshRate { get; set; } = 1;
-
     public static event Action? OnResize;
     
-    private static SafeFileHandle _fileHandle = null!;
+    private readonly SafeFileHandle _fileHandle;
     
-    private static CharInfo[] _buffer = null!;
-    private static DisplayRect _screenRect;
-    private static Coord _screenSize;
-    private static readonly Coord StartPos = new() {X = 0, Y = 0};
+    private CharInfo[] _buffer;
+    private DisplayRect _screenRect;
+    private Coord _screenSize;
+    private readonly Coord _startPos = new() {X = 0, Y = 0};
 
-    private static bool _modified;
-    private static bool _refreshing;
-    private static bool _resizable;
+    private bool _modified;
 
-    private static readonly List<IRenderable> Renderables = new();
-    private static readonly List<IRenderable> AddedRenderables = new();
+    private readonly List<IRenderable> _renderables = new();
+    private readonly List<IRenderable> _addedRenderables = new();
 
-    [SupportedOSPlatform("windows")]
-    internal static void Init(short width, short height, int refreshRate = 20)
+    public NativeDisplay(int width, int height)
     {
-        Console.Clear();
+        Width = (short) width;
+        Height = (short) height;
         
-        if (width < 40) width = 40;
-        if (height < 20) height = 20;
-
-        RefreshRate = refreshRate;
-        
-        CheckIfResizable();
-
-        if (_resizable)
-        {
-            Width = width;
-            Height = height;
-
-            Console.SetWindowSize(Width, Height);
-            Console.SetBufferSize(Width, Height);
-        }
-
-        else
-        {
-            Width = (short) Console.WindowWidth;
-            Height = (short) Console.WindowHeight;
-        }
-        
-        // Displaying stuff on the screen
-        _buffer = new CharInfo[Width * Height];
-        _screenSize = new Coord {X = Width, Y = Height};
-        _screenRect = new DisplayRect {Left = 0, Top = 0, Right = Width, Bottom = Height};
-
-        // Console.Title = "Minesweeper";
-        Console.CursorVisible = false;
-
-        // file handle for faster console printing
         _fileHandle = CreateFile("CONOUT$",
             0x40000000,
             2,
@@ -71,149 +34,41 @@ public static class NativeDisplay
             FileMode.Open,
             0,
             IntPtr.Zero);
-
+        
         if (_fileHandle.IsInvalid) throw new IOException("Console buffer file is invalid");
-        
-        new Thread(Start).Start();
-    }
-
-    [SupportedOSPlatform("windows")]
-    internal static void Start()
-    {
-        Input.WindowEvent += delegate(Input.WindowState state) { ResizeBuffer(state.Size); };
-
-        var tickLenght = 1000 / RefreshRate; // ms
-        var stopwatch = new Stopwatch();
-
-        _refreshing = true;
-
-        while (_refreshing)
-        {
-            stopwatch.Start();
-
-            Renderables.RemoveAll(r => r.ShouldRemove);
-            
-            foreach (var renderable in Renderables)
-            {
-                renderable.Render();
-            }
-            
-            if (_modified)
-            {
-                WriteConsoleOutput(_fileHandle, _buffer, _screenSize, StartPos, ref _screenRect);
-                _modified = false;
-            }
-            
-            Renderables.AddRange(AddedRenderables);
-            AddedRenderables.Clear();
-            
-            CheckBufferSize();
-
-            stopwatch.Stop();
-            var sleepTime = tickLenght - (int) stopwatch.ElapsedMilliseconds;
-            stopwatch.Reset();
-            
-            if (sleepTime > 0) Thread.Sleep(sleepTime);
-        }
-    }
-
-    internal static void Stop() => _refreshing = false;
-
-    private static void CheckIfResizable()
-    {
-        var original = Console.WindowWidth;
-        var resizable = false;
-        
-        try
-        {
-            Console.WindowWidth += Console.LargestWindowWidth;
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            resizable = true;
-        }
-
-        Console.WindowWidth = original;
-        
-        Console.Title = resizable ? "Resizable" : "Not Resizable";
-        _resizable = false;
-    }
-
-    [SupportedOSPlatform("windows")]
-    private static void CheckBufferSize()
-    {
-        var windowHeight = Console.WindowHeight;
-
-        if (windowHeight != Console.BufferHeight && windowHeight > 0)
-        {
-            Console.BufferHeight = windowHeight;
-        }
-    }
-
-    [SupportedOSPlatform("windows")]
-    internal static void SetSize(int width, int height)
-    {
-        if (width > Console.LargestWindowWidth) width = Console.LargestWindowWidth;
-        if (height > Console.LargestWindowHeight) height = Console.LargestWindowHeight;
-
-        Width = (short) width;
-        Height = (short) height;
-
-        if (_resizable)
-        {
-            Console.SetWindowSize(width, height);
-            Console.SetBufferSize(width, height);
-            
-            ResizeBuffer();
-        }
-    }
-
-    private static void ResizeBuffer() => ResizeBuffer(new Coord(Width, Height));
-
-    private static void ResizeBuffer(Coord size)
-    {
-        if (size.X < 15) size.X = 15;
-        else if (size.X > Console.LargestWindowWidth) size.X = (short) Console.LargestWindowWidth;
-        
-        if (size.Y < 1) size.Y = 1;
-        else if (size.Y > Console.LargestWindowWidth) size.Y = (short) Console.LargestWindowHeight;
-
-        Width = size.X;
-        Height = size.Y;
         
         _buffer = new CharInfo[Width * Height];
         _screenSize = new Coord {X = Width, Y = Height};
-        _screenRect = new DisplayRect {Left = 0, Top = 0, Right = Width, Bottom = Height};
-        
-        OnResize?.Invoke();
+        _screenRect = new DisplayRect {Left = 0, Top = 0, Right = Width, Bottom = Height};   
     }
-
-    internal static void AddToRenderList(IRenderable renderable) => AddedRenderables.Add(renderable);
-
-    internal static void Update()
-    {
-        if (!_modified) return;
     
-        WriteConsoleOutput(_fileHandle, _buffer, _screenSize, StartPos, ref _screenRect);
-        _modified = false;
+    public void Draw()
+    {
+        foreach (var renderable in _renderables)
+        {
+            renderable.Render();
+        }
+        
+        if (_modified)
+        {
+            WriteConsoleOutput(_fileHandle, _buffer, _screenSize, _startPos, ref _screenRect);
+            _modified = false;
+        }
+        
+        _renderables.AddRange(_addedRenderables);
+        _addedRenderables.Clear();
     }
-
-    public static void Draw(Coord pos, char symbol, ConsoleColor foreground = ConsoleColor.White, ConsoleColor background = ConsoleColor.Black) =>
-        Draw(pos.X, pos.Y, symbol, foreground, background);
-
-    public static void Draw(Coord pos, TileDisplay tileDisplay) =>
-        Draw(pos.X, pos.Y, tileDisplay.Symbol, tileDisplay.Foreground, tileDisplay.Background);
-
-    public static void Draw(int posX, int posY, TileDisplay tileDisplay) =>
-        Draw(posX, posY, tileDisplay.Symbol, tileDisplay.Foreground, tileDisplay.Background);
-
-    public static void Draw(int posX, int posY, char symbol, ConsoleColor foreground, ConsoleColor background)
+    
+    public void Draw(int posX, int posY, char symbol, Color foreground, Color background)
     {
         if (posX < 0 || posX >= Width || posY < 0 || posY >= Height) return;
 
         var bufferIndex = posY * Width + posX;
+        
+        var cfg = FromColor(foreground);
+        var cbg = FromColor(background);
 
-        var color = (short) ((int) foreground | (int) background << 4);
+        var color = (short) ((int) cfg | (int) cbg << 4);
         var symbolInfo = _buffer[bufferIndex];
 
         if (symbolInfo.Symbol == symbol && symbolInfo.Color == color) return;
@@ -224,9 +79,7 @@ public static class NativeDisplay
         _modified = true;
     }
 
-    public static void ClearAt(Coord pos) => ClearAt(pos.X, pos.Y);
-    
-    public static void ClearAt(int posX, int posY)
+    public void ClearAt(int posX, int posY)
     {
         if (posX < 0 || posX >= Width || posY < 0 || posY >= Height) return;
 
@@ -238,8 +91,8 @@ public static class NativeDisplay
         _modified = true;
     }
 
-    public static void Print(int posX, int posY, string text, ConsoleColor foreground = ConsoleColor.White,
-        ConsoleColor background = ConsoleColor.Black, Alignment alignment = Alignment.Center)
+    public void Print(int posX, int posY, string text, Color foreground,
+        Color background, Alignment alignment = Alignment.Center)
     {
         var startX = alignment switch
         {
@@ -255,6 +108,81 @@ public static class NativeDisplay
             Draw(posX + x, posY, text[i], foreground, background);
         }
     }
+
+    public void DrawRect(Coord pos, Coord size, Color color, char symbol = ' ')
+    {
+        for (var y = 0; y < size.Y; y++)
+        for (var x = 0; x < size.X; x++)
+        {
+            Draw(pos.X + x, pos.Y + y, symbol, color, color);
+        }
+    }
+
+    private static ConsoleColor FromColor(Color c) {
+        var index = c.R > 128 | c.G > 128 | c.B > 128 ? 8 : 0; // Bright bit
+        index |= c.R > 64 ? 4 : 0; // Red bit
+        index |= c.G > 64 ? 2 : 0; // Green bit
+        index |= c.B > 64 ? 1 : 0; // Blue bit
+        return (ConsoleColor) index;
+    }
+    
+    public void AddToRenderList(IRenderable renderable) => _addedRenderables.Add(renderable);
+
+    // [SupportedOSPlatform("windows")]
+    // private void CheckBufferSize()
+    // {
+    //     var windowHeight = Console.WindowHeight;
+    //
+    //     if (windowHeight != Console.BufferHeight && windowHeight > 0)
+    //     {
+    //         Console.BufferHeight = windowHeight;
+    //     }
+    // }
+    //
+    // [SupportedOSPlatform("windows")]
+    // internal void SetSize(int width, int height)
+    // {
+    //     if (width > Console.LargestWindowWidth) width = Console.LargestWindowWidth;
+    //     if (height > Console.LargestWindowHeight) height = Console.LargestWindowHeight;
+    //
+    //     Width = (short) width;
+    //     Height = (short) height;
+    //     
+    //     Console.SetWindowSize(width, height);
+    //     Console.SetBufferSize(width, height);
+    //         
+    //     ResizeBuffer();
+    //     
+    // }
+    //
+    // private void ResizeBuffer() => ResizeBuffer(new Coord(Width, Height));
+    //
+    // private void ResizeBuffer(Coord size)
+    // {
+    //     if (size.X < 15) size.X = 15;
+    //     else if (size.X > Console.LargestWindowWidth) size.X = (short) Console.LargestWindowWidth;
+    //     
+    //     if (size.Y < 1) size.Y = 1;
+    //     else if (size.Y > Console.LargestWindowWidth) size.Y = (short) Console.LargestWindowHeight;
+    //
+    //     Width = size.X;
+    //     Height = size.Y;
+    //     
+    //     _buffer = new CharInfo[Width * Height];
+    //     _screenSize = new Coord {X = Width, Y = Height};
+    //     _screenRect = new DisplayRect {Left = 0, Top = 0, Right = Width, Bottom = Height};
+    //     
+    //     OnResize?.Invoke();
+    // }
+    //
+    // public void Draw(Coord pos, char symbol, Color foreground, Color background) =>
+    //     Draw(pos.X, pos.Y, symbol, foreground, background);
+    //
+    // public void Draw(Coord pos, TileDisplay tileDisplay) =>
+    //     Draw(pos.X, pos.Y, tileDisplay.Symbol, tileDisplay.Foreground, tileDisplay.Background);
+    //
+    // public void Draw(int posX, int posY, TileDisplay tileDisplay) =>
+    //     Draw(posX, posY, tileDisplay.Symbol, tileDisplay.Foreground, tileDisplay.Background);
 
     #region NativeMetods
     
