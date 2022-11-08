@@ -18,7 +18,7 @@ public static class MainMenu
             Size = new Coord(13, 2),
             DefaultColor = Color.Gray
         };
-
+        
         var widthLabel = new Label(Color.Gray, "Width")
         {
             Pos = new Coord(20, 2),
@@ -52,16 +52,18 @@ public static class MainMenu
             Size = new Coord(6, 1),
         };
         
-        var playButton = new Button(Color.Gray ,"PLAY")
+        var playButton = new Button(Color.White ,"PLAY")
         {
             Pos = new Coord(18, 15),
             Size = new Coord(12, 3),
-            HighlightedColor = Color.Green,
-            PressedColor = Color.Yellow,
+            HighlightedColor = Color.Orange,
+            PressedColor = Color.Green,
             OnClick = ClickAction,
         };
         
         MenuFrame.Add(bombLabel, bombSpinbox, gridHeight, gridWidth, heightLabel, playButton, widthLabel);
+
+        Input.DoubleClick += delegate { StartGame(); };
         
         void ClickAction()
         {
@@ -76,8 +78,16 @@ public static class MainMenu
     private static void StartGame()
     {
         MenuFrame.Clear();
+
+        Console.Read();
         
-        Game.Start(_bombAmount, _gridWidth, _gridHeight);
+        
+        Input.Stop();
+        Minesweeper.Display.Stop();
+        
+        Console.Clear();
+        
+        // Game.Start(_bombAmount, _gridWidth, _gridHeight);
     }
 }
     

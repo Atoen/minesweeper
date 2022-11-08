@@ -67,7 +67,8 @@ public static class Input
 
     private static void HandleMouse(MouseEventRecord mouseRecord)
     {
-        _mouseState.Assign(mouseRecord);
+        _mouseState.Assign(ref mouseRecord);
+        
         if (_lastMouseButton == 0)
         {
             if ((_mouseState.Buttons & MouseButtonState.Left) != 0)
@@ -180,7 +181,7 @@ public struct MouseState
     public MouseEventFlags Flags;
     public MouseWheelState Wheel;
 
-    public void Assign(Input.MouseEventRecord record)
+    public void Assign(ref Input.MouseEventRecord record)
     {
         Position = record.MousePosition;
         Buttons = (MouseButtonState) record.ButtonState;

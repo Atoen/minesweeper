@@ -27,7 +27,7 @@ public sealed class Spinbox : Widget
         MaxVal = maxVal;
 
         CurrentVal = defaultVal;
-        
+
         Input.MouseEvent += MouseWheel;
         Input.MouseLeftClick += LeftClick;
         Input.DoubleClick += DoubleClick;
@@ -66,23 +66,55 @@ public sealed class Spinbox : Widget
             yield return null;
         }
     }
-    
+
+    public override void Render()
+    {
+        if (ShouldRemove) return;
+        if (!IsTextSetUp) SetUpText();
+
+        for (var x = Pos.X; x < Pos.X + Size.X; x++)
+        for (var y = Pos.Y; y < Pos.Y + Size.Y; y++)
+        {
+            if (x >= TextStart.X && x < TextStop.X && y == TextStart.Y) continue;
+
+            if (y == Pos.Y + Size.Y / 2 && x == Pos.X)
+            {
+                Display.Draw(x, y, '<', Color.Black, CurrentColor);
+            }
+            else if (y == Pos.Y + Size.Y / 2 && x == Pos.X + Size.X - 1)
+            {
+                Display.Draw(x, y, '>', Color.Black, CurrentColor);
+            }
+            else
+            {
+                Display.Draw(x, y, ' ', Color.White, CurrentColor);
+            }
+        }
+        
+        RenderText();
+    }
+
     protected override void RenderText()
     {
         var centerX = Pos.X + Size.X / 2;
         var centerY = Pos.Y + Size.Y / 2;
-        
-        Display.Draw(Pos.X, centerY, '<', Color.White, DefaultColor);
-        Display.Draw(Pos.X + Size.X - 1, centerY, '>', Color.White, DefaultColor);
 
         _textCycle.MoveNext();
-
+        
         var keyboardText = _displayingPlaceholder ? new string(TextCycleSymbol, _keyboardText.Length) : _keyboardText;
         var text = _inKeyboardMode ? keyboardText : CurrentVal.ToString();
         
         Display.Print(centerX, centerY, text, Color.Black, DefaultColor, Alignment);
     }
-    
+
+    protected override void SetUpText()
+    {
+        base.SetUpText();
+
+        TextStart.X = Pos.X;
+        TextStop.X = (short) (Pos.X + Size.X);
+    }
+
     private void KeyEvent(KeyboardState state)
     {
         if (!_inKeyboardMode || !state.Pressed) return;

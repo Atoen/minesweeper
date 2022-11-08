@@ -4,7 +4,7 @@ public interface IRenderable
 {
     void Render();
 
-    void Remove();
-
+    void Clear();
+    
     bool ShouldRemove { get; }
 }

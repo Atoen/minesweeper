@@ -27,14 +27,7 @@ public static class Grid
             _tiles[x, y] = new Tile{Pos = {X = x, Y = y}};
         }
         
-        // Display.SetSize(width + 10, height + 10);
-        Draw();
-
-        // NativeDisplay.OnResize += delegate
-        // {
-        //     Center();
-        //     Draw();
-        // };
+        // Draw();
     }
 
     private static void GenerateBombs(Coord clickPos)

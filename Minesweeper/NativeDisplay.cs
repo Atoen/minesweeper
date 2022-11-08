@@ -8,8 +8,7 @@ internal sealed class NativeDisplay : IDisplayProvider
 {
     public static short Width { get; private set; }
     public static short Height { get; private set; }
-    public static event Action? OnResize;
-    
+
     private readonly SafeFileHandle _fileHandle;
     
     private CharInfo[] _buffer;
@@ -38,12 +37,21 @@ internal sealed class NativeDisplay : IDisplayProvider
         if (_fileHandle.IsInvalid) throw new IOException("Console buffer file is invalid");
         
         _buffer = new CharInfo[Width * Height];
-        _screenSize = new Coord {X = Width, Y = Height};
+        _screenSize = new Coord(Width, Height);
         _screenRect = new DisplayRect {Left = 0, Top = 0, Right = Width, Bottom = Height};   
     }
     
     public void Draw()
     {
+        foreach (var renderable in _renderables.Where(renderable => renderable.ShouldRemove))
+        {
+            renderable.Clear();
+        }
+        
+        _renderables.RemoveAll(r => r.ShouldRemove);
+
+        if (_renderables.Any(r => r.ShouldRemove)) throw new Exception();
+        
         foreach (var renderable in _renderables)
         {
             renderable.Render();
@@ -55,18 +63,20 @@ internal sealed class NativeDisplay : IDisplayProvider
             _modified = false;
         }
         
+        if (_addedRenderables.Count == 0) return;
+
         _renderables.AddRange(_addedRenderables);
         _addedRenderables.Clear();
     }
     
-    public void Draw(int posX, int posY, char symbol, Color foreground, Color background)
+    public void Draw(int posX, int posY, char symbol, Color fg, Color bg)
     {
         if (posX < 0 || posX >= Width || posY < 0 || posY >= Height) return;
 
         var bufferIndex = posY * Width + posX;
         
-        var cfg = FromColor(foreground);
-        var cbg = FromColor(background);
+        var cfg = FromColor(fg);
+        var cbg = FromColor(bg);
 
         var color = (short) ((int) cfg | (int) cbg << 4);
         var symbolInfo = _buffer[bufferIndex];
@@ -84,15 +94,17 @@ internal sealed class NativeDisplay : IDisplayProvider
         if (posX < 0 || posX >= Width || posY < 0 || posY >= Height) return;
 
         var bufferIndex = posY * Width + posX;
+        
+        if (_buffer[bufferIndex].Symbol == (byte) ' ' && _buffer[bufferIndex].Color == 15) return;
 
         _buffer[bufferIndex].Symbol = (byte) ' ';
-        _buffer[bufferIndex].Color = 15;
+        _buffer[bufferIndex].Color = 0;
 
         _modified = true;
     }
 
-    public void Print(int posX, int posY, string text, Color foreground,
-        Color background, Alignment alignment = Alignment.Center)
+    public void Print(int posX, int posY, string text, Color fg,
+        Color bg, Alignment alignment = Alignment.Center)
     {
         var startX = alignment switch
         {
@@ -105,16 +117,25 @@ internal sealed class NativeDisplay : IDisplayProvider
 
         for (int x = startX - posX, i = 0; x < endX - posX; x++, i++)
         {
-            Draw(posX + x, posY, text[i], foreground, background);
+            Draw(posX + x, posY, text[i], fg, bg);
         }
     }
 
     public void DrawRect(Coord pos, Coord size, Color color, char symbol = ' ')
     {
-        for (var y = 0; y < size.Y; y++)
         for (var x = 0; x < size.X; x++)
+        for (var y = 0; y < size.Y; y++)
         {
             Draw(pos.X + x, pos.Y + y, symbol, color, color);
+        }
+    }
+
+    public void ClearRect(Coord pos, Coord size)
+    {
+        for (var x = 0; x < size.X; x++)
+        for (var y = 0; y < size.Y; y++)
+        {
+            ClearAt(pos.X + x, pos.Y + y);
         }
     }
 

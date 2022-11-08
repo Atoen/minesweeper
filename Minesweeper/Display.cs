@@ -1,4 +1,5 @@
-﻿using Minesweeper.UI;
+﻿using System.Runtime.InteropServices;
+using Minesweeper.UI;
 
 namespace Minesweeper;
 
@@ -19,10 +20,16 @@ public static class Display
         Width = (short) Console.WindowWidth;
         Height = (short) Console.WindowHeight;
 
-        Console.Title = new Coord(Width, Height).ToString();
-        
-        if (option == 0) _displayProvider = new NativeDisplay(Width, Height); 
-        if (option == 1) _displayProvider = new AnsiDisplay(Width, Height);
+        if (option == 0)
+        {
+            Console.Title = "Native Display";
+            _displayProvider = new NativeDisplay(Width, Height);
+        } 
+        else if (option == 1)
+        {
+            Console.Title = "Ansi Display";
+            _displayProvider = new AnsiDisplay(Width, Height);
+        }
         
         new Thread(Start).Start();
     }
@@ -42,13 +49,14 @@ public static class Display
 
     public static void ClearAt(int posX, int posY) => _displayProvider.ClearAt(posX, posY);
 
-    public static void Print(int posX, int posY, string text, Color foreground, Color background, Alignment alignment)
-    {
-        
-    }
+    public static void Print(int posX, int posY, string text, Color foreground, Color background,
+        Alignment alignment = Alignment.Center) =>
+        _displayProvider.Print(posX, posY, text, foreground, background, alignment);
 
     public static void DrawRect(Coord pos, Coord size, Color color, char symbol = ' ') =>
         _displayProvider.DrawRect(pos, size, color, symbol);
+
+    public static void ClearRect(Coord pos, Coord size) => _displayProvider.ClearRect(pos, size);
 
     private static void Start()
     {
