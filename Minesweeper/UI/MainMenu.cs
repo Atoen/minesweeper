@@ -1,6 +1,6 @@
-﻿using Minesweeper.UI;
+﻿using Minesweeper.Display;
 
-namespace Minesweeper;
+namespace Minesweeper.UI;
 
 public static class MainMenu
 {
@@ -15,13 +15,13 @@ public static class MainMenu
         var bombLabel = new Label(Color.Gray,"Bomb Amount")
         {
             Pos = new Coord(4, 2),
-            Size = new Coord(13, 2),
+            Size = new Coord(12, 2),
             DefaultColor = Color.Gray
         };
         
         var widthLabel = new Label(Color.Gray, "Width")
         {
-            Pos = new Coord(20, 2),
+            Pos = new Coord(19, 2),
             Size = new Coord(8, 2),
             DefaultColor = Color.Gray
         };
@@ -61,10 +61,8 @@ public static class MainMenu
             OnClick = ClickAction,
         };
         
-        MenuFrame.Add(bombLabel, bombSpinbox, gridHeight, gridWidth, heightLabel, playButton, widthLabel);
+        MenuFrame.Add(bombLabel, gridHeight, gridWidth, bombSpinbox, heightLabel, widthLabel, playButton);
 
-        // Input.DoubleClick += delegate { StartGame(); };
-        
         void ClickAction()
         {
             _bombAmount = bombSpinbox.CurrentVal;
@@ -79,15 +77,7 @@ public static class MainMenu
     {
         MenuFrame.Clear();
 
-        Console.Read();
-        
-        
-        Input.Stop();
-        Minesweeper.Display.Stop();
-        
-        Console.Clear();
-        
-        // Game.Start(_bombAmount, _gridWidth, _gridHeight);
+        Game.Game.Start(_bombAmount, _gridWidth, _gridHeight);
     }
 }
     

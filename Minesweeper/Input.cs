@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Minesweeper.Display;
 
 namespace Minesweeper;
 
@@ -152,10 +153,6 @@ public static class Input
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
     private static extern bool ReadConsoleInput(IntPtr hConsoleInput, [Out] InputRecord[] lpBuffer, uint nLength,
         ref uint lpNumberOfEventsRead);
-
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-    private static extern bool WriteConsoleInput(IntPtr hConsoleInput, InputRecord[] lpBuffer, uint nLength,
-        ref uint lpNumberOfEventsWritten);
 
     #endregion
 }

@@ -1,4 +1,6 @@
-﻿namespace Minesweeper;
+﻿using Minesweeper.Display;
+
+namespace Minesweeper.Game;
 
 public static class Grid
 {
@@ -6,8 +8,7 @@ public static class Grid
     public static short Height { get; private set; }
 
     private static Tile[,] _tiles = null!;
-
-    private static Coord _printOffset;
+    
     private static bool _firstClick = true;
     private static int _bombs;
 
@@ -34,14 +35,13 @@ public static class Grid
     {
         // Tiles near the clicked one are guaranteed not to have bombs
         var nearTiles = new List<Tile>();
-        var arrayPos = clickPos - _printOffset;
-        
+
         // Gathering near tiles
         for (var x = -1; x < 2; x++)
         for (var y = -1; y < 2; y++)
         {
-            var tileX = arrayPos.X + x;
-            var tileY = arrayPos.Y + y;
+            var tileX = clickPos.X + x;
+            var tileY = clickPos.Y + y;
             
             if (tileX < 0 || tileX >= Width || tileY < 0 || tileY >= Height) continue;
             
@@ -93,7 +93,7 @@ public static class Grid
             _firstClick = false;
         }
         
-        var clickedTile = _tiles[pos.X - _printOffset.X, pos.Y - _printOffset.Y];
+        var clickedTile = _tiles[pos.X, pos.Y];
         if (clickedTile.Revealed) return;
         
         if (buttonState == MouseButtonState.Left)
@@ -115,13 +115,13 @@ public static class Grid
         
         if (!clickedTile.Flagged)
         {
-            Display.Draw(pos, Tiles.Flag);
+            Display.Display.Draw(pos, Tiles.Flag);
             clickedTile.Flagged = true;
                 
             return;
         }
             
-        Display.Draw(pos, Tiles.Default);
+        Display.Display.Draw(pos, Tiles.Default);
         clickedTile.Flagged = false;
     }
 
@@ -169,7 +169,7 @@ public static class Grid
                 // If tile is empty then its neighbours are searched too 
                 if (tileToReveal.NeighbouringBombs == 0) newTiles.AddRange(tileToReveal.Neighbours);
                 
-                Display.Draw(tileToReveal.Pos + _printOffset, Tiles.GetTile(tileToReveal.NeighbouringBombs));
+                Display.Display.Draw(tileToReveal.Pos, Tiles.GetTile(tileToReveal.NeighbouringBombs));
             }
 
             if (newTiles.Count == 0) break;
@@ -186,7 +186,7 @@ public static class Grid
             if (!tile.HasBomb) continue;
             
             tile.Revealed = true;
-            Display.Draw(tile.Pos + _printOffset, Tiles.Bomb);
+            Display.Display.Draw(tile.Pos, Tiles.Bomb);
         }
         
     }
@@ -199,23 +199,17 @@ public static class Grid
             var tile = _tiles[x, y];
 
             if (tile.Revealed)
-                Display.Draw(x + _printOffset.X, y + _printOffset.Y, Tiles.GetTile(tile.NeighbouringBombs));
+                Display.Display.Draw(x, y, Tiles.GetTile(tile.NeighbouringBombs));
             else if (tile.Flagged)
-                Display.Draw(x + _printOffset.X, y + _printOffset.Y, Tiles.Flag);
+                Display.Display.Draw(x, y, Tiles.Flag);
             else
-                Display.Draw(x + _printOffset.X, y + _printOffset.Y, Tiles.Default);
+                Display.Display.Draw(x, y, Tiles.Default);
         }
     }
 
     private static bool IsInside(Coord pos)
     {
-        return pos.X >= _printOffset.X && pos.X < Width + _printOffset.X &&
-               pos.Y >= _printOffset.Y && pos.Y < Height + _printOffset.Y;
-    }
-
-    private static void Center()
-    {
-        _printOffset.X = (short) (NativeDisplay.Width / 2 - Width / 2);
-        _printOffset.Y = (short) (NativeDisplay.Height / 2 - Height / 2);
+        return pos.X >= 0 && pos.X < Width &&
+               pos.Y >= 0 && pos.Y < Height;
     }
 }

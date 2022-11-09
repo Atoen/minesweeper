@@ -1,4 +1,4 @@
-﻿namespace Minesweeper;
+﻿namespace Minesweeper.Game;
 
 public static class Game
 {
@@ -7,6 +7,8 @@ public static class Game
         Input.MouseLeftClick += InputOnMouseClick;
         Input.MouseRightClick += InputOnMouseClick;
 
+        Thread.Sleep(100);
+        
         Grid.Generate(bombs, width, height);
     }
 

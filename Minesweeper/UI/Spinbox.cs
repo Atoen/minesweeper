@@ -79,15 +79,15 @@ public sealed class Spinbox : Widget
 
             if (y == Pos.Y + Size.Y / 2 && x == Pos.X)
             {
-                Display.Draw(x, y, '<', Color.Black, CurrentColor);
+                Display.Display.Draw(x, y, '<', Color.Black, CurrentColor);
             }
             else if (y == Pos.Y + Size.Y / 2 && x == Pos.X + Size.X - 1)
             {
-                Display.Draw(x, y, '>', Color.Black, CurrentColor);
+                Display.Display.Draw(x, y, '>', Color.Black, CurrentColor);
             }
             else
             {
-                Display.Draw(x, y, ' ', Color.White, CurrentColor);
+                Display.Display.Draw(x, y, ' ', Color.White, CurrentColor);
             }
         }
         
@@ -104,7 +104,7 @@ public sealed class Spinbox : Widget
         var keyboardText = _displayingPlaceholder ? new string(TextCycleSymbol, _keyboardText.Length) : _keyboardText;
         var text = _inKeyboardMode ? keyboardText : CurrentVal.ToString();
         
-        Display.Print(centerX, centerY, text, Color.Black, DefaultColor, Alignment);
+        Display.Display.Print(centerX, centerY, text, Color.Black, DefaultColor, Alignment);
     }
 
     protected override void SetUpText()

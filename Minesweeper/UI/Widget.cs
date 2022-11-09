@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Minesweeper.Display;
 
 namespace Minesweeper.UI;
 
@@ -41,7 +41,7 @@ public class Widget : IRenderable
         CurrentColor = color;
         DefaultColor = color;
 
-        Display.AddToRenderList(this);
+        Display.Display.AddToRenderList(this);
     }
 
     public virtual void Render()
@@ -53,7 +53,7 @@ public class Widget : IRenderable
         {
             if (x >= TextStart.X && x < TextStop.X && y == TextStart.Y) continue;
             
-            Display.Draw(x, y, ' ', Color.White, CurrentColor);
+            Display.Display.Draw(x, y, ' ', Color.Black, CurrentColor);
         }
         
         RenderText();
@@ -61,11 +61,11 @@ public class Widget : IRenderable
 
     public virtual void Remove() => ShouldRemove = true;
 
-    public virtual void Clear() => Display.ClearRect(Pos, Size);
+    public virtual void Clear() => Display.Display.ClearRect(Pos, Size);
 
     protected virtual void RenderText()
     {
-        Display.Print(TextCenter.X, TextCenter.Y, Text, Color.Black, CurrentColor, Alignment);
+        Display.Display.Print(TextCenter.X, TextCenter.Y, Text, Color.Black, CurrentColor, Alignment);
     }
 
     protected bool IsCursorOver(Coord pos)
