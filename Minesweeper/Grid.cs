@@ -27,7 +27,7 @@ public static class Grid
             _tiles[x, y] = new Tile{Pos = {X = x, Y = y}};
         }
         
-        // Draw();
+        Draw();
     }
 
     private static void GenerateBombs(Coord clickPos)

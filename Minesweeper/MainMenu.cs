@@ -63,7 +63,7 @@ public static class MainMenu
         
         MenuFrame.Add(bombLabel, bombSpinbox, gridHeight, gridWidth, heightLabel, playButton, widthLabel);
 
-        Input.DoubleClick += delegate { StartGame(); };
+        // Input.DoubleClick += delegate { StartGame(); };
         
         void ClickAction()
         {

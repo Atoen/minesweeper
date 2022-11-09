@@ -78,8 +78,8 @@ internal sealed class AnsiDisplay : IDisplayProvider
     
     public void DrawRect(Coord pos, Coord size, Color color, char symbol = ' ')
     {
-        for (var y = 0; y < size.Y; y++)
         for (var x = 0; x < size.X; x++)
+        for (var y = 0; y < size.Y; y++)
         {
             Draw(pos.X + x, pos.Y + y, symbol, color, color);
         }
@@ -108,15 +108,19 @@ internal sealed class AnsiDisplay : IDisplayProvider
         
         if (_pixels[posX, posY].IsEmpty) return;
 
-        _pixels[posX, posY] = Pixel.Cleared;
+        // _pixels[posX, posY].Symbol = ' ';
+        // _pixels[posX, posY].Bg = Color.Empty;
+        // _pixels[posX, posY].Fg = Color.Empty;
 
+        _pixels[posX, posY] = Pixel.Cleared;
+        
         _modified = true;
     }
 
     public void ClearRect(Coord pos, Coord size)
     {
-        for (var y = 0; y < size.Y; y++)
         for (var x = 0; x < size.X; x++)
+        for (var y = 0; y < size.Y; y++)
         {
             ClearAt(pos.X + x, pos.Y + y);
         }
@@ -126,8 +130,8 @@ internal sealed class AnsiDisplay : IDisplayProvider
 
     private string GenerateDisplayString()
     {
-        var lastFg = Color.Empty;
-        var lastBg = Color.Empty;
+        var lastFg = Color.Transparent;
+        var lastBg = Color.Transparent;
         var firstStreakPos = new Coord();
         var symbolsBuilder = new StringBuilder();
         var debugBuilder = new StringBuilder();
@@ -136,24 +140,37 @@ internal sealed class AnsiDisplay : IDisplayProvider
         for (var y = 0; y < _pixels.GetLength(0); y++)
         {
             ref var pixel = ref _pixels[y, x]; // swapped indexes
-            
+
+            if (pixel.IsCleared)
+            {
+                // pixel = Pixel.Empty;
+            }
+
             // Printing the already gathered pixels if next one has different colors
-            if (pixel.Fg != lastFg || pixel.Bg != lastBg)
+            if (pixel.Fg != lastFg || pixel.Bg != lastBg || pixel.IsCleared)
             {
                 _stringBuilder.Append($"\x1b[{firstStreakPos.X + 1};{firstStreakPos.Y + 1}f");
-                _stringBuilder.Append($"\x1b[38;2;{lastFg.AnsiString()}m\x1b[48;2;{lastBg.AnsiString()}m");
+                if (pixel.IsCleared)
+                {
+                    _stringBuilder.Append("\x1b[0m");
+                }
+                else
+                {
+                    _stringBuilder.Append($"\x1b[38;2;{lastFg.AnsiString()}m\x1b[48;2;{lastBg.AnsiString()}m");
+                }
+                
                 _stringBuilder.Append(symbolsBuilder);
 
-                debugBuilder.Append($"{{[{x + 1}, {y + 1}] {lastFg}, {lastBg} '");
+                debugBuilder.Append($"{{[{firstStreakPos.X + 1}, {firstStreakPos.Y + 1}] {lastFg}, {lastBg} '");
                 debugBuilder.Append(symbolsBuilder);
 
                 debugBuilder.Append("' }\n");
                 
                 symbolsBuilder.Clear();
-
+                
                 lastFg = pixel.Fg;
                 lastBg = pixel.Bg;
-                
+
                 firstStreakPos.X = (short) x;
                 firstStreakPos.Y = (short) y;
             }
@@ -174,8 +191,12 @@ internal sealed class AnsiDisplay : IDisplayProvider
     
     private struct Pixel
     {
-        internal static readonly Pixel Empty = new(' ', Color.Empty, Color.Empty);
-        internal static readonly Pixel Cleared = new('\0', Color.Empty, Color.Empty);
+        private const char ClearedSymbol = ' ';
+        
+        internal static readonly Pixel Empty = new('\0', Color.Empty, Color.Empty);
+        internal static readonly Pixel Cleared = new(ClearedSymbol, Color.Empty, Color.Empty);
+
+        // public bool IsCleared = false;
         
         public Pixel(char symbol, Color fg, Color bg)
         {
@@ -184,7 +205,7 @@ internal sealed class AnsiDisplay : IDisplayProvider
             Bg = bg;
         }
 
-        public char Symbol = ' ';
+        public char Symbol = '\0';
         public Color Fg = Color.Empty;
         public Color Bg = Color.Empty;
 
@@ -193,8 +214,8 @@ internal sealed class AnsiDisplay : IDisplayProvider
             return $"\x1b[38;2;{Fg.R};{Fg.G};{Fg.B}m\x1b[48;2;{Bg.R};{Bg.G};{Bg.B}m{Symbol}";
         }
 
-        public bool IsEmpty => Symbol == ' ' && Fg == Color.Empty && Bg == Color.Empty;
-        public bool IsCleared => Symbol == '\0' && Fg == Color.Empty && Bg == Color.Empty;
+        public bool IsEmpty => Symbol == '\0' && Fg == Color.Empty && Bg == Color.Empty;
+        public bool IsCleared => Symbol == ClearedSymbol && Fg == Color.Empty && Bg == Color.Empty;
     }
 }
 
