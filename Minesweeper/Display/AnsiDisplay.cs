@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Minesweeper.Game;
 
 namespace Minesweeper.Display;
 
@@ -42,6 +43,11 @@ public class AnsiDisplay : IRenderer
         Modified = true;
     }
 
+    public void Draw(int posX, int posY, TileDisplay tile)
+    {
+        Draw(posX, posY, tile.Utf8Symbol, tile.Foreground, tile.Background);
+    }
+
     public void ClearAt(int posX, int posY)
     {
         if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
@@ -66,41 +72,43 @@ public class AnsiDisplay : IRenderer
         
         // starting position for printing the gathered pixel symbols
         var streakStartPos = new Coord();
+        var oldStreakPos = new Coord();
         var previousIsCleared = false;
         
         var symbolsBuilder = new StringBuilder();
-        var debugBuilder = new StringBuilder();
 
-        for (var x = 0; x < _pixels.GetLength(1); x++)
-        for (var y = 0; y < _pixels.GetLength(0); y++)
+        _stringBuilder.Append($"\x1b[1;1f");
+        
+        for (var y = 0; y < _pixels.GetLength(1); y++)
+        for (var x = 0; x < _pixels.GetLength(0); x++)
         {
-            ref var pixel = ref _pixels[y, x]; // swapped indexes
+            var pixel = _pixels[x, y]; // swapped indexes
 
             // Printing the already gathered pixels if next one has different colors
-            if (pixel.Fg != lastFg || pixel.Bg != lastBg || (previousIsCleared && pixel.IsEmpty))
+            if (pixel.Fg != lastFg || pixel.Bg != lastBg || previousIsCleared && pixel.IsEmpty)
             {
                 if (symbolsBuilder.Length != 0)
                 {
-                    _stringBuilder.Append($"\x1b[{streakStartPos.X + 1};{streakStartPos.Y + 1}f");
-                    debugBuilder.Append($"{{[{streakStartPos.X + 1}, {streakStartPos.Y + 1}] ");
+                    if (oldStreakPos.Y != y || oldStreakPos.X + symbolsBuilder.Length != streakStartPos.X)
+                    {
+                        _stringBuilder.Append($"\x1b[{streakStartPos.Y + 1};{streakStartPos.X + 1}f");
+                    }
 
-                    // Resetting the colors to clear the pixel
+                    // Resetting the colors to clear the pixels
                     if (previousIsCleared)
                     {
                         _stringBuilder.Append("\x1b[0m");
-                        debugBuilder.Append("\x1b[0m '");
                     }
+                    
+                    // Applying the colors for gathered pixels
                     else
                     {
                         _stringBuilder.Append($"\x1b[38;2;{lastFg.AnsiString()}m\x1b[48;2;{lastBg.AnsiString()}m");
-                        debugBuilder.Append($"{lastFg}, {lastBg} '");
                     }
 
+                    // Starting new streak of pixels
                     _stringBuilder.Append(symbolsBuilder);
-
-                    debugBuilder.Append(symbolsBuilder);
-
-                    debugBuilder.Append("' }\n");
+                    oldStreakPos = streakStartPos;
                 }
 
                 symbolsBuilder.Clear();
@@ -112,8 +120,8 @@ public class AnsiDisplay : IRenderer
             // Setting the start pos of the collected pixel symbols when collecting the first one
             if (symbolsBuilder.Length == 0)
             {
-                streakStartPos.X = (short) x;
                 streakStartPos.Y = (short) y;
+                streakStartPos.X = (short) x;
             }
 
             // Collecting the pixels with same colors together
@@ -121,17 +129,14 @@ public class AnsiDisplay : IRenderer
 
             previousIsCleared = pixel.IsCleared;
 
-            // Marking the pixel as cleared to not draw it again unnecessarily
-            if (pixel.IsCleared) pixel = Pixel.Empty;
+            // Marking the pixel as empty to not draw it again unnecessarily
+            if (pixel.IsCleared) _pixels[x, y] = Pixel.Empty;
         }
         
-        // Resetting the console style in case of an app interrupt
+        // Resetting the console style after full draw
         _stringBuilder.Append("\x1b[0m");
 
-        var _ = debugBuilder.ToString();
-        debugBuilder.Clear();
-
-        Console.Title = _stringBuilder.ToString().Length.ToString();
+        Console.Title = $"{_stringBuilder.Length}";
         
         return _stringBuilder.ToString();
     }
@@ -166,8 +171,5 @@ public class AnsiDisplay : IRenderer
 
 public static class ColorExtensions
 {
-    public static string AnsiString(this Color color)
-    {
-        return $"{color.R};{color.G};{color.B}";
-    }
+    public static string AnsiString(this Color color) => $"{color.R};{color.G};{color.B}";
 }

@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Text;
 using Minesweeper.Game;
 using Minesweeper.UI;
 
@@ -8,6 +9,8 @@ public static class Display
 {
     public static short Width { get; private set; }
     public static short Height { get; private set; }
+    
+    public static DisplayMode Mode { get; private set; }
 
     private static bool _refreshing;
 
@@ -20,26 +23,34 @@ public static class Display
     {
         Console.Clear();
         Console.CursorVisible = false;
+        Console.OutputEncoding = Encoding.Unicode;
         
         Width = (short) Console.WindowWidth;
         Height = (short) Console.WindowHeight;
 
-        if (mode == DisplayMode.Auto) mode = GetDisplayMode();
+        Mode = mode;
 
-        _renderer = mode == DisplayMode.Native
+        if (Mode == DisplayMode.Auto) GetDisplayMode();
+
+        _renderer = Mode == DisplayMode.Native
             ? new NativeDisplay(Width, Height)
             : new AnsiDisplay(Width, Height);
 
-        new Thread(Start).Start();
+        new Thread(Start)
+        {
+            Name = "Minesweeper Display Thread"
+        }.Start();
     }
 
+    public static void Stop() => _refreshing = false;
+    
     public static void AddToRenderList(IRenderable renderable) => AddedRenderables.Add(renderable);
     
     public static void Draw(Coord pos, TileDisplay tileDisplay) =>
-        _renderer.Draw(pos.X, pos.Y, tileDisplay.Symbol, tileDisplay.Foreground, tileDisplay.Background);
+        _renderer.Draw(pos.X, pos.Y, tileDisplay);
     
     public static void Draw(int posX, int posY, TileDisplay tileDisplay) =>
-        _renderer.Draw(posX, posY, tileDisplay.Symbol, tileDisplay.Foreground, tileDisplay.Background);
+        _renderer.Draw(posX, posY, tileDisplay);
 
     public static void Draw(int posX, int posY, char symbol, Color foreground, Color background) =>
         _renderer.Draw(posX, posY, symbol, foreground, background);
@@ -132,7 +143,7 @@ public static class Display
         AddedRenderables.Clear();
     }
 
-    private static DisplayMode GetDisplayMode()
+    private static void GetDisplayMode()
     {
         [DllImport("kernel32.dll")]
         static extern IntPtr GetStdHandle(int nStdHandle);
@@ -144,8 +155,8 @@ public static class Display
         var mode = 0u;
 
         GetConsoleMode(handle, ref mode);
-        
-        return (mode & 0x4) == 0 ? DisplayMode.Native : DisplayMode.Ansi;
+
+        Mode = (mode & 0x4) == 0 ? DisplayMode.Native : DisplayMode.Ansi;
     }
 }
 

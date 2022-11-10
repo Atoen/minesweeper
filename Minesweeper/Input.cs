@@ -33,7 +33,10 @@ public static class Input
         mode |= EnableMouseInput;
         SetConsoleMode(inHandle, mode);
 
-        new Thread(HandleInput).Start();
+        new Thread(HandleInput)
+        {
+            Name = "Minesweeper Inupt Thread"
+        }.Start();
     }
 
     private static void HandleInput()

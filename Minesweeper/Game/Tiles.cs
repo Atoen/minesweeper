@@ -6,8 +6,8 @@ public static class Tiles
 {
     public static readonly TileDisplay Default = new(Color.Gray, Color.Gray, ' ');
     public static readonly TileDisplay Empty = new(Color.DarkGray, Color.DarkGray, ' ');
-    public static readonly TileDisplay Flag = new(Color.Red, Color.DarkGray, '^');
-    public static readonly TileDisplay Bomb = new(Color.Black, Color.Red, '@');
+    public static readonly TileDisplay Flag = new(Color.Red, Color.Gray, '^','◀');
+    public static readonly TileDisplay Bomb = new(Color.Red, Color.DarkGray, '@', '⬤');
 
     public static readonly TileDisplay One = new(Color.Blue, Color.DarkGray, '1');
     public static readonly TileDisplay Two = new(Color.Green, Color.DarkGray, '2');
@@ -18,22 +18,12 @@ public static class Tiles
     public static readonly TileDisplay Seven = new(Color.Gray, Color.DarkGray, '7');
     public static readonly TileDisplay Eight = new(Color.Black, Color.DarkGray, '8');
 
-    private static readonly TileDisplay ErrorTileDisplay = new(Color.Magenta, Color.Green, 'E');
-
     private static readonly TileDisplay[] RevealedTiles =
     {
-        Empty, One, Two, Three, Four, Five, Six, Seven, Eight
+        Bomb, Empty, One, Two, Three, Four, Five, Six, Seven, Eight
     };
 
-    public static TileDisplay GetTile(int number)
-    {
-        return number switch
-        {
-            -1 => Bomb,
-            >= 0 and <= 8 => RevealedTiles[number],
-            _ => ErrorTileDisplay
-        };
-    }
+    public static TileDisplay GetTile(int number) => RevealedTiles[number + 1];
 }
 
 public sealed class Tile
@@ -53,11 +43,14 @@ public struct TileDisplay
     public readonly Color Foreground;
     public readonly Color Background;
     public readonly char Symbol;
+    public readonly char Utf8Symbol;
 
-    public TileDisplay(Color foreground, Color background, char symbol)
+    public TileDisplay(Color foreground, Color background, char symbol, char utf8Symbol = '\0')
     {
         Foreground = foreground;
         Background = background;
         Symbol = symbol;
+        
+        Utf8Symbol = utf8Symbol == '\0' ? symbol : utf8Symbol;
     }
 }

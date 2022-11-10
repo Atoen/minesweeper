@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
+using Minesweeper.Game;
 
 namespace Minesweeper.Display;
 
@@ -51,6 +52,11 @@ public sealed class NativeDisplay : IRenderer
         Modified = true;
     }
 
+    public void Draw(int posX, int posY, TileDisplay tile)
+    {
+        Draw(posX, posY, tile.Symbol, tile.Foreground, tile.Background);
+    }
+
     public void ClearAt(int posX, int posY)
     {
         if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
@@ -69,7 +75,7 @@ public sealed class NativeDisplay : IRenderer
     {
         WriteConsoleOutput(_fileHandle, _buffer, _displaySize, _startPos, ref _screenRect);
     }
-    
+
     private static ConsoleColor FromColor(Color c)
     {
         var index = c.R > 128 | c.G > 128 | c.B > 128 ? 8 : 0; // Bright bit
