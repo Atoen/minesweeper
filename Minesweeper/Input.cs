@@ -201,6 +201,7 @@ public enum MouseButtonState
     Middle = 1 << 2
 }
 
+[Flags]
 public enum MouseEventFlags
 {
     Moved = 1,
@@ -212,5 +213,7 @@ public enum MouseEventFlags
 public enum MouseWheelState : ulong
 {
     Down = 0xff880000,
-    Up = 0x780000
+    AsciiDown = 0xff800000,
+    Up = 0x780000,
+    AsciiUp = 0x800000
 }

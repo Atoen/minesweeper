@@ -40,13 +40,13 @@ public static class MainMenu
             DefaultColor = Color.Cyan
         };
         
-        var gridWidth = new Spinbox(Color.Cyan, 3, 100, 40)
+        var gridWidth = new Spinbox(Color.Cyan, 3, Minesweeper.Display.Display.Width, 40)
         {
             Pos = new Coord(20, 5),
             Size = new Coord(6, 1),
         };
         
-        var gridHeight = new Spinbox(Color.Cyan, 3, 40, 15)
+        var gridHeight = new Spinbox(Color.Cyan, 3, Minesweeper.Display.Display.Height, 15)
         {
             Pos = new Coord(30, 5),
             Size = new Coord(6, 1),

@@ -1,5 +1,6 @@
 ﻿using Minesweeper;
 using Minesweeper.Display;
+using Minesweeper.Game;
 using Minesweeper.UI;
 
 Console.CancelKeyPress += delegate
@@ -15,17 +16,19 @@ Console.CancelKeyPress += delegate
     
     Console.Clear();
     Console.WriteLine("Exiting...");
+    
+    var bytesPerMByte = 1048576F;
     Console.WriteLine(
-        $"Memory usage - Physical: {peakPhysical / (1024 * 1024)}MB, Paged: {peakPaged / (1024 * 1024)}MB");
+        $"Memory usage - Physical: {peakPhysical / bytesPerMByte:.00}MB, Paged: {peakPaged / bytesPerMByte:.00}MB");
     
     Environment.Exit(Environment.ExitCode);
 };
 
-var arg = args[0];
 var displayMode = DisplayMode.Auto;
-
-if (arg[0] is '/' or '-')
+void ParseArgs(string arg)
 {
+    if (arg[0] is not ('/' or '-')) return;
+    
     var mode = arg[1..].ToLower();
 
     switch (mode)
@@ -44,12 +47,17 @@ if (arg[0] is '/' or '-')
         default:
             Console.WriteLine($"Unknown display mode: {mode}");
             Console.WriteLine("Modes: native (0), ansi (1), auto");
+            
+            Environment.Exit(1);
             return;
     }
 }
+
+if (args.Length > 0) ParseArgs(args[0]);
 
 Display.Init(displayMode);
 
 Input.Init();
 
 MainMenu.Display();
+
