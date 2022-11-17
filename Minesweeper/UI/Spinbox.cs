@@ -70,7 +70,7 @@ public sealed class Spinbox : Widget
     public override void Render()
     {
         if (ShouldRemove) return;
-        if (!IsTextSetUp) SetUpText();
+        if (!IsTextSetUp) SetUp();
 
         for (var x = Pos.X; x < Pos.X + Size.X; x++)
         for (var y = Pos.Y; y < Pos.Y + Size.Y; y++)
@@ -107,9 +107,9 @@ public sealed class Spinbox : Widget
         Display.Display.Print(centerX, centerY, text, Color.Black, DefaultColor, Alignment);
     }
 
-    protected override void SetUpText()
+    protected override void SetUp()
     {
-        base.SetUpText();
+        base.SetUp();
 
         TextStart.X = Pos.X;
         TextStop.X = (short) (Pos.X + Size.X);
@@ -178,7 +178,7 @@ public sealed class Spinbox : Widget
         if (state.Wheel is MouseWheelState.Up or MouseWheelState.AsciiUp) ChangeValue(1);
         else if (state.Wheel is MouseWheelState.Down or MouseWheelState.AsciiDown) ChangeValue(-1);
 
-        SetUpText();
+        SetUp();
     }
     
     private void ChangeValue(short change)

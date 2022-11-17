@@ -1,6 +1,5 @@
 ﻿using Minesweeper;
 using Minesweeper.Display;
-using Minesweeper.Game;
 using Minesweeper.UI;
 
 Console.CancelKeyPress += delegate
@@ -17,7 +16,7 @@ Console.CancelKeyPress += delegate
     Console.Clear();
     Console.WriteLine("Exiting...");
     
-    var bytesPerMByte = 1048576F;
+    const float bytesPerMByte = 1048576F;
     Console.WriteLine(
         $"Memory usage - Physical: {peakPhysical / bytesPerMByte:.00}MB, Paged: {peakPaged / bytesPerMByte:.00}MB");
     

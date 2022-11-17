@@ -4,7 +4,7 @@ using Minesweeper.Game;
 
 namespace Minesweeper.Display;
 
-public class AnsiDisplay : IRenderer
+public sealed class AnsiDisplay : IRenderer
 {
     public bool Modified { get; set; }
     public int ChunkSize { get; set; }
@@ -21,12 +21,6 @@ public class AnsiDisplay : IRenderer
         _displaySize.Y = (short) height;
         
         _pixels = new Pixel[width, height];
-        
-        // for (var i = 0; i < width; i++)
-        // for (var j = 0; j < height; j++)
-        // {
-        //     _pixels[i, j] = Pixel.Empty;
-        // }
 
         ChunkSize = chunkSize;
         var chunksX = (width + chunkSize - 1) / chunkSize;

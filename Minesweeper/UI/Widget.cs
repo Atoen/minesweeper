@@ -27,7 +27,6 @@ public class Widget : IRenderable
     protected Coord TextStart;
     protected Coord TextStop;
     protected Coord TextCenter;
-    protected bool AddedToRenderList;
 
     public bool ShouldRemove { get; set; }
 
@@ -46,7 +45,7 @@ public class Widget : IRenderable
 
     public virtual void Render()
     {
-        if (!IsTextSetUp) SetUpText();
+        if (!IsTextSetUp) SetUp();
 
         for (var x = Pos.X; x < Pos.X + Size.X; x++)
         for (var y = Pos.Y; y < Pos.Y + Size.Y; y++)
@@ -74,7 +73,7 @@ public class Widget : IRenderable
                pos.Y >= Pos.Y && pos.Y < Pos.Y + Size.Y;
     }
 
-    protected virtual void SetUpText()
+    protected virtual void SetUp()
     {
         IsTextSetUp = true;
         
