@@ -127,6 +127,8 @@ public sealed class NativeDisplay : IRenderer
 [StructLayout(LayoutKind.Sequential)]
 public struct Coord : IEquatable<Coord>
 {
+    public static readonly Coord Zero = new(0, 0);
+    
     public short X;
     public short Y;
 

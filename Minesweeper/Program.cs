@@ -58,5 +58,5 @@ Display.Init(displayMode);
 
 Input.Init();
 
-MainMenu.Display();
+MainMenu.Show();
 
