@@ -15,8 +15,8 @@ public sealed class RadioButton : Widget
     private Coord ButtonPos;
 
     public RadioButton(Color color, string text, Variable variable, int value,
-        Alignment buttonAlignment = Alignment.Left, Alignment textAlignment = Alignment.Center) : base(color, text,
-        textAlignment)
+        Alignment buttonAlignment = Alignment.Left, Alignment textAlignment = Alignment.Center)
+        : base(color, text, textAlignment)
     {
         Input.MouseLeftClick += LeftClick;
         Input.MouseEvent += MouseMove;

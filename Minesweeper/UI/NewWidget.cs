@@ -5,9 +5,23 @@ namespace Minesweeper.UI;
 public abstract class NewWidget : IRenderable
 {
     protected NewFrame Parent;
+    protected Coord DrawOffset;
+    protected Coord _center;
 
     public Coord Size;
-    public Coord DrawOffset;
+    public Coord Anchor;
+
+    public Coord Center
+    {
+        get => _center;
+        set
+        {
+            _center = value;
+            Anchor = value;
+            DrawOffset = _center - new Coord(Size.X / 2, Size.Y / 2);
+        }
+    }
+
     public bool AutoResize;
 
     public Color DefaultColor = Color.Aqua;

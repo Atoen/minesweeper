@@ -246,9 +246,9 @@ public static class MainMenu
             DefaultColor = Color.Blue
         }.Grid(1, 0);
 
-        var label3 = new NewLabel(frame, new UString("Oro deadass", Color.White) {Animating = true})
+        var label3 = new NewLabel(frame, UString.Empty)
         {
-            Size = new Coord(5, 7),
+            Size = new Coord(5, 9),
             DefaultColor = Color.Green
         }.Grid(1, 1);
         

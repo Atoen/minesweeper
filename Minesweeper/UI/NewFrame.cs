@@ -19,12 +19,12 @@ public class NewFrame
         };
     }
 
-    public void Grid(NewWidget widget, int row, int column)
+    public void Grid(NewWidget widget, int row, int column, GridAlignment alignment = GridAlignment.Center)
     {
         _widgets.Add((widget, new Coord(row, column)));
         _grid.SetCellSize(row, column, widget.Size);
 
-        widget.DrawOffset = _grid[row, column].Pos;
+        widget.Center = _grid[row, column].Pos;
         
         CheckIfNeedToRedraw();
     }
@@ -33,17 +33,53 @@ public class NewFrame
     {
         _widgets.Add((widget, Coord.Zero));
 
-        widget.DrawOffset = new Coord(posX, posY);
+        widget.Center = new Coord(posX, posY);
+    }
+
+    private void AlignToGrid(NewWidget widget, int row, int column, GridAlignment alignment)
+    {
+        switch (alignment)
+        {
+            case GridAlignment.Center:
+                break;
+            
+            case GridAlignment.N:
+                break;
+            
+            case GridAlignment.NE:
+                break;
+            
+            case GridAlignment.NW:
+                break;
+            
+            case GridAlignment.S:
+                break;
+            
+            case GridAlignment.SE:
+                break;
+            
+            case GridAlignment.SW:
+                break;
+            
+            case GridAlignment.E:
+                break;
+            
+            case GridAlignment.W:
+                break;
+            
+            default:
+                throw new ArgumentOutOfRangeException(nameof(alignment), alignment, null);
+        }
     }
 
     private void CheckIfNeedToRedraw()
     {
         foreach (var (widget, gridPos) in _widgets)
         {
-            if (widget.DrawOffset == _grid[gridPos.X, gridPos.Y].Pos) continue;
+            if (widget.Anchor == _grid[gridPos.X, gridPos.Y].Pos) continue;
 
             widget.Clear();
-            widget.DrawOffset = _grid[gridPos.X, gridPos.Y].Pos;
+            widget.Center = _grid[gridPos.X, gridPos.Y].Pos;
             widget.Render();
         }
     }
@@ -64,6 +100,8 @@ public sealed class GridUi
 
     public void SetCellSize(int row, int column, Coord size)
     {
+        _cells[row, column].ItemSize = size;
+        
         // new size cannot be smaller than the current one
         _cells[row, column].Size.X = Math.Max(size.X, _cells[row, column].Size.X);
         _cells[row, column].Size.Y = Math.Max(size.Y, _cells[row, column].Size.Y);
@@ -115,5 +153,19 @@ public sealed class GridUi
     {
         public Coord Pos;
         public Coord Size;
+        public Coord ItemSize;
     }
+}
+
+public enum GridAlignment
+{
+    Center,
+    N,
+    NE,
+    NW,
+    S,
+    SE,
+    SW,
+    E,
+    W,
 }
