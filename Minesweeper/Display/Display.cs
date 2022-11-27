@@ -97,16 +97,20 @@ public static class Display
 
     private static void Start()
     {
-        const int tickLenght = 1000 / 20;
+        const int tickLenght = 1000 / 2;
         var stopwatch = new Stopwatch();
 
         _refreshing = true;
+
+        var frame = 0;
 
         while (_refreshing)
         {
             stopwatch.Start();
 
             Draw();
+            
+            Debug.WriteLine($"Frame {frame++}");
 
             stopwatch.Stop();
             var sleepTime = tickLenght - (int) stopwatch.ElapsedMilliseconds;

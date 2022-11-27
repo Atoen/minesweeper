@@ -234,25 +234,25 @@ public static class MainMenu
     {
         var frame = new NewFrame(2, 2);
 
-        var label1 = new NewLabel(frame)
+        var label1 = new NewLabel(frame, UString.Empty)
         {
             Size = new Coord(15, 5),
             DefaultColor = Color.Orange
         }.Grid(0, 1);
         
-        var label2 = new NewLabel(frame)
+        var label2 = new NewLabel(frame, UString.Empty)
         {
             Size = new Coord(20, 3),
             DefaultColor = Color.Blue
         }.Grid(1, 0);
-        
-        var label3 = new NewLabel(frame)
+
+        var label3 = new NewLabel(frame, new UString("Oro deadass", Color.White) {Animating = true})
         {
             Size = new Coord(5, 7),
             DefaultColor = Color.Green
         }.Grid(1, 1);
         
-        var label4 = new NewLabel(frame)
+        var label4 = new NewLabel(frame, UString.Empty)
         {
             Size = new Coord(5, 3),
             DefaultColor = Color.Red

@@ -2,10 +2,21 @@
 
 public class NewLabel : NewWidget
 {
-    public string Text { get; set; }
+    public UString Text { get; set; }
     
-    public NewLabel(NewFrame parent, string text = "") : base(parent)
+    public NewLabel(NewFrame parent, UString text) : base(parent)
     {
         Text = text;
+    }
+
+    public override void Render()
+    {
+        Text.Cycle();
+        
+        Debug.WriteLine("rendering");
+        
+        Display.Display.Print(DrawOffset.X, DrawOffset.Y, Text.Text, Text.Foreground, Text.Background ?? DefaultColor);
+        
+        base.Render();
     }
 }
