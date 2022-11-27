@@ -19,12 +19,13 @@ public class NewFrame
         };
     }
 
-    public void Grid(NewWidget widget, int row, int column, GridAlignment alignment = GridAlignment.Center)
+    public void Grid(NewWidget widget, int row, int column, GridAlignment alignment)
     {
         _widgets.Add((widget, new Coord(row, column)));
         _grid.SetCellSize(row, column, widget.Size);
 
-        widget.Center = _grid[row, column].Pos;
+        // widget.Center = _grid[row, column].Pos;
+        AlignToGrid(widget, row, column, alignment);
         
         CheckIfNeedToRedraw();
     }
@@ -38,38 +39,24 @@ public class NewFrame
 
     private void AlignToGrid(NewWidget widget, int row, int column, GridAlignment alignment)
     {
-        switch (alignment)
+        var cellPos = _grid[row, column].Pos;
+        var cellSize = _grid[row, column].Size;
+        
+        widget.Anchor = cellPos;
+
+        widget.Center = alignment switch
         {
-            case GridAlignment.Center:
-                break;
-            
-            case GridAlignment.N:
-                break;
-            
-            case GridAlignment.NE:
-                break;
-            
-            case GridAlignment.NW:
-                break;
-            
-            case GridAlignment.S:
-                break;
-            
-            case GridAlignment.SE:
-                break;
-            
-            case GridAlignment.SW:
-                break;
-            
-            case GridAlignment.E:
-                break;
-            
-            case GridAlignment.W:
-                break;
-            
-            default:
-                throw new ArgumentOutOfRangeException(nameof(alignment), alignment, null);
-        }
+            GridAlignment.Center => cellPos + cellSize / 2,
+            GridAlignment.N =>      cellPos + new Coord(cellSize.X / 2, 0),
+            GridAlignment.NE =>     cellPos + new Coord(cellSize.X, (short) 0),
+            GridAlignment.NW =>     cellPos,
+            GridAlignment.S =>      cellPos + new Coord(cellSize.X / 2, cellSize.Y),
+            GridAlignment.SE =>     cellPos + cellSize,
+            GridAlignment.SW =>     cellPos + new Coord((short) 0, cellSize.Y),
+            GridAlignment.E =>      cellPos + new Coord(cellSize.X, cellSize.Y / 2),
+            GridAlignment.W =>      cellPos + new Coord(0, cellSize.Y / 2),
+            _ => throw new ArgumentOutOfRangeException(nameof(alignment), alignment, null)
+        };
     }
 
     private void CheckIfNeedToRedraw()

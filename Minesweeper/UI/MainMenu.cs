@@ -238,7 +238,7 @@ public static class MainMenu
         {
             Size = new Coord(15, 5),
             DefaultColor = Color.Orange
-        }.Grid(0, 1);
+        }.Grid(0, 1, GridAlignment.W);
         
         var label2 = new NewLabel(frame, UString.Empty)
         {
@@ -256,7 +256,7 @@ public static class MainMenu
         {
             Size = new Coord(5, 3),
             DefaultColor = Color.Red
-        }.Grid(0, 0);
+        }.Grid(0, 0, GridAlignment.N);
     }
 }
     

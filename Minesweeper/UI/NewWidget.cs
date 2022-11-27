@@ -17,8 +17,7 @@ public abstract class NewWidget : IRenderable
         set
         {
             _center = value;
-            Anchor = value;
-            DrawOffset = _center - new Coord(Size.X / 2, Size.Y / 2);
+            DrawOffset = _center - Size / 2;
         }
     }
 
@@ -33,9 +32,9 @@ public abstract class NewWidget : IRenderable
         Parent = parent;
     }
 
-    public virtual NewWidget Grid(int row, int column)
+    public virtual NewWidget Grid(int row, int column, GridAlignment alignment = GridAlignment.Center)
     {
-        Parent.Grid(this, row, column);
+        Parent.Grid(this, row, column, alignment);
         Render();
         
         Display.Display.AddToRenderList(this);

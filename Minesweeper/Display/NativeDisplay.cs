@@ -149,6 +149,10 @@ public struct Coord : IEquatable<Coord>
         Y = (short) y;
     }
 
+    public static Coord operator /(Coord c, int i) => new(c.X / i, c.Y / i);
+    
+    public static Coord operator *(Coord c, int i) => new(c.X * i, c.Y * i);
+
     public override string ToString() => $"({X} {Y})";
     
     public static Coord operator +(Coord a, Coord b) => new((short) (a.X + b.X), (short) (a.Y + b.Y));
