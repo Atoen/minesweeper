@@ -2,7 +2,7 @@
 
 namespace Minesweeper.UI;
 
-public sealed class Spinbox : Widget
+public sealed class Spinbox : WidgetOld
 {
     public short CurrentVal;
     public short MaxVal;
@@ -133,7 +133,7 @@ public sealed class Spinbox : Widget
 
         if (state.Key == ConsoleKey.Backspace && _keyboardText.Length > 0)
         {
-            _keyboardText = _keyboardText.Remove(_keyboardText.Length - 1);
+            _keyboardText = _keyboardText[1..];
         }
     }
     

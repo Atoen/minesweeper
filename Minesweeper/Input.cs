@@ -25,7 +25,7 @@ public static class Input
 
         var inHandle = GetStdHandle(StdInputHandle);
 
-        uint mode = 0;
+        var mode = 0u;
         GetConsoleMode(inHandle, ref mode);
 
         mode &= ~EnableQuickEditMode;
@@ -35,7 +35,7 @@ public static class Input
 
         new Thread(HandleInput)
         {
-            Name = "Minesweeper Inupt Thread"
+            Name = "Inupt Thread"
         }.Start();
     }
 
@@ -122,7 +122,7 @@ public static class Input
     [StructLayout(LayoutKind.Explicit)]
     public struct MouseEventRecord
     {
-        [FieldOffset(0)] public Coord MousePosition;
+        [FieldOffset(0)] public SCoord MousePosition;
         [FieldOffset(4)] public uint ButtonState;
         [FieldOffset(12)] public uint EventFlags;
     }
@@ -141,7 +141,7 @@ public static class Input
 
     public struct WindowState
     {
-        public Coord Size;
+        public SCoord Size;
     }
 
     [DllImport("kernel32.dll")]
@@ -158,6 +158,14 @@ public static class Input
         ref uint lpNumberOfEventsRead);
 
     #endregion
+    
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SCoord
+    {
+        public short X;
+        public short Y;
+        public override string ToString() => $"({X} {Y})";
+    }
 }
 
 internal struct KeyboardState
@@ -183,7 +191,7 @@ public struct MouseState
 
     public void Assign(ref Input.MouseEventRecord record)
     {
-        Position = record.MousePosition;
+        Position = new Coord(record.MousePosition.X, record.MousePosition.Y);
         Buttons = (MouseButtonState) record.ButtonState;
 
         Wheel = (MouseWheelState) record.ButtonState;

@@ -24,6 +24,7 @@ Console.CancelKeyPress += delegate
 };
 
 var displayMode = DisplayMode.Auto;
+
 void ParseArgs(string arg)
 {
     if (arg[0] is not ('/' or '-')) return;
@@ -59,4 +60,3 @@ Display.Init(displayMode);
 Input.Init();
 
 MainMenu.Show();
-

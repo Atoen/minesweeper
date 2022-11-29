@@ -12,7 +12,7 @@ public class UString
     public string Text
     {
         get => _displayingPlaceholder ? _replacement : _text;
-        private set => _text = value;
+        set => _text = value;
     }
 
     public char[] PlaceholderArray = {'_'};
@@ -21,18 +21,29 @@ public class UString
 
     public Color Foreground;
     public Color? Background;
-    
-    private string _replacement = "";
+
+    private string _replacement;
     private string _text;
     private bool _displayingPlaceholder;
     private readonly IEnumerator _cycler;
+    private bool _animating;
 
-    public bool Animating { get; set; }
+    public bool Animating
+    {
+        get => _animating;
+        set
+        {
+            if (value == false) _displayingPlaceholder = false;
+            _animating = value;
+        }
+    }
+
     public bool Enabled { get; set; } = true;
 
     public UString(string text, Color foreground, Color? background = null)
     {
         _text = text;
+        _replacement = new string(PlaceholderArray[0], _text.Length);
 
         Foreground = foreground;
         Background = background;
@@ -42,6 +53,8 @@ public class UString
 
     public void Cycle() => _cycler.MoveNext();
 
+    public static implicit operator UString(string s) => new(s, Color.Black);
+
     private IEnumerator CycleText()
     {
         var i = 0;
@@ -49,23 +62,21 @@ public class UString
 
         while (Enabled)
         {
-            if (!Animating) yield return null;
-
             i++;
-
-            Console.Title = i.ToString();
             
-            if (i < FramesPerSymbol) continue;
+            if (i >= FramesPerSymbol)
+            {
+                _displayingPlaceholder = !_displayingPlaceholder;
 
-            _displayingPlaceholder = !_displayingPlaceholder;
-
-            i = 0;
-            _replacement = new string(PlaceholderArray[j], Text.Length);
+                i = 0;
+                _replacement = new string(PlaceholderArray[j], Text.Length);
                 
-            j++;
-            j %= PlaceholderArray.Length;
+                j++;
+                j %= PlaceholderArray.Length;
+            }
 
             yield return null;
         }
     }
+
 }

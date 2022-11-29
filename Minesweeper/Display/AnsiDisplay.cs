@@ -86,7 +86,7 @@ public sealed class AnsiDisplay : IRenderer
         return _modifiedChunks[x, y];
     }
 
-    private void CleatChunks()
+    private void ClearChunks()
     {
         for (var i = 0; i < _modifiedChunks.GetLength(0); i++)
         for (var j = 0; j < _modifiedChunks.GetLength(1); j++)
@@ -153,8 +153,8 @@ public sealed class AnsiDisplay : IRenderer
             // Setting the start pos of the collected pixel symbols when collecting the first one
             if (symbolsBuilder.Length == 0)
             {
-                streakStartPos.Y = (short) y;
-                streakStartPos.X = (short) x;
+                streakStartPos.Y = y;
+                streakStartPos.X = x;
             }
         
             // Collecting the pixels with same colors together
@@ -180,7 +180,7 @@ public sealed class AnsiDisplay : IRenderer
 
         // Resetting the console style after full draw
         _stringBuilder.Append("\x1b[0m");
-        CleatChunks();
+        ClearChunks();
         
         Console.Title = $"{_stringBuilder.Length}";
         

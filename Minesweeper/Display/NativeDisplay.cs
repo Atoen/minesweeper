@@ -12,8 +12,8 @@ public sealed class NativeDisplay : IRenderer
     
     private readonly CharInfo[] _buffer;
     private DisplayRect _screenRect;
-    private readonly Coord _displaySize;
-    private readonly Coord _startPos = new() {X = 0, Y = 0};
+    private readonly SCoord _displaySize;
+    private readonly SCoord _startPos = new() {X = 0, Y = 0};
     
     public NativeDisplay(int width, int height)
     {
@@ -28,7 +28,7 @@ public sealed class NativeDisplay : IRenderer
         if (_fileHandle.IsInvalid) throw new IOException("Console buffer file is invalid");
         
         _buffer = new CharInfo[width * height];
-        _displaySize = new Coord(width, height);
+        _displaySize = new SCoord((short) width, (short) height);
         _screenRect = new DisplayRect {Left = 0, Top = 0, Right = (short) width, Bottom = (short) height};   
     }
     
@@ -100,8 +100,8 @@ public sealed class NativeDisplay : IRenderer
     private static extern bool WriteConsoleOutput(
         SafeFileHandle hConsoleOutput,
         CharInfo[] lpBuffer,
-        Coord dwBufferSize,
-        Coord dwBufferCoord,
+        SCoord dwBufferSize,
+        SCoord dwBufferSCoord,
         ref DisplayRect lpWriteRegion);
 
     [StructLayout(LayoutKind.Explicit)]
@@ -121,51 +121,20 @@ public sealed class NativeDisplay : IRenderer
     }
 
     #endregion
-}
-
-
-[StructLayout(LayoutKind.Sequential)]
-public struct Coord : IEquatable<Coord>
-{
-    public static readonly Coord Zero = new(0, 0);
     
-    public short X;
-    public short Y;
+    [StructLayout(LayoutKind.Sequential)]
+    private struct SCoord
+    {
 
-    public Coord(short x, short y)
-    {
-        X = x;
-        Y = y;
-    }
-    
-    public Coord(int x, int y)
-    {
-        if (x > short.MaxValue || y > short.MaxValue)
+        public short X;
+        public short Y;
+
+        public SCoord(short x, short y)
         {
-            throw new ArgumentException("Position argument is invalid (over the short max value)");
+            X = x;
+            Y = y;
         }
 
-        X = (short) x;
-        Y = (short) y;
+        public override string ToString() => $"({X} {Y})";
     }
-
-    public static Coord operator /(Coord c, int i) => new(c.X / i, c.Y / i);
-    
-    public static Coord operator *(Coord c, int i) => new(c.X * i, c.Y * i);
-
-    public override string ToString() => $"({X} {Y})";
-    
-    public static Coord operator +(Coord a, Coord b) => new((short) (a.X + b.X), (short) (a.Y + b.Y));
-
-    public static Coord operator -(Coord a, Coord b) => new((short) (a.X - b.X), (short) (a.Y - b.Y));
-
-    public bool Equals(Coord other) => X == other.X && Y == other.Y;
-
-    public override bool Equals(object? obj) => obj is Coord other && Equals(other);
-
-    public override int GetHashCode() => HashCode.Combine(X, Y);
-
-    public static bool operator ==(Coord left, Coord right) => left.Equals(right);
-
-    public static bool operator !=(Coord left, Coord right) => !(left == right);
 }

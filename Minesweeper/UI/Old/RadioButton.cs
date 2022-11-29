@@ -2,7 +2,7 @@
 
 namespace Minesweeper.UI;
 
-public sealed class RadioButton : Widget
+public sealed class RadioButton : WidgetOld
 {
     public Color HighlightedColor = Color.Cyan;
     public Color PressedColor = Color.White;
