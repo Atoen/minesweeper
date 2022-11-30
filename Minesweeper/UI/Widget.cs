@@ -9,7 +9,9 @@ public abstract class Widget : IRenderable
     public Coord Anchor;
     public Coord Offset;
     
-    public bool AutoResize;
+    public bool AutoResize = true;
+    public Coord InnerPadding = new(1, 1);
+    public Coord OuterPadding = Coord.Zero;
 
     public Color DefaultColor = Color.Aqua;
     public Color HighlightedColor = Color.Blue;
@@ -24,11 +26,13 @@ public abstract class Widget : IRenderable
         Parent = parent;
     }
 
-    public virtual Widget Grid(int row, int column, GridAlignment alignment = GridAlignment.Center)
+    public Widget Grid(int row, int column, int rowSpan = 1, int columnSpawn = 1, GridAlignment alignment = GridAlignment.Center)
     {
         Color = DefaultColor;
         
-        Parent.Grid(this, row, column, alignment);
+        if (AutoResize) Resize();
+        
+        Parent.Grid(this, row, column, rowSpan, columnSpawn, alignment);
         Render();
         
         Display.Display.AddToRenderList(this);
@@ -36,9 +40,11 @@ public abstract class Widget : IRenderable
         return this;
     }
 
-    public virtual Widget Place(int posX, int posY)
+    public Widget Place(int posX, int posY)
     {
         Color = DefaultColor;
+        
+        if (AutoResize) Resize();
 
         Parent.Place(this, posX, posY);
         Render();
@@ -67,6 +73,8 @@ public abstract class Widget : IRenderable
         return pos.X >= c.X && pos.X < c.X + Size.X &&
                pos.Y >= c.Y && pos.Y < c.Y + Size.Y;
     }
+
+    protected abstract void Resize();
 
     public bool ShouldRemove { get; private set; }
 }

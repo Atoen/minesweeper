@@ -175,8 +175,8 @@ public sealed class Spinbox : WidgetOld
     {
         if (!IsCursorOver(state.Position)) return;
 
-        if (state.Wheel is MouseWheelState.Up or MouseWheelState.AsciiUp) ChangeValue(1);
-        else if (state.Wheel is MouseWheelState.Down or MouseWheelState.AsciiDown) ChangeValue(-1);
+        if (state.Wheel is MouseWheelState.Up or MouseWheelState.AnsiUp) ChangeValue(1);
+        else if (state.Wheel is MouseWheelState.Down or MouseWheelState.AnsiDown) ChangeValue(-1);
 
         SetUp();
     }

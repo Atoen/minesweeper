@@ -7,10 +7,18 @@ public class Frame
 {
     private readonly GridUi _grid;
     private readonly List<(Widget, Coord)> _widgets = new();
-
     private readonly Coord _padding;
-    
-    public Coord Pos = Coord.Zero;
+    private Coord _pos = Coord.Zero;
+
+    public Coord Pos
+    {
+        get => _pos;
+        set
+        {
+            _pos = value;
+            _grid.Pos = value;
+        }
+    }
 
     public Frame(int rows, int columns, int paddingX = 1, int paddingY = 1)
     {
@@ -20,16 +28,27 @@ public class Frame
         _grid = new GridUi(rows, columns)
         {
             InsidePaddingX = paddingX,
-            InsidePaddingY = paddingY
+            InsidePaddingY = paddingY,
         };
     }
 
-    public void Grid(Widget widget, int row, int column, GridAlignment alignment)
+    
+    public void Grid(Widget widget, int row, int column, int rowSpawn, int columnSpan, GridAlignment alignment)
     {
         _widgets.Add((widget, new Coord(row, column)));
-        _grid.SetCellSize(row, column, widget.Size, alignment);
+
+        var newCellSize = widget.Size + widget.OuterPadding * 2;
+        _grid.SetCellSize(row, column, newCellSize, alignment);
+
+        if (rowSpawn != 0 || columnSpan != 0)
+        {
+            AlignToGridMultiCell();
+        }
+        else
+        {
+            AlignToGrid(widget, row, column, alignment);
+        }
         
-        AlignToGrid(widget, row, column, alignment);
         
         CheckIfNeedToRedraw();
     }
@@ -92,5 +111,10 @@ public class Frame
             GridAlignment.W => Coord.Left * (cellSize.X / 2) + Coord.Up * (widgetSize.Y / 2),
             _ => throw new ArgumentOutOfRangeException(nameof(alignment), alignment, null)
         };
+    }
+
+    private void AlignToGridMultiCell()
+    {
+        
     }
 }

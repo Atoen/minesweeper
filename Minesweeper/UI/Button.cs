@@ -28,6 +28,13 @@ public class Button : Widget
         
         Display.Display.Print(Center.X, Center.Y, Text.Text, Text.Foreground, Text.Background ?? Color);
     }
+    
+    protected override void Resize()
+    {
+        var minSize = new Coord(Text.Lenght + 2 * InnerPadding.X, 1 + 2 * InnerPadding.Y);
+    
+        Size = Size.ExpandTo(minSize);
+    }
 
     private void LeftClick(MouseState obj)
     {

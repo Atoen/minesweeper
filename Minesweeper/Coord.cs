@@ -1,4 +1,6 @@
-﻿namespace Minesweeper;
+﻿using System.Diagnostics.Contracts;
+
+namespace Minesweeper;
 
 public struct Coord : IEquatable<Coord>
 {
@@ -20,7 +22,10 @@ public struct Coord : IEquatable<Coord>
         X = x;
         Y = y;
     }
-    
+
+    [Pure]
+    public Coord ExpandTo(Coord other) => new(Math.Max(X, other.X), Math.Max(Y, other.Y));
+
     public static bool operator ==(Coord a, Coord b) => a.X == b.X && a.Y == b.Y;
 
     public static bool operator !=(Coord a, Coord b) => !(a == b);
@@ -36,6 +41,7 @@ public struct Coord : IEquatable<Coord>
     public static Coord operator -(Coord a) => new(-a.X, -a.Y);
 
     public static Coord operator +(Coord a) => a;
+    
     public bool Equals(Coord other) => X == other.X && Y == other.Y;
 
     public override bool Equals(object? obj) => obj is Coord other && Equals(other);

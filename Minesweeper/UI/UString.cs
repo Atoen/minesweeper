@@ -15,6 +15,8 @@ public class UString
         set => _text = value;
     }
 
+    public int Lenght => _text.Length;
+
     public char[] PlaceholderArray = {'_'};
     
     public int FramesPerSymbol = 10;

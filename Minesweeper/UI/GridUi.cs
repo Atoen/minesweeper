@@ -6,6 +6,8 @@ public sealed class GridUi
     public int InsidePaddingX;
     public int InsidePaddingY;
 
+    public Coord Pos = Coord.Zero;
+
     public GridUi(int rows, int columns)
     {
         _cells = new Cell[rows, columns];
@@ -44,17 +46,19 @@ public sealed class GridUi
 
         var padding = new Coord(InsidePaddingX, InsidePaddingY);
 
-        _cells[0, 0].Pos = Coord.Zero;
+        _cells[0, 0].Pos = Pos;
         
         // Manually setting first row and first column
         for (var r = 1; r < rows; r++)
         {
-            _cells[r, 0].Pos.Y = (short) (_cells[r - 1, 0].Size.Y + _cells[r - 1, 0].Pos.Y + padding.Y);
+            _cells[r, 0].Pos.Y = _cells[r - 1, 0].Size.Y + _cells[r - 1, 0].Pos.Y + padding.Y;
+            _cells[r, 0].Pos.X = Pos.X; // Offset of whole grid
         }
         
         for (var c = 1; c < columns; c++)
         {
-            _cells[0, c].Pos.X = (short) (_cells[0, c - 1].Size.X + _cells[0, c - 1].Pos.X + padding.X);
+            _cells[0, c].Pos.X = _cells[0, c - 1].Size.X + _cells[0, c - 1].Pos.X + padding.X;
+            _cells[0, c].Pos.Y = Pos.Y; // Offset of whole grid
         }
 
         // Updating rest of the grid

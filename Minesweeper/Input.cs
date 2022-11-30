@@ -221,7 +221,7 @@ public enum MouseEventFlags
 public enum MouseWheelState : ulong
 {
     Down = 0xff880000,
-    AsciiDown = 0xff800000,
+    AnsiDown = 0xff800000,
     Up = 0x780000,
-    AsciiUp = 0x800000
+    AnsiUp = 0x800000
 }

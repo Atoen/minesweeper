@@ -9,8 +9,4 @@
         <LangVersion>10</LangVersion>
     </PropertyGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Spectre.Console" Version="0.45.0" />
-    </ItemGroup>
-
 </Project>
