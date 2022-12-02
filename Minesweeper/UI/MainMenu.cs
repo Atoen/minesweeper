@@ -13,19 +13,19 @@ public static class MainMenu
     {
         var frame = new Frame(5, 3)
         {
-            Pos = new Coord(1, 1)
+            Pos = (1, 1)
         };
 
         var title = new Label(frame, new UString("MINESWEEPER", Color.DarkBlue))
         {
-            InnerPadding = new Coord(2, 1),
+            InnerPadding = (2, 1),
             DefaultColor = Color.PaleGoldenrod
         }.Grid(0, 1);
 
         var easyLabel = new Label(frame, "Easy")
         {
-            InnerPadding = new Coord(2, 1),
-            DefaultColor = Color.DarkGreen
+            InnerPadding = (2, 1),
+            DefaultColor = Color.DarkGreen,
         }.Grid(1, 0);
         
         var mediumLabel = new Label(frame, "Medium")
@@ -35,13 +35,19 @@ public static class MainMenu
         
         var hardLabel = new Label(frame, "Hard")
         {
-            InnerPadding = new Coord(2, 1),
+            InnerPadding = (2, 1),
             DefaultColor = Color.Orange
         }.Grid(3, 0);
 
+        new Label(frame, UString.Empty)
+        {
+            Size = (13, 3),
+            DefaultColor = Color.Blue,
+        }.Grid(4, 2);
+
         var playButton = new Button(frame, "PLAY")
         {
-            InnerPadding = new Coord(5, 1),
+            InnerPadding = (5, 1),
 
             DefaultColor = Color.White,
             HighlightedColor = Color.Yellow,
@@ -50,9 +56,9 @@ public static class MainMenu
             OnClick = () => Console.Title = "Playing!"
         }.Grid(4, 1);
 
-        var bg = new Background(frame)
+        var background = new Background(frame)
         {
-            DefaultColor = Color.DarkGray
-        }.Grid(1, 1, rowSpan: 3, columnSpawn: 3, alignment: GridAlignment.Center);
+            DefaultColor = Color.DarkGray,
+        }.Grid(1, 1, rowSpan: 3, columnSpan: 2);
     }
 }

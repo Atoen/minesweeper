@@ -11,6 +11,8 @@ public class Label : Widget
 
     protected override void Resize()
     {
+        if (Text == UString.Empty) return;
+        
         var minSize = new Coord(Text.Lenght + 2 * InnerPadding.X, 1 + 2 * InnerPadding.Y);
     
         Size = Size.ExpandTo(minSize);

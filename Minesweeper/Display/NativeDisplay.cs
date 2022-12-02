@@ -125,7 +125,6 @@ public sealed class NativeDisplay : IRenderer
     [StructLayout(LayoutKind.Sequential)]
     private struct SCoord
     {
-
         public short X;
         public short Y;
 

@@ -94,17 +94,3 @@ public class WidgetOld : IRenderable
         TextStop.X = (short) (TextStart.X + Text.Length);
     }
 }
-
-public enum WidgetState
-{
-    Default,
-    Highlighted,
-    Pressed
-}
-
-public enum Alignment
-{
-    Left,
-    Right,
-    Center
-}

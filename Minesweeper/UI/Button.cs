@@ -2,7 +2,7 @@
 
 public class Button : Widget
 {
-    public Action? OnClick;
+    public Action? OnClick { get; init; }
     public UString Text { get; set; }
 
     public Button(Frame parent, UString text) : base(parent)

@@ -15,6 +15,8 @@ public sealed class GridUi
 
     public Cell this[int row, int column] => _cells[row, column];
 
+    public Cell this[Coord pos] => _cells[pos.X, pos.Y];
+
     public void SetCellSize(int row, int column, Coord size, GridAlignment alignment)
     {
         _cells[row, column].ItemSize = size;

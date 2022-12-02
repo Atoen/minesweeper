@@ -8,14 +8,15 @@ public abstract class Widget : IRenderable
     public Coord Size;
     public Coord Anchor;
     public Coord Offset;
-    
-    public bool AutoResize = true;
+
+    public bool AutoResize { get; init; } = true;
+    public FillMode Fill { get; init; } = FillMode.None;
     public Coord InnerPadding = new(1, 1);
     public Coord OuterPadding = Coord.Zero;
 
-    public Color DefaultColor = Color.Aqua;
-    public Color HighlightedColor = Color.Blue;
-    public Color PressedColor = Color.White;
+    public Color DefaultColor { get; set; } = Color.Aqua;
+    public Color HighlightedColor { get; set; } = Color.Blue;
+    public Color PressedColor { get; set; } = Color.White;
 
     public WidgetState State { get; protected set; }
 
@@ -26,13 +27,13 @@ public abstract class Widget : IRenderable
         Parent = parent;
     }
 
-    public Widget Grid(int row, int column, int rowSpan = 1, int columnSpawn = 1, GridAlignment alignment = GridAlignment.Center)
+    public Widget Grid(int row, int column, int rowSpan = 1, int columnSpan = 1, GridAlignment alignment = GridAlignment.Center)
     {
         Color = DefaultColor;
         
         if (AutoResize) Resize();
         
-        Parent.Grid(this, row, column, rowSpan, columnSpawn, alignment);
+        Parent.Grid(this, row, column, rowSpan, columnSpan, alignment);
         Render();
         
         Display.Display.AddToRenderList(this);
@@ -77,4 +78,26 @@ public abstract class Widget : IRenderable
     protected abstract void Resize();
 
     public bool ShouldRemove { get; private set; }
+}
+
+public enum WidgetState
+{
+    Default,
+    Highlighted,
+    Pressed
+}
+
+public enum Alignment
+{
+    Left,
+    Right,
+    Center
+}
+
+public enum FillMode
+{
+    None,
+    Vertical,
+    Horizontal,
+    Both
 }
