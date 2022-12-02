@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Text;
+﻿using System.Text;
 using Minesweeper.Game;
 
 namespace Minesweeper.Display;
@@ -14,6 +13,8 @@ public sealed class AnsiDisplay : IRenderer
     private bool[,] _modifiedChunks;
     
     private readonly StringBuilder _stringBuilder = new();
+    
+    private bool _rendering;
     
     public AnsiDisplay(int width, int height, int chunkSize = 5)
     {
@@ -31,6 +32,8 @@ public sealed class AnsiDisplay : IRenderer
     
     public void Draw(int posX, int posY, char symbol, Color fg, Color bg)
     {
+        if (_rendering) throw new Exception();
+
         if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
 
         if (_pixels[posX, posY].Symbol == symbol && _pixels[posX, posY].Fg == fg &&
@@ -54,6 +57,8 @@ public sealed class AnsiDisplay : IRenderer
 
     public void ClearAt(int posX, int posY)
     {
+        if (_rendering) throw new Exception();
+        
         if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
         
         if (_pixels[posX, posY].IsEmpty) return;
@@ -66,8 +71,12 @@ public sealed class AnsiDisplay : IRenderer
     
     public void Draw()
     {
+        _rendering = true;
+        
         Console.Write(GenerateDisplayString());
         _stringBuilder.Clear();
+
+        _rendering = false;
     }
 
     private void SetChunk(int posX, int posY)

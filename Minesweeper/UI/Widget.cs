@@ -21,7 +21,19 @@ public abstract class Widget : IRenderable
     public WidgetState State { get; protected set; }
 
     public Coord Center => Anchor + Offset + Size / 2;
+    public Coord PaddedSize => Size + OuterPadding * 2;
     
+    public int Width
+    {
+        get => Size.X;
+        set => Size.X = value;
+    }
+    public int Height
+    {
+        get => Size.Y;
+        set => Size.Y = value;
+    }
+
     protected Widget(Frame parent)
     {
         Parent = parent;
@@ -62,7 +74,7 @@ public abstract class Widget : IRenderable
 
     public virtual void Remove() => ShouldRemove = true;
 
-    public void Clear()
+    public virtual void Clear()
     {
         Display.Display.ClearRect(Anchor + Offset, Size);
     }
@@ -71,8 +83,8 @@ public abstract class Widget : IRenderable
     {
         var c = Anchor + Offset;
         
-        return pos.X >= c.X && pos.X < c.X + Size.X &&
-               pos.Y >= c.Y && pos.Y < c.Y + Size.Y;
+        return pos.X >= c.X && pos.X < c.X + Width &&
+               pos.Y >= c.Y && pos.Y < c.Y + Height;
     }
 
     protected abstract void Resize();
@@ -87,7 +99,7 @@ public enum WidgetState
     Pressed
 }
 
-public enum Alignment
+public enum TextAlignment
 {
     Left,
     Right,

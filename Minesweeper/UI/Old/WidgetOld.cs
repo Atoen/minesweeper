@@ -1,6 +1,4 @@
-﻿using Minesweeper.Display;
-
-namespace Minesweeper.UI;
+﻿namespace Minesweeper.UI;
 
 public class WidgetOld : IRenderable
 {
@@ -9,7 +7,7 @@ public class WidgetOld : IRenderable
 
     public Color DefaultColor;
 
-    public Alignment Alignment;
+    public TextAlignment TextAlignment;
 
     private string _text = "";
     public string Text
@@ -32,10 +30,10 @@ public class WidgetOld : IRenderable
 
     protected Color CurrentColor;
 
-    protected WidgetOld(Color color, string text, Alignment alignment)
+    protected WidgetOld(Color color, string text, TextAlignment textAlignment)
     {
         Text = text;
-        Alignment = alignment;
+        TextAlignment = textAlignment;
 
         CurrentColor = color;
         DefaultColor = color;
@@ -64,7 +62,7 @@ public class WidgetOld : IRenderable
 
     protected virtual void RenderText()
     {
-        Display.Display.Print(TextCenter.X, TextCenter.Y, Text, Color.Black, CurrentColor, Alignment);
+        Display.Display.Print(TextCenter.X, TextCenter.Y, Text, Color.Black, CurrentColor, TextAlignment);
     }
 
     protected bool IsCursorOver(Coord pos)
@@ -83,10 +81,10 @@ public class WidgetOld : IRenderable
         TextCenter.Y = (short) (Pos.Y + Size.Y / 2);
 
         TextStart.Y = TextCenter.Y;
-        TextStart.X = Alignment switch
+        TextStart.X = TextAlignment switch
         {
-            Alignment.Left => (short) (TextCenter.X - Text.Length),
-            Alignment.Right => TextCenter.X,
+            TextAlignment.Left => (short) (TextCenter.X - Text.Length),
+            TextAlignment.Right => TextCenter.X,
             _ => (short) (TextCenter.X - Text.Length / 2)
         };
 

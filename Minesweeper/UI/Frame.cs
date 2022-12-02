@@ -1,7 +1,4 @@
-﻿using System.Text;
-using Minesweeper.Display;
-
-namespace Minesweeper.UI;
+﻿namespace Minesweeper.UI;
 
 public class Frame
 {
@@ -42,21 +39,19 @@ public class Frame
         {
             FillWidget(widget, _grid[row, column].Size);
         }
-        else if (!multiCell)
-        {
-            var newCellSize = widget.Size + widget.OuterPadding * 2;
-            _grid.SetCellSize(row, column, newCellSize, alignment);  
-        }
-        
+
         if (multiCell)
         {
             AlignToGridMultiCell(widget, row, column, rowSpan, columnSpan);
         }
         else
         {
+
             AlignToGrid(widget, row, column, alignment);
         }
-        
+
+        _grid.SetCellSize(row, column, widget.PaddedSize, alignment);
+
         CheckIfNeedToRedraw();
     }
 
@@ -92,42 +87,37 @@ public class Frame
         switch (widget.Fill)
         {
             case FillMode.Vertical:
-                widget.Size.Y = cellSize.Y;
+                widget.Height = Math.Max(widget.Height, cellSize.Y);
                 break;
             
             case FillMode.Horizontal:
-                widget.Size.X = cellSize.X;
+                widget.Width = Math.Max(widget.Width, cellSize.X);
                 break;
             
             case FillMode.Both:
-                widget.Size = cellSize;
+                widget.Size = widget.Size.ExpandTo(cellSize);
                 break;
-
+            
             case FillMode.None:
+                break;
+            
             default:
                 throw new ArgumentOutOfRangeException(nameof(widget), widget.Fill, null);
-        } 
+        }
     }
-    
+
     private void CheckIfNeedToRedraw()
     {
-        // foreach (var (widget, gridPos) in _widgets)
-        // {
-        //     if (widget.Anchor == _grid[gridPos.X, gridPos.Y].Center) continue;
-        //
-        //     widget.Clear();
-        //     
-        //     AlignToGrid(widget, gridPos.X, gridPos.Y, _grid[gridPos.X, gridPos.Y].Alignment);
-        // }
-
         foreach (var (widget, pos, gridSpan) in _widgets)
         {
+            // Single cell widgets
             if (gridSpan == (1, 1))
             {
-                // Single cell widgets
-                if (widget.Anchor == _grid[pos].Center) continue;
-                
+                if (widget.Anchor == _grid[pos].Center && widget.PaddedSize == _grid[Pos].Size) continue;
+
                 widget.Clear();
+                
+                FillWidget(widget, _grid[pos].Size - widget.OuterPadding * 2);
                 
                 AlignToGrid(widget, pos.X, pos.Y, _grid[pos].Alignment);
                 
@@ -142,7 +132,7 @@ public class Frame
 
             var anchor = (startPos + endPos) / 2;
             var size = endPos - startPos;
-            
+
             if (widget.Anchor == anchor && widget.Size == size) continue;
             
             widget.Clear();

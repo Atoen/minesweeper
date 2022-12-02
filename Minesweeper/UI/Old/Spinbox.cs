@@ -16,7 +16,7 @@ public sealed class Spinbox : WidgetOld
     private bool _displayingPlaceholder;
 
     public Spinbox(Color color, short minVal, short maxVal, short defaultVal,
-        Alignment alignment = Alignment.Center) : base(color, "", alignment)
+        TextAlignment textAlignment = TextAlignment.Center) : base(color, "", textAlignment)
     {
         if (minVal > maxVal)
         {
@@ -104,7 +104,7 @@ public sealed class Spinbox : WidgetOld
         var keyboardText = _displayingPlaceholder ? new string(TextCycleSymbol, _keyboardText.Length) : _keyboardText;
         var text = _inKeyboardMode ? keyboardText : CurrentVal.ToString();
         
-        Display.Display.Print(centerX, centerY, text, Color.Black, DefaultColor, Alignment);
+        Display.Display.Print(centerX, centerY, text, Color.Black, DefaultColor, TextAlignment);
     }
 
     protected override void SetUp()

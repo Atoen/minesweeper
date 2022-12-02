@@ -1,6 +1,4 @@
-﻿using Minesweeper.Display;
-
-namespace Minesweeper.Game;
+﻿namespace Minesweeper.Game;
 
 public static class Tiles
 {

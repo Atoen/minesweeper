@@ -14,6 +14,8 @@ public sealed class NativeDisplay : IRenderer
     private DisplayRect _screenRect;
     private readonly SCoord _displaySize;
     private readonly SCoord _startPos = new() {X = 0, Y = 0};
+
+    private bool _rendering;
     
     public NativeDisplay(int width, int height)
     {
@@ -34,6 +36,8 @@ public sealed class NativeDisplay : IRenderer
     
     public void Draw(int posX, int posY, char symbol, Color fg, Color bg)
     {
+        if (_rendering) throw new Exception();
+        
         if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
 
         var bufferIndex = posY * _displaySize.X + posX;
@@ -73,7 +77,11 @@ public sealed class NativeDisplay : IRenderer
     
     public void Draw()
     {
+        _rendering = true;
+        
         WriteConsoleOutput(_fileHandle, _buffer, _displaySize, _startPos, ref _screenRect);
+
+        _rendering = false;
     }
 
     private static ConsoleColor FromColor(Color c)

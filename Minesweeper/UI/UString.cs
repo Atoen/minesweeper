@@ -81,4 +81,5 @@ public class UString
         }
     }
 
+    public override string ToString() => _text;
 }

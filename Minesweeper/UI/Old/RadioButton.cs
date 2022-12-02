@@ -1,6 +1,4 @@
-﻿using Minesweeper.Display;
-
-namespace Minesweeper.UI;
+﻿namespace Minesweeper.UI;
 
 public sealed class RadioButton : WidgetOld
 {
@@ -9,21 +7,21 @@ public sealed class RadioButton : WidgetOld
     public Action? OnClick;
     
     private WidgetState _uiState = WidgetState.Default;
-    private Alignment _buttonAlignment;
+    private TextAlignment _buttonTextAlignment;
     private Variable _variable;
     private int _value;
-    private Coord ButtonPos;
+    private Coord _buttonPos;
 
     public RadioButton(Color color, string text, Variable variable, int value,
-        Alignment buttonAlignment = Alignment.Left, Alignment textAlignment = Alignment.Center)
-        : base(color, text, textAlignment)
+        TextAlignment buttonTextAlignment = TextAlignment.Left, TextAlignment textTextAlignment = TextAlignment.Center)
+        : base(color, text, textTextAlignment)
     {
         Input.MouseLeftClick += LeftClick;
         Input.MouseEvent += MouseMove;
 
         _variable = variable;
         _value = value;
-        _buttonAlignment = buttonAlignment;
+        _buttonTextAlignment = buttonTextAlignment;
 
         if (variable.Val == value) _uiState = WidgetState.Highlighted;
     }
@@ -39,7 +37,7 @@ public sealed class RadioButton : WidgetOld
         
         base.Render();
 
-        Display.Display.Draw(ButtonPos.X, ButtonPos.Y, ' ', Color.White,
+        Display.Display.Draw(_buttonPos.X, _buttonPos.Y, ' ', Color.White,
             _variable.Val == _value ? Color.Black : Color.Gray);
     }
 
@@ -50,29 +48,29 @@ public sealed class RadioButton : WidgetOld
         if (Text.Length == 0) return;
         
         TextCenter.Y = (short) (Pos.Y + Size.Y / 2);
-        TextCenter.X = _buttonAlignment switch
+        TextCenter.X = _buttonTextAlignment switch
         {
-            Alignment.Left => (short) (Pos.X + (Size.X + Text.Length) / 2),
-            Alignment.Right => (short) (Pos.X + (Size.X - Text.Length) / 2),
+            TextAlignment.Left => (short) (Pos.X + (Size.X + Text.Length) / 2),
+            TextAlignment.Right => (short) (Pos.X + (Size.X - Text.Length) / 2),
             _ => (short) (Pos.X + Size.X / 2),
         };
         
         TextStart.Y = TextCenter.Y;
-        TextStart.X = Alignment switch
+        TextStart.X = TextAlignment switch
         {
-            Alignment.Left => (short) (TextCenter.X - Text.Length),
-            Alignment.Right => TextCenter.X,
+            TextAlignment.Left => (short) (TextCenter.X - Text.Length),
+            TextAlignment.Right => TextCenter.X,
             _ => (short) (TextCenter.X - Text.Length / 2)
         };
         
         TextStop.Y = TextCenter.Y;
         TextStop.X = (short) (TextStart.X + Text.Length);
 
-        ButtonPos.Y = TextCenter.Y;
-        ButtonPos.X = _buttonAlignment switch
+        _buttonPos.Y = TextCenter.Y;
+        _buttonPos.X = _buttonTextAlignment switch
         {
-            Alignment.Left => (short) (Pos.X + 1),
-            Alignment.Right => (short) (Pos.X + Size.X - 1),
+            TextAlignment.Left => (short) (Pos.X + 1),
+            TextAlignment.Right => (short) (Pos.X + Size.X - 1),
             _ => TextCenter.X
         };
     }

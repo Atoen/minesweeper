@@ -3,6 +3,7 @@
 public class Label : Widget
 {
     public UString Text { get; set; }
+    public Coord TextOffset = Coord.Zero;
 
     public Label(Frame parent, UString text) : base(parent)
     {
@@ -23,7 +24,17 @@ public class Label : Widget
         if (Text.Animating) Text.Cycle();
 
         base.Render();
+
+        Display.Display.Print(Center.X + TextOffset.X, Center.Y + TextOffset.Y, Text.Text, Text.Foreground,
+            Text.Background ?? Color);
+    }
+
+    public override void Clear()
+    {
+        var textStart = Center + TextOffset + Coord.Left * (Text.Lenght / 2);
         
-        Display.Display.Print(Center.X, Center.Y, Text.Text, Text.Foreground, Text.Background ?? Color);
+        Display.Display.ClearRect(textStart, Coord.Right * Text.Lenght);
+
+        base.Clear();
     }
 }

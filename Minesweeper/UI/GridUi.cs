@@ -23,19 +23,19 @@ public sealed class GridUi
         _cells[row, column].Alignment = alignment;
         
         // new size cannot be smaller than the current one
-        _cells[row, column].Size.X = Math.Max(size.X, _cells[row, column].Size.X);
-        _cells[row, column].Size.Y = Math.Max(size.Y, _cells[row, column].Size.Y);
+        _cells[row, column].Width = Math.Max(size.X, _cells[row, column].Width);
+        _cells[row, column].Height = Math.Max(size.Y, _cells[row, column].Height);
 
         // Matching the width of the column
         for (var r = 0; r < _cells.GetLength(0); r++)
         {
-            _cells[r, column].Size.X = Math.Max(size.X, _cells[r, column].Size.X);
+            _cells[r, column].Width = Math.Max(size.X, _cells[r, column].Width);
         }
         
         // Matching the height of the row
         for (var c = 0; c < _cells.GetLength(1); c++)
         {
-            _cells[row, c].Size.Y = Math.Max(size.Y, _cells[row, c].Size.Y);
+            _cells[row, c].Height = Math.Max(size.Y, _cells[row, c].Height);
         }
 
         UpdatePosition();
@@ -79,6 +79,16 @@ public sealed class GridUi
         public GridAlignment Alignment;
 
         public Coord Center => Pos + Size / 2;
+        public int Width
+        {
+            get => Size.X;
+            set => Size.X = value;
+        }
+        public int Height
+        {
+            get => Size.Y;
+            set => Size.Y = value;
+        }
     }
 }
 

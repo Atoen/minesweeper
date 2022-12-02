@@ -41,6 +41,22 @@ public static class Display
             Name = "Display Thread"
         }.Start();
     }
+    
+    public static IEnumerable<Color> Gradient(Color start, Color end, int steps)
+    {
+        var stepA = (end.A - start.A) / (steps - 1);
+        var stepR = (end.R - start.R) / (steps - 1);
+        var stepG = (end.G - start.G) / (steps - 1);
+        var stepB = (end.B - start.B) / (steps - 1);
+
+        for (var i = 0; i < steps; i++)
+        {
+            yield return Color.FromArgb(start.A + stepA * i,
+                start.R + stepR * i,
+                start.G + stepG * i,
+                start.B + stepB * i);
+        }
+    }
 
     public static void Stop() => _refreshing = false;
     
@@ -60,12 +76,12 @@ public static class Display
     public static void ClearAt(int posX, int posY) => _renderer.ClearAt(posX, posY);
 
     public static void Print(int posX, int posY, string text, Color foreground, Color background,
-        Alignment alignment = Alignment.Center)
+        TextAlignment textAlignment = TextAlignment.Center)
     {
-        var startX = alignment switch
+        var startX = textAlignment switch
         {
-            Alignment.Left => posX - text.Length,
-            Alignment.Right => posX,
+            TextAlignment.Left => posX - text.Length,
+            TextAlignment.Right => posX,
             _ => posX - text.Length / 2
         };
             

@@ -4,6 +4,7 @@ public class Button : Widget
 {
     public Action? OnClick { get; init; }
     public UString Text { get; set; }
+    public Coord TextOffset = Coord.Zero;
 
     public Button(Frame parent, UString text) : base(parent)
     {
@@ -25,8 +26,9 @@ public class Button : Widget
         if (Text.Animating) Text.Cycle();
         
         base.Render();
-        
-        Display.Display.Print(Center.X, Center.Y, Text.Text, Text.Foreground, Text.Background ?? Color);
+
+        Display.Display.Print(Center.X + TextOffset.X, Center.Y + TextOffset.Y, Text.Text, Text.Foreground,
+            Text.Background ?? Color);
     }
     
     protected override void Resize()
