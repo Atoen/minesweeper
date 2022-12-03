@@ -11,22 +11,20 @@ public class UString
 
     public string Text
     {
-        get => _displayingPlaceholder ? _replacement : _text;
+        get => _displayingCaret ? $"{_text}{Caret}" : _text;
         set => _text = value;
     }
 
     public int Lenght => _text.Length;
-
-    public char[] PlaceholderArray = {'_'};
+    public char Caret { get; set; } = '_';
     
-    public int FramesPerSymbol = 10;
+    public int CaretCycleSpeed { get; set; } = 10;
 
-    public Color Foreground;
-    public Color? Background;
-
-    private string _replacement;
+    public Color Foreground { get; set; }
+    public Color? Background { get; set; }
+    
     private string _text;
-    private bool _displayingPlaceholder;
+    private bool _displayingCaret;
     private readonly IEnumerator _cycler;
     private bool _animating;
 
@@ -35,7 +33,7 @@ public class UString
         get => _animating;
         set
         {
-            if (value == false) _displayingPlaceholder = false;
+            if (value == false) _displayingCaret = false;
             _animating = value;
         }
     }
@@ -45,7 +43,7 @@ public class UString
     public UString(string text, Color foreground, Color? background = null)
     {
         _text = text;
-        _replacement = new string(PlaceholderArray[0], _text.Length);
+        
 
         Foreground = foreground;
         Background = background;
@@ -55,26 +53,25 @@ public class UString
 
     public void Cycle() => _cycler.MoveNext();
 
+    public void Append(string newText) => _text += newText;
+    public void Append(char symbol) => _text += symbol;
+
+    public void RemoveLast(int n) => _text = _text[..^n];
+
     public static implicit operator UString(string s) => new(s, Color.Black);
 
     private IEnumerator CycleText()
     {
         var i = 0;
-        var j = 0;
 
         while (Enabled)
         {
             i++;
             
-            if (i >= FramesPerSymbol)
+            if (i >= CaretCycleSpeed)
             {
-                _displayingPlaceholder = !_displayingPlaceholder;
-
+                _displayingCaret = !_displayingCaret;
                 i = 0;
-                _replacement = new string(PlaceholderArray[j], Text.Length);
-                
-                j++;
-                j %= PlaceholderArray.Length;
             }
 
             yield return null;

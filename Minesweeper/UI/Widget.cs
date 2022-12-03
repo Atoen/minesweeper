@@ -1,4 +1,6 @@
-﻿namespace Minesweeper.UI;
+﻿using System.Runtime.CompilerServices;
+
+namespace Minesweeper.UI;
 
 public abstract class Widget : IRenderable
 {
@@ -49,7 +51,7 @@ public abstract class Widget : IRenderable
         Render();
         
         Display.Display.AddToRenderList(this);
-        
+
         return this;
     }
 

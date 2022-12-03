@@ -133,7 +133,7 @@ public sealed class Spinbox : WidgetOld
 
         if (state.Key == ConsoleKey.Backspace && _keyboardText.Length > 0)
         {
-            _keyboardText = _keyboardText[1..];
+            _keyboardText = _keyboardText[0..^1];
         }
     }
     

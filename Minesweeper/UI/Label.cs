@@ -9,16 +9,7 @@ public class Label : Widget
     {
         Text = text;
     }
-
-    protected override void Resize()
-    {
-        if (Text == UString.Empty) return;
-        
-        var minSize = new Coord(Text.Lenght + 2 * InnerPadding.X, 1 + 2 * InnerPadding.Y);
     
-        Size = Size.ExpandTo(minSize);
-    }
-
     public override void Render()
     {
         if (Text.Animating) Text.Cycle();
@@ -36,5 +27,14 @@ public class Label : Widget
         Display.Display.ClearRect(textStart, Coord.Right * Text.Lenght);
 
         base.Clear();
+    }
+    
+    protected override void Resize()
+    {
+        if (Text == UString.Empty) return;
+        
+        var minSize = new Coord(Text.Lenght + 2 * InnerPadding.X, 1 + 2 * InnerPadding.Y);
+    
+        Size = Size.ExpandTo(minSize);
     }
 }

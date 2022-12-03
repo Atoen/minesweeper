@@ -29,7 +29,7 @@ public class Frame
         };
     }
     
-    public void Grid(Widget widget, int row, int column, int rowSpan, int columnSpan, GridAlignment alignment)
+    public void Grid (Widget widget, int row, int column, int rowSpan, int columnSpan, GridAlignment alignment)
     {
         _widgets.Add(new WidgetEntry(widget, (row, column), (rowSpan, columnSpan)));
 
@@ -39,6 +39,8 @@ public class Frame
         {
             FillWidget(widget, _grid[row, column].Size);
         }
+        
+        _grid.SetCellSize(row, column, widget.PaddedSize, alignment);
 
         if (multiCell)
         {
@@ -46,12 +48,9 @@ public class Frame
         }
         else
         {
-
             AlignToGrid(widget, row, column, alignment);
         }
-
-        _grid.SetCellSize(row, column, widget.PaddedSize, alignment);
-
+        
         CheckIfNeedToRedraw();
     }
 
