@@ -2,7 +2,7 @@
 
 public static class Game
 {
-    public static void Start(short bombs, short width, short height)
+    public static void Start(int bombs, int width, int height)
     {
         Input.MouseLeftClick += InputOnMouseClick;
         Input.MouseRightClick += InputOnMouseClick;

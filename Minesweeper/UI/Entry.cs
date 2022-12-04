@@ -85,6 +85,14 @@ public class Entry : Widget
             _ => !char.IsControl(symbol)
         };
     }
+    
+    public override void Remove()
+    {
+        Input.MouseLeftClick -= LeftClick;
+        Input.KeyEvent -= KeyEvent;
+        
+        base.Remove();
+    }
 }
 
 public enum TextEntryMode

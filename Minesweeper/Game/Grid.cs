@@ -2,15 +2,15 @@
 
 public static class Grid
 {
-    public static short Width { get; private set; }
-    public static short Height { get; private set; }
+    public static int Width { get; private set; }
+    public static int Height { get; private set; }
 
     private static Tile[,] _tiles = null!;
     
     private static bool _firstClick = true;
     private static int _bombs;
 
-    public static void Generate(short bombs, short width, short height)
+    public static void Generate(int bombs, int width, int height)
     {
         if (width < 3) width = 3;
         if (height < 3) height = 3;

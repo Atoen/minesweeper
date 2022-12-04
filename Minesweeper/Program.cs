@@ -16,7 +16,7 @@ Console.CancelKeyPress += delegate
     Console.Clear();
     Console.WriteLine("Exiting...");
     
-    const float bytesPerMByte = 1048576F;
+    var bytesPerMByte = Math.Pow(2, 20);
     Console.WriteLine(
         $"Memory usage - Physical: {peakPhysical / bytesPerMByte:.00}MB, Paged: {peakPaged / bytesPerMByte:.00}MB");
     

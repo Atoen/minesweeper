@@ -1,4 +1,6 @@
-﻿namespace Minesweeper.UI;
+﻿using Minesweeper.Display;
+
+namespace Minesweeper.UI;
 
 public static class MainMenu
 {
@@ -25,7 +27,7 @@ public static class MainMenu
         {
             DefaultColor = Color.PaleGoldenrod,
         }.Grid(0, 1, columnSpan: 2);
-        
+
         // Background for difficulty presets
         new Background(frame)
         {
@@ -53,15 +55,18 @@ public static class MainMenu
         }.Grid(1, 3);
         
         // Presets values
-        var gradient = Display.Display.Gradient(Color.Green, Color.Orange, Presets.Count).ToList();
+        var gradient = Colors.Gradient(Color.Green, Color.Orange, Presets.Count).ToList();
+        var radioVariable = new Variable();
         
         for (var i = 0; i < Presets.Count; i++)
         {
             var preset = Presets[i];
-        
-            new Label(frame, preset.Name)
+
+            new RadioButton(frame, preset.Name, radioVariable, i)
             {
                 DefaultColor = gradient[i],
+                HighlightedColor = gradient[i].Dimmer(),
+                PressedColor = gradient[i].Brighter(),
                 Fill = FillMode.Horizontal
             }.Grid(i + labelsRowOffset, 0);
             
@@ -84,43 +89,45 @@ public static class MainMenu
             }.Grid(i + labelsRowOffset, 3);
         }
 
-        new Label(frame, "Custom")
+        new RadioButton(frame, "Custom", radioVariable, Presets.Count)
         {
-            DefaultColor = Color.LightBlue,
-            Fill = FillMode.Horizontal
+            DefaultColor = Color.CornflowerBlue,
+            HighlightedColor = Color.CornflowerBlue.Dimmer(),
+            PressedColor = Color.CornflowerBlue.Brighter()
         }.Grid(5, 0);
 
-        new Entry(frame)
+        var bombsEntry = new Entry(frame)
         {
             DefaultColor = Color.DarkGray,
             MaxTextLenght = 4,
             TextBackground = Color.Gray,
             Text = "50",
             
-            Fill = FillMode.Horizontal
+            Fill = FillMode.Horizontal,
+            Mode = TextEntryMode.Digits
 
         }.Grid(5, 1);
         
-        new Entry(frame)
+        var widthEntry = new Entry(frame)
         {
             DefaultColor = Color.DarkGray,
             MaxTextLenght = 4,
             TextBackground = Color.Gray,
             Text = "30",
 
-            Fill = FillMode.Horizontal
-
+            Fill = FillMode.Horizontal,
+            Mode = TextEntryMode.Digits
         }.Grid(5, 2);
         
-        new Entry(frame)
+        var heightEntry = new Entry(frame)
         {
             DefaultColor = Color.DarkGray,
             MaxTextLenght = 4,
             TextBackground = Color.Gray,
             Text = "20",
 
-            Fill = FillMode.Horizontal
-
+            Fill = FillMode.Horizontal,
+            Mode = TextEntryMode.Digits
         }.Grid(5, 3);
         
         // Play button
@@ -131,9 +138,40 @@ public static class MainMenu
             PressedColor = Color.Lime,
             
             Fill = FillMode.Both,
-        
-            OnClick = () => Console.Title = "Playing!"
+            
+            OnClick = () =>
+            {
+                frame.Clear();
+                StartGame(GetSettings());
+            }
         }.Grid(labelsRowOffset + Presets.Count + 1, 1, columnSpan: 2);
+
+        DifficultyPreset GetSettings()
+        {
+            var selected = radioVariable.Val;
+            
+            if (selected >= 0 && selected < Presets.Count)
+                return Presets[selected];
+
+            if (selected == Presets.Count)
+            {
+                return new DifficultyPreset()
+                {
+                    // very ugly
+                    
+                    BombAmount = int.Parse((bombsEntry as Entry)?.Text.Text ?? string.Empty),
+                    GridWidth = int.Parse((widthEntry as Entry)?.Text.Text ?? string.Empty),
+                    GridHeight = int.Parse((heightEntry as Entry)?.Text.Text ?? string.Empty)
+                };
+            }
+
+            return new DifficultyPreset();
+        }
+    }
+
+    private static void StartGame(DifficultyPreset preset)
+    {
+        Game.Game.Start(preset.BombAmount, preset.GridWidth, preset.GridHeight);
     }
 }
 

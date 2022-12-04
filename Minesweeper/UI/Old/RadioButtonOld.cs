@@ -1,29 +1,29 @@
 ﻿namespace Minesweeper.UI;
 
-public sealed class RadioButton : WidgetOld
+public sealed class RadioButtonOld : WidgetOld
 {
     public Color HighlightedColor = Color.Cyan;
     public Color PressedColor = Color.White;
     public Action? OnClick;
     
     private WidgetState _uiState = WidgetState.Default;
-    private TextAlignment _buttonTextAlignment;
-    private Variable _variable;
+    private Alignment _buttonAlignment;
+    private VariableOld _variableOld;
     private int _value;
     private Coord _buttonPos;
 
-    public RadioButton(Color color, string text, Variable variable, int value,
-        TextAlignment buttonTextAlignment = TextAlignment.Left, TextAlignment textTextAlignment = TextAlignment.Center)
-        : base(color, text, textTextAlignment)
+    public RadioButtonOld(Color color, string text, VariableOld variableOld, int value,
+        Alignment buttonAlignment = Alignment.Left, Alignment alignment = Alignment.Center)
+        : base(color, text, alignment)
     {
         Input.MouseLeftClick += LeftClick;
         Input.MouseEvent += MouseMove;
 
-        _variable = variable;
+        _variableOld = variableOld;
         _value = value;
-        _buttonTextAlignment = buttonTextAlignment;
+        _buttonAlignment = buttonAlignment;
 
-        if (variable.Val == value) _uiState = WidgetState.Highlighted;
+        if (variableOld.Val == value) _uiState = WidgetState.Highlighted;
     }
 
     public override void Render()
@@ -38,7 +38,7 @@ public sealed class RadioButton : WidgetOld
         base.Render();
 
         Display.Display.Draw(_buttonPos.X, _buttonPos.Y, ' ', Color.White,
-            _variable.Val == _value ? Color.Black : Color.Gray);
+            _variableOld.Val == _value ? Color.Black : Color.Gray);
     }
 
     protected override void SetUp()
@@ -48,18 +48,18 @@ public sealed class RadioButton : WidgetOld
         if (Text.Length == 0) return;
         
         TextCenter.Y = (short) (Pos.Y + Size.Y / 2);
-        TextCenter.X = _buttonTextAlignment switch
+        TextCenter.X = _buttonAlignment switch
         {
-            TextAlignment.Left => (short) (Pos.X + (Size.X + Text.Length) / 2),
-            TextAlignment.Right => (short) (Pos.X + (Size.X - Text.Length) / 2),
+            Alignment.Left => (short) (Pos.X + (Size.X + Text.Length) / 2),
+            Alignment.Right => (short) (Pos.X + (Size.X - Text.Length) / 2),
             _ => (short) (Pos.X + Size.X / 2),
         };
         
         TextStart.Y = TextCenter.Y;
-        TextStart.X = TextAlignment switch
+        TextStart.X = Alignment switch
         {
-            TextAlignment.Left => (short) (TextCenter.X - Text.Length),
-            TextAlignment.Right => TextCenter.X,
+            Alignment.Left => (short) (TextCenter.X - Text.Length),
+            Alignment.Right => TextCenter.X,
             _ => (short) (TextCenter.X - Text.Length / 2)
         };
         
@@ -67,10 +67,10 @@ public sealed class RadioButton : WidgetOld
         TextStop.X = (short) (TextStart.X + Text.Length);
 
         _buttonPos.Y = TextCenter.Y;
-        _buttonPos.X = _buttonTextAlignment switch
+        _buttonPos.X = _buttonAlignment switch
         {
-            TextAlignment.Left => (short) (Pos.X + 1),
-            TextAlignment.Right => (short) (Pos.X + Size.X - 1),
+            Alignment.Left => (short) (Pos.X + 1),
+            Alignment.Right => (short) (Pos.X + Size.X - 1),
             _ => TextCenter.X
         };
     }
@@ -93,23 +93,23 @@ public sealed class RadioButton : WidgetOld
             return;
         }
 
-        _uiState = _variable.Val == _value ? WidgetState.Highlighted : WidgetState.Default;
+        _uiState = _variableOld.Val == _value ? WidgetState.Highlighted : WidgetState.Default;
     }
     
     private void LeftClick(MouseState state)
     {
         if (!IsCursorOver(state.Position)) return;
 
-        _variable.Val = _value;
+        _variableOld.Val = _value;
         
         _uiState = WidgetState.Pressed;
         OnClick?.Invoke();
     }
 }
 
-public sealed class Variable
+public sealed class VariableOld
 {
     public int Val { get; set; }
     
-    public Variable(int val = 0) => Val = val;
+    public VariableOld(int val = 0) => Val = val;
 }

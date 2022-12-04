@@ -8,10 +8,10 @@ public class Button : Widget
 
     public Button(Frame parent, UString text) : base(parent)
     {
+        Text = text;
+        
         Input.MouseLeftClick += LeftClick;
         Input.MouseEvent += MouseMove;
-
-        Text = text;
     }
 
     public override void Render()

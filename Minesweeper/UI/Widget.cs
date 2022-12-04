@@ -101,7 +101,7 @@ public enum WidgetState
     Pressed
 }
 
-public enum TextAlignment
+public enum Alignment
 {
     Left,
     Right,
