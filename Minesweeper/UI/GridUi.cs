@@ -48,37 +48,38 @@ public sealed class GridUi
 
         var padding = new Coord(InsidePaddingX, InsidePaddingY);
 
-        _cells[0, 0].Pos = Pos;
+        _cells[0, 0].Start = Pos;
         
         // Manually setting first row and first column
         for (var r = 1; r < rows; r++)
         {
-            _cells[r, 0].Pos.Y = _cells[r - 1, 0].Size.Y + _cells[r - 1, 0].Pos.Y + padding.Y;
-            _cells[r, 0].Pos.X = Pos.X; // Offset of whole grid
+            _cells[r, 0].Start.Y = _cells[r - 1, 0].Size.Y + _cells[r - 1, 0].Start.Y + padding.Y;
+            _cells[r, 0].Start.X = Pos.X; // Offset of whole grid
         }
         
         for (var c = 1; c < columns; c++)
         {
-            _cells[0, c].Pos.X = _cells[0, c - 1].Size.X + _cells[0, c - 1].Pos.X + padding.X;
-            _cells[0, c].Pos.Y = Pos.Y; // Offset of whole grid
+            _cells[0, c].Start.X = _cells[0, c - 1].Size.X + _cells[0, c - 1].Start.X + padding.X;
+            _cells[0, c].Start.Y = Pos.Y; // Offset of whole grid
         }
 
         // Updating rest of the grid
         for (var r = 1; r < rows; r++)
         for (var c = 1; c < columns; c++)
         {
-            _cells[r, c].Pos = _cells[r - 1, c - 1].Pos + _cells[r - 1, c - 1].Size + padding;
+            _cells[r, c].Start = _cells[r - 1, c - 1].Start + _cells[r - 1, c - 1].Size + padding;
         }
     }
 
     public struct Cell
     {
-        public Coord Pos;
+        public Coord Start;
         public Coord Size;
         public Coord ItemSize;
         public GridAlignment Alignment;
 
-        public Coord Center => Pos + Size / 2;
+        public Coord Center => Start + Size / 2;
+        public Coord End => Start + Size;
         public int Width
         {
             get => Size.X;

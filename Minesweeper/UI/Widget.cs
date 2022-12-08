@@ -1,11 +1,11 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Minesweeper.Display;
 
 namespace Minesweeper.UI;
 
 public abstract class Widget : IRenderable
 {
     protected readonly Frame Parent;
-    protected Color Color;
+    public Color Color { get; protected set; }
 
     public Coord Size;
     public Coord Anchor;
@@ -19,6 +19,8 @@ public abstract class Widget : IRenderable
     public Color DefaultColor { get; set; } = Color.Aqua;
     public Color HighlightedColor { get; set; } = Color.Blue;
     public Color PressedColor { get; set; } = Color.White;
+
+    public Layer Layer { get; set; } = Layer.Foreground;
 
     public WidgetState State { get; protected set; }
 
@@ -41,7 +43,11 @@ public abstract class Widget : IRenderable
         Parent = parent;
     }
 
-    public Widget Grid(int row, int column, int rowSpan = 1, int columnSpan = 1, GridAlignment alignment = GridAlignment.Center)
+    public abstract Widget Grid(int row, int column, int rowSpan = 1, int columnSpan = 1,
+        GridAlignment alignment = GridAlignment.Center);
+
+    protected T Grid<T>(int row, int column, int rowSpan = 1, int columnSpan = 1, GridAlignment alignment = GridAlignment.Center)
+        where T : Widget
     {
         Color = DefaultColor;
         
@@ -52,10 +58,12 @@ public abstract class Widget : IRenderable
         
         Display.Display.AddToRenderList(this);
 
-        return this;
+        return this as T ?? throw new InvalidOperationException();
     }
 
-    public Widget Place(int posX, int posY)
+    public abstract Widget Place(int posX, int posY);
+
+    protected T Place<T>(int posX, int posY) where T : Widget
     {
         Color = DefaultColor;
         
@@ -66,22 +74,22 @@ public abstract class Widget : IRenderable
         
         Display.Display.AddToRenderList(this);
         
-        return this;
+        return this as T ?? throw new InvalidOperationException();
     }
 
     public virtual void Render()
     {
-        Display.Display.DrawRect(Anchor + Offset, Size, Color);
+        Display.Display.DrawRect(Anchor + Offset, Size, Color, layer: Layer);
     }
 
     public virtual void Remove() => ShouldRemove = true;
 
     public virtual void Clear()
     {
-        Display.Display.ClearRect(Anchor + Offset, Size);
+        Display.Display.ClearRect(Anchor + Offset, Size, Layer);
     }
     
-    protected bool IsCursorOver(Coord pos)
+    protected bool IsInside(Coord pos)
     {
         var c = Anchor + Offset;
         

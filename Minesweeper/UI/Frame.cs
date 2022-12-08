@@ -29,7 +29,7 @@ public class Frame
         };
     }
     
-    public void Grid (Widget widget, int row, int column, int rowSpan, int columnSpan, GridAlignment alignment)
+    public void Grid(Widget widget, int row, int column, int rowSpan, int columnSpan, GridAlignment alignment)
     {
         _widgets.Add(new WidgetEntry(widget, (row, column), (rowSpan, columnSpan)));
 
@@ -40,25 +40,66 @@ public class Frame
             FillWidget(widget, _grid[row, column].Size);
         }
         
-        _grid.SetCellSize(row, column, widget.PaddedSize, alignment);
-
         if (multiCell)
         {
+            SetMultipleCellSize((row, column), rowSpan, columnSpan, widget.PaddedSize, alignment);
             AlignToGridMultiCell(widget, row, column, rowSpan, columnSpan);
         }
         else
         {
+            _grid.SetCellSize(row, column, widget.PaddedSize, alignment);
             AlignToGrid(widget, row, column, alignment);
         }
         
         CheckIfNeedToRedraw();
     }
 
+    private void SetMultipleCellSize(Coord firstCellPos, int rowSpan, int columnSpan, Coord widgetSize, GridAlignment alignment)
+    {
+        var paddings = new Coord((columnSpan - 1) * _padding.X, (rowSpan - 1) * _padding.Y);
+
+        var lastCellPos = firstCellPos + (rowSpan - 1, columnSpan - 1);
+        var currentSizeAvailable = _grid[lastCellPos].End - _grid[firstCellPos].Start;
+
+        // Setting cells horizontally
+        if (currentSizeAvailable.X < widgetSize.X)
+        {
+            var sizeToDivide = widgetSize.X - paddings.X;
+            
+            var cellWidth = sizeToDivide / columnSpan;
+            var remainder = sizeToDivide % columnSpan;
+
+            for (var i = 0; i < columnSpan; i++)
+            {
+                var size = cellWidth + remainder;
+                if (remainder > 0) remainder--;
+                
+                _grid.SetCellSize(firstCellPos.X, firstCellPos.Y + i, Coord.Right * size, alignment);
+            }
+        }
+
+        // Setting cells vertically
+        if (currentSizeAvailable.Y < widgetSize.Y)
+        {
+            var sizeToDivide = widgetSize.Y - paddings.Y;
+            
+            var cellWidth = sizeToDivide / rowSpan;
+            var remainder = sizeToDivide % rowSpan;
+
+            for (var i = 0; i < rowSpan; i++)
+            {
+                var size = cellWidth + remainder;
+                if (remainder > 0) remainder--;
+                
+                _grid.SetCellSize(firstCellPos.X + i, firstCellPos.Y, Coord.Down * size, alignment);
+            }
+        }
+    }
+    
     public void Place(Widget widget, int posX, int posY)
     {
         _widgets.Add(new WidgetEntry(widget, Coord.Zero, Coord.Zero));
-
-
+        
         widget.Anchor = new Coord(posX, posY);
         widget.Offset = Coord.Zero;
     }
@@ -76,9 +117,11 @@ public class Frame
     public void Remove(Widget widget)
     {
         var entry = _widgets.FirstOrDefault(e => e.Widget == widget);
-        widget.Remove();
 
-        if (entry is not null) _widgets.Remove(entry);
+        if (entry is null) return;
+        
+        widget.Remove();
+        _widgets.Remove(entry);
     }
 
     private void FillWidget(Widget widget, Coord cellSize)
@@ -124,10 +167,10 @@ public class Frame
             }
 
             // multi cell widgets
-            var startPos = _grid[pos].Pos;
+            var startPos = _grid[pos].Start;
             
             var endCell = _grid[pos + gridSpan - (1, 1)];
-            var endPos = endCell.Pos + endCell.Size;
+            var endPos = endCell.Start + endCell.Size;
 
             var anchor = (startPos + endPos) / 2;
             var size = endPos - startPos;
@@ -167,10 +210,10 @@ public class Frame
 
     private void AlignToGridMultiCell(Widget widget, int row, int column, int rowSpan, int columnSpan)
     {
-        var startPos = _grid[row, column].Pos;
+        var startPos = _grid[row, column].Start;
 
         var endCell = _grid[row + rowSpan - 1, column + columnSpan - 1];
-        var endPos = endCell.Pos + endCell.Size;
+        var endPos = endCell.Start + endCell.Size;
 
         widget.Size = endPos - startPos;
         widget.Anchor = (startPos + endPos) / 2;

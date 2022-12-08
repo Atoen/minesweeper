@@ -15,7 +15,7 @@ public class UString
         set => _text = value;
     }
 
-    public int Lenght => _text.Length;
+    public int Length => _text.Length;
     public char Caret { get; set; } = '_';
     
     public int CaretCycleSpeed { get; set; } = 10;
@@ -44,7 +44,6 @@ public class UString
     {
         _text = text;
         
-
         Foreground = foreground;
         Background = background;
 

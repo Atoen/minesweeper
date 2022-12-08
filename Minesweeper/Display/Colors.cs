@@ -31,4 +31,16 @@ public static class Colors
     }
 
     public static Color Dimmer(this Color color, int dimmingPercent = 20) => Brighter(color, -dimmingPercent);
+    
+    public static string AnsiString(this Color color) => $"{color.R};{color.G};{color.B}";
+
+    public static ConsoleColor ConsoleColor(this Color color)
+    {
+        var index = color.R > 128 | color.G > 128 | color.B > 128 ? 8 : 0; // Bright bit
+        index |= color.R > 64 ? 4 : 0; // Red bit
+        index |= color.G > 64 ? 2 : 0; // Green bit
+        index |= color.B > 64 ? 1 : 0; // Blue bit
+        return (ConsoleColor) index;
+    }
+
 }

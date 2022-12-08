@@ -6,16 +6,14 @@ namespace Minesweeper.Display;
 public sealed class AnsiDisplay : IRenderer
 {
     public bool Modified { get; set; }
-    public int ChunkSize { get; set; }
+    private int ChunkSize { get; set; }
 
     private readonly Coord _displaySize;
     private readonly Pixel[,] _pixels;
-    private bool[,] _modifiedChunks;
+    private readonly bool[,] _modifiedChunks;
     
     private readonly StringBuilder _stringBuilder = new();
-    
-    private bool _rendering;
-    
+
     public AnsiDisplay(int width, int height, int chunkSize = 5)
     {
         _displaySize.X = (short) width;
@@ -30,10 +28,8 @@ public sealed class AnsiDisplay : IRenderer
         _modifiedChunks = new bool[chunksX, chunksY];
     }
     
-    public void Draw(int posX, int posY, char symbol, Color fg, Color bg)
+    public void Draw(int posX, int posY, char symbol, Color fg, Color bg, Layer layer)
     {
-        if (_rendering) throw new Exception();
-
         if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
 
         if (_pixels[posX, posY].Symbol == symbol && _pixels[posX, posY].Fg == fg &&
@@ -52,13 +48,11 @@ public sealed class AnsiDisplay : IRenderer
 
     public void Draw(int posX, int posY, TileDisplay tile)
     {
-        Draw(posX, posY, tile.Utf8Symbol, tile.Foreground, tile.Background);
+        Draw(posX, posY, tile.Utf8Symbol, tile.Foreground, tile.Background, Layer.Foreground);
     }
 
-    public void ClearAt(int posX, int posY)
+    public void ClearAt(int posX, int posY, Layer layer)
     {
-        if (_rendering) throw new Exception();
-        
         if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
         
         if (_pixels[posX, posY].IsEmpty) return;
@@ -71,12 +65,8 @@ public sealed class AnsiDisplay : IRenderer
     
     public void Draw()
     {
-        _rendering = true;
-        
         Console.Write(GenerateDisplayString());
         _stringBuilder.Clear();
-
-        _rendering = false;
     }
 
     private void SetChunk(int posX, int posY)
@@ -87,7 +77,7 @@ public sealed class AnsiDisplay : IRenderer
         _modifiedChunks[x, y] = true;
     }
 
-    private bool GetChunk(int posX, int posY)
+    private bool IsChunkModified(int posX, int posY)
     {
         var x = posX / ChunkSize;
         var y = posY / ChunkSize;
@@ -114,13 +104,13 @@ public sealed class AnsiDisplay : IRenderer
         var oldStreakPos = new Coord();
         var oldStreakLen = 0;
         var previousIsCleared = false;
-
+        
         var symbolsBuilder = new StringBuilder();
         
         _stringBuilder.Append("\x1b[1;1f");
         
-        for (var y = 0; y < _pixels.GetLength(1); y++)
-        for (var x = 0; x < _pixels.GetLength(0); x++)
+        for (var y = 0; y < _displaySize.Y; y++)
+        for (var x = 0; x < _displaySize.X; x++)
         {
             var pixel = _pixels[x, y];
 
@@ -129,7 +119,7 @@ public sealed class AnsiDisplay : IRenderer
             {
                 if (symbolsBuilder.Length != 0)
                 {
-                    // need to specify new coords for printing
+                    // Need to specify new coords for printing
                     if (oldStreakPos.Y != y || oldStreakPos.X + oldStreakLen != streakStartPos.X)
                     {
                         _stringBuilder.Append($"\x1b[{streakStartPos.Y + 1};{streakStartPos.X + 1}f");
@@ -222,9 +212,4 @@ public sealed class AnsiDisplay : IRenderer
         public bool IsEmpty => Symbol == '\0' && Fg == Color.Empty && Bg == Color.Empty;
         public bool IsCleared => Symbol == ClearedSymbol && Fg == Color.Empty && Bg == Color.Empty;
     }
-}
-
-public static class ColorExtensions
-{
-    public static string AnsiString(this Color color) => $"{color.R};{color.G};{color.B}";
 }

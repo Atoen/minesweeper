@@ -21,20 +21,20 @@ public static class MainMenu
         };
 
         var labelsRowOffset = 2;
-        
+
         // Title label
-        var label = new Label(frame, new UString("MINESWEEPER", Color.DarkBlue))
+        new Label(frame, new UString("MINESWEEPER", Color.DarkBlue))
         {
             DefaultColor = Color.PaleGoldenrod,
         }.Grid(0, 1, columnSpan: 2);
-
+        
         // Background for difficulty presets
         new Background(frame)
         {
             DefaultColor = Color.Gray,
             InnerPadding = (1, 1)
         }.Grid(1, 0, rowSpan: Presets.Count + 2, columnSpan: 4);
-        
+
         // Titles for preset values
         new Label(frame, "Bombs")
         {
@@ -51,7 +51,7 @@ public static class MainMenu
         new Label(frame, "Height")
         {
             DefaultColor = Color.DarkGray,
-            Fill = FillMode.Horizontal
+            Fill = FillMode.Horizontal,
         }.Grid(1, 3);
         
         // Presets values
@@ -61,7 +61,7 @@ public static class MainMenu
         for (var i = 0; i < Presets.Count; i++)
         {
             var preset = Presets[i];
-
+        
             new RadioButton(frame, preset.Name, radioVariable, i)
             {
                 DefaultColor = gradient[i],
@@ -88,14 +88,14 @@ public static class MainMenu
                 Fill = FillMode.Horizontal
             }.Grid(i + labelsRowOffset, 3);
         }
-
+        
         new RadioButton(frame, "Custom", radioVariable, Presets.Count)
         {
             DefaultColor = Color.CornflowerBlue,
             HighlightedColor = Color.CornflowerBlue.Dimmer(),
             PressedColor = Color.CornflowerBlue.Brighter()
         }.Grid(5, 0);
-
+        
         var bombsEntry = new Entry(frame)
         {
             DefaultColor = Color.DarkGray,
@@ -104,8 +104,8 @@ public static class MainMenu
             Text = "50",
             
             Fill = FillMode.Horizontal,
-            Mode = TextEntryMode.Digits
-
+            InputMode = TextEntryMode.Digits
+        
         }.Grid(5, 1);
         
         var widthEntry = new Entry(frame)
@@ -114,9 +114,9 @@ public static class MainMenu
             MaxTextLenght = 4,
             TextBackground = Color.Gray,
             Text = "30",
-
+        
             Fill = FillMode.Horizontal,
-            Mode = TextEntryMode.Digits
+            InputMode = TextEntryMode.Digits
         }.Grid(5, 2);
         
         var heightEntry = new Entry(frame)
@@ -125,20 +125,18 @@ public static class MainMenu
             MaxTextLenght = 4,
             TextBackground = Color.Gray,
             Text = "20",
-
-            Fill = FillMode.Horizontal,
-            Mode = TextEntryMode.Digits
-        }.Grid(5, 3);
         
+            Fill = FillMode.Horizontal,
+            InputMode = TextEntryMode.Digits
+        }.Grid(5, 3);
+
         // Play button
         new Button(frame, "PLAY")
         {
             DefaultColor = Color.White,
             HighlightedColor = Color.Yellow,
             PressedColor = Color.Lime,
-            
-            Fill = FillMode.Both,
-            
+
             OnClick = () =>
             {
                 frame.Clear();
@@ -152,16 +150,14 @@ public static class MainMenu
             
             if (selected >= 0 && selected < Presets.Count)
                 return Presets[selected];
-
+            
             if (selected == Presets.Count)
             {
                 return new DifficultyPreset()
                 {
-                    // very ugly
-                    
-                    BombAmount = int.Parse((bombsEntry as Entry)?.Text.Text ?? string.Empty),
-                    GridWidth = int.Parse((widthEntry as Entry)?.Text.Text ?? string.Empty),
-                    GridHeight = int.Parse((heightEntry as Entry)?.Text.Text ?? string.Empty)
+                    BombAmount = int.Parse(bombsEntry.Text.Text),
+                    GridWidth = int.Parse(widthEntry.Text.Text ?? "0"),
+                    GridHeight = int.Parse(heightEntry.Text.Text ?? "0")
                 };
             }
 

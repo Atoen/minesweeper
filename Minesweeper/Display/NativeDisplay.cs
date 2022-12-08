@@ -10,13 +10,15 @@ public sealed class NativeDisplay : IRenderer
     
     private readonly SafeFileHandle _fileHandle;
     
-    private readonly CharInfo[] _buffer;
     private DisplayRect _screenRect;
     private readonly SCoord _displaySize;
     private readonly SCoord _startPos = new() {X = 0, Y = 0};
 
-    private bool _rendering;
-    
+    private readonly CharInfo[] _currentBuffer;
+    private readonly CharInfo[] _lastBuffer;
+
+    private readonly object _threadLock = new();
+
     public NativeDisplay(int width, int height)
     {
         _fileHandle = CreateFile("CONOUT$",
@@ -29,70 +31,83 @@ public sealed class NativeDisplay : IRenderer
         
         if (_fileHandle.IsInvalid) throw new IOException("Console buffer file is invalid");
         
-        _buffer = new CharInfo[width * height];
-        _displaySize = new SCoord((short) width, (short) height);
-        _screenRect = new DisplayRect {Left = 0, Top = 0, Right = (short) width, Bottom = (short) height};   
+        _displaySize = new SCoord {X = (short) width, Y = (short) height};
+        _screenRect = new DisplayRect {Left = 0, Top = 0, Right = (short) width, Bottom = (short) height};
+
+        _currentBuffer = new CharInfo[width * height];
+        _lastBuffer = new CharInfo[width * height];
     }
     
-    public void Draw(int posX, int posY, char symbol, Color fg, Color bg)
+    public void Draw(int posX, int posY, char symbol, Color fg, Color bg, Layer layer)
     {
-        if (_rendering) throw new Exception();
-        
-        if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
+        lock(_threadLock)
+        {
+            if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
 
-        var bufferIndex = posY * _displaySize.X + posX;
-        
-        var cfg = FromColor(fg);
-        var cbg = FromColor(bg);
+            var bufferIndex = posY * _displaySize.X + posX;
+            
+            var cfg = fg.ConsoleColor();
+            var cbg = bg.ConsoleColor();
 
-        var color = (short) ((int) cfg | (int) cbg << 4);
-        var symbolInfo = _buffer[bufferIndex];
-
-        if (symbolInfo.Symbol == symbol && symbolInfo.Color == color) return;
-
-        _buffer[bufferIndex].Symbol = (byte) symbol;
-        _buffer[bufferIndex].Color = color;
-
-        Modified = true;
+            var color = (short) ((int) cfg | (int) cbg << 4);
+            // var plane = (int) layer;
+            
+            // var symbolInfo = _currentBuffer[bufferIndex];
+            
+            // if (symbolInfo.Symbol == symbol && symbolInfo.Color == color) return;
+            
+            _currentBuffer[bufferIndex].Symbol = (byte) symbol;
+            _currentBuffer[bufferIndex].Color = color;
+        }
     }
 
     public void Draw(int posX, int posY, TileDisplay tile)
     {
-        Draw(posX, posY, tile.Symbol, tile.Foreground, tile.Background);
+        Draw(posX, posY, tile.Symbol, tile.Foreground, tile.Background, Layer.Foreground);
     }
 
-    public void ClearAt(int posX, int posY)
+    public void ClearAt(int posX, int posY, Layer layer)
     {
-        if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
+        lock (_threadLock)
+        {
+            if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
 
-        var bufferIndex = posY * _displaySize.X + posX;
+            var bufferIndex = posY * _displaySize.X + posX;
+            // var plane = (int) layer;
         
-        if (_buffer[bufferIndex].Symbol == (byte) ' ' && _buffer[bufferIndex].Color == 15) return;
-
-        _buffer[bufferIndex].Symbol = (byte) ' ';
-        _buffer[bufferIndex].Color = 0;
-
-        Modified = true;
+            // if (_currentBuffer[bufferIndex].Symbol == (byte) ' ' && _currentBuffer[bufferIndex].Color == 15) return;
+        
+            _currentBuffer[bufferIndex] = CharInfo.Cleared;
+        }
     }
     
     public void Draw()
     {
-        _rendering = true;
-        
-        WriteConsoleOutput(_fileHandle, _buffer, _displaySize, _startPos, ref _screenRect);
+        lock (_threadLock)
+        {
+            CopyToBuffer();
 
-        _rendering = false;
+            if (!Modified) return;
+            
+            WriteConsoleOutput(_fileHandle, _currentBuffer, _displaySize, _startPos, ref _screenRect);
+            Modified = false;
+        }
     }
 
-    private static ConsoleColor FromColor(Color c)
+    private unsafe void CopyToBuffer()
     {
-        var index = c.R > 128 | c.G > 128 | c.B > 128 ? 8 : 0; // Bright bit
-        index |= c.R > 64 ? 4 : 0; // Red bit
-        index |= c.G > 64 ? 2 : 0; // Green bit
-        index |= c.B > 64 ? 1 : 0; // Blue bit
-        return (ConsoleColor) index;
+        fixed (CharInfo* current = _currentBuffer, last = _lastBuffer)
+        {
+            for (var i = 0; i < _displaySize.X * _displaySize.Y; i++)
+            {
+                if (current[i].Symbol == last[i].Symbol && current[i].Color == last[i].Color) continue;
+                
+                Modified = true;
+                last[i] = current[i];
+            }
+        }
     }
-    
+
     #region NativeMetods
     
     [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
@@ -115,8 +130,14 @@ public sealed class NativeDisplay : IRenderer
     [StructLayout(LayoutKind.Explicit)]
     private struct CharInfo
     {
+        public static readonly CharInfo Empty = new() {Symbol = 0, Color = 0};
+        public static readonly CharInfo Cleared = new() {Symbol = (byte) ' ', Color = 0};
+        
         [FieldOffset(0)] public byte Symbol;
         [FieldOffset(2)] public short Color;
+
+        public bool IsEmpty => Symbol == 0 && Color == 0;
+        public bool IsCleared => Symbol == (byte) ' ' && Color == 0;
     }
     
     [StructLayout(LayoutKind.Sequential)]
@@ -135,12 +156,6 @@ public sealed class NativeDisplay : IRenderer
     {
         public short X;
         public short Y;
-
-        public SCoord(short x, short y)
-        {
-            X = x;
-            Y = y;
-        }
 
         public override string ToString() => $"({X} {Y})";
     }
