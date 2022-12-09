@@ -1,9 +1,6 @@
 ﻿Display Layers (bg fg top)
-Thread safe display render
-Break down ansi display into cells
 Resizing cells when it could be smaller
 Background padding fix
-Multi cell widget
 Maybe cleaner ustring
-Griding and placing widgets returns them as base class (not intended)
 Namespace names change
+Render only changed widgets (ansi)

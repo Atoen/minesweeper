@@ -33,20 +33,12 @@ public class Entry : Widget
     public override void Render()
     {
         if (_inEntryMode) Text.Cycle();
+
+        Display.Display.DrawRect(Anchor + Offset, Size, Color);
         
         var textStart = Center + TextOffset + Coord.Left * (MaxTextLenght / 2);
-        var start = Anchor + Offset;
-        
-        for (var x = start.X; x < start.X + Size.X; x++)
-        for (var y = start.Y; y < start.Y + Size.Y; y++)
-        {
-            if (y == Center.Y && x >= textStart.X && x < textStart.X + MaxTextLenght + 1) continue;
-            
-            Display.Display.Draw(x, y, ' ', Color.Black, Color);
-        }
-        
         Display.Display.DrawRect(textStart, (MaxTextLenght + 1, 1), TextBackground);
-        
+
         Display.Display.Print(
             Center.X + TextOffset.X - MaxTextLenght / 2,
             Center.Y + TextOffset.Y, Text.Text, Text.Foreground,

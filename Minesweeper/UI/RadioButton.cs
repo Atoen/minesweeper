@@ -6,8 +6,8 @@ public class RadioButton : Button
 {
     public bool IsSelected => _variable.Val == _value;
     
-    private Variable _variable;
-    private int _value;
+    private readonly Variable _variable;
+    private readonly int _value;
     
     public RadioButton(Frame parent, UString text, Variable variable, int value) : base(parent, text)
     {
@@ -37,13 +37,6 @@ public class RadioButton : Button
     
     public override void Render()
     {
-        Color = State switch
-        {
-            WidgetState.Highlighted => HighlightedColor,
-            WidgetState.Pressed => PressedColor,
-            _ => DefaultColor,
-        };
-        
         Text.Background = IsSelected ? Color.Brighter(50) : Color;
         
         base.Render();

@@ -1,4 +1,6 @@
-﻿namespace Minesweeper.UI;
+﻿using Minesweeper.Display;
+
+namespace Minesweeper.UI;
 
 public interface IRenderable
 {
@@ -7,4 +9,7 @@ public interface IRenderable
     void Clear();
     
     bool ShouldRemove { get; }
+    
+    public Layer Layer { get; set; }
+
 }

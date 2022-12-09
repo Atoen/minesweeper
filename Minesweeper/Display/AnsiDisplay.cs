@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿using System.Data;
+using System.Reflection.Metadata.Ecma335;
+using System.Runtime.InteropServices;
+using System.Text;
 using Minesweeper.Game;
 
 namespace Minesweeper.Display;
@@ -6,94 +9,80 @@ namespace Minesweeper.Display;
 public sealed class AnsiDisplay : IRenderer
 {
     public bool Modified { get; set; }
-    private int ChunkSize { get; set; }
 
     private readonly Coord _displaySize;
-    private readonly Pixel[,] _pixels;
-    private readonly bool[,] _modifiedChunks;
-    
     private readonly StringBuilder _stringBuilder = new();
-
-    public AnsiDisplay(int width, int height, int chunkSize = 5)
+    
+    private readonly Pixel[,] _currentPixels;
+    private readonly Pixel[,] _lastPixels;
+    
+    private readonly object _threadLock = new();
+    
+    public AnsiDisplay(int width, int height)
     {
         _displaySize.X = (short) width;
         _displaySize.Y = (short) height;
         
-        _pixels = new Pixel[width, height];
-
-        ChunkSize = chunkSize;
-        var chunksX = (width + chunkSize - 1) / chunkSize;
-        var chunksY = (height + chunkSize - 1) / chunkSize;
-
-        _modifiedChunks = new bool[chunksX, chunksY];
+        _currentPixels = new Pixel[width, height];
+        _lastPixels = new Pixel[width, height];
     }
     
-    public void Draw(int posX, int posY, char symbol, Color fg, Color bg, Layer layer)
+    public void Draw(int posX, int posY, char symbol, Color fg, Color bg)
     {
-        if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
-
-        if (_pixels[posX, posY].Symbol == symbol && _pixels[posX, posY].Fg == fg &&
-            _pixels[posX, posY].Bg == bg)
+        lock (_threadLock)
         {
-            return;
+            if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
+
+            _currentPixels[posX, posY].Symbol = symbol;
+            _currentPixels[posX, posY].Fg = fg;
+            _currentPixels[posX, posY].Bg = bg;
         }
-
-        _pixels[posX, posY].Symbol = symbol;
-        _pixels[posX, posY].Fg = fg;
-        _pixels[posX, posY].Bg = bg;
-
-        SetChunk(posX, posY);
-        Modified = true;
     }
 
     public void Draw(int posX, int posY, TileDisplay tile)
     {
-        Draw(posX, posY, tile.Utf8Symbol, tile.Foreground, tile.Background, Layer.Foreground);
+        Draw(posX, posY, tile.Utf8Symbol, tile.Foreground, tile.Background);
     }
 
-    public void ClearAt(int posX, int posY, Layer layer)
+    public void ClearAt(int posX, int posY)
     {
-        if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
-        
-        if (_pixels[posX, posY].IsEmpty) return;
+        lock (_threadLock)
+        {
+            if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
 
-        _pixels[posX, posY] = Pixel.Cleared;
-        
-        SetChunk(posX, posY);
-        Modified = true;
+            _currentPixels[posX, posY] = Pixel.Cleared;
+        }
     }
     
     public void Draw()
     {
-        Console.Write(GenerateDisplayString());
-        _stringBuilder.Clear();
-    }
-
-    private void SetChunk(int posX, int posY)
-    {
-        var x = posX / ChunkSize;
-        var y = posY / ChunkSize;
-
-        _modifiedChunks[x, y] = true;
-    }
-
-    private bool IsChunkModified(int posX, int posY)
-    {
-        var x = posX / ChunkSize;
-        var y = posY / ChunkSize;
-
-        return _modifiedChunks[x, y];
-    }
-
-    private void ClearChunks()
-    {
-        for (var i = 0; i < _modifiedChunks.GetLength(0); i++)
-        for (var j = 0; j < _modifiedChunks.GetLength(1); j++)
+        lock(_threadLock)
         {
-            _modifiedChunks[i, j] = false;
+            CopyToBuffer();
+            
+            if (!Modified) return;
+            
+            Console.Write(GenerateDisplayString());
+            _stringBuilder.Clear();
+
+            Modified = false;
         }
     }
-    
+
+    private void CopyToBuffer()
+    {
+        for (var x = 0; x < _displaySize.X; x++)
+        for (var y = 0; y < _displaySize.Y; y++)
+        {
+            if (_currentPixels[x, y] == _lastPixels[x, y]) continue;
+
+            Modified = true;
+            Array.Copy(_currentPixels, _lastPixels, _displaySize.X * _displaySize.Y);
+            
+            return;
+        }
+    }
+
     private string GenerateDisplayString()
     {
         var lastFg = Color.Transparent;
@@ -112,7 +101,7 @@ public sealed class AnsiDisplay : IRenderer
         for (var y = 0; y < _displaySize.Y; y++)
         for (var x = 0; x < _displaySize.X; x++)
         {
-            var pixel = _pixels[x, y];
+            var pixel = _currentPixels[x, y];
 
             // Printing the already gathered pixels if next one has different colors
             if (pixel.Fg != lastFg || pixel.Bg != lastBg || previousIsCleared && pixel.IsEmpty)
@@ -162,13 +151,13 @@ public sealed class AnsiDisplay : IRenderer
             previousIsCleared = pixel.IsCleared;
         
             // Marking the pixel as empty to not draw it again unnecessarily
-            if (pixel.IsCleared) _pixels[x, y] = Pixel.Empty;
+            if (pixel.IsCleared) _currentPixels[x, y] = Pixel.Empty;
         }
 
         // If all of the pixels are the same, they are printed all at once
         if (symbolsBuilder.Length > 0)
         {
-            var lastPixel = _pixels[_displaySize.X - 1, _displaySize.Y - 1];
+            var lastPixel = _currentPixels[_displaySize.X - 1, _displaySize.Y - 1];
             
             _stringBuilder.Append($"\x1b[{streakStartPos.Y + 1};{streakStartPos.X + 1}f");
             _stringBuilder.Append($"\x1b[38;2;{lastPixel.Fg.AnsiString()}m\x1b[48;2;{lastPixel.Bg.AnsiString()}m");
@@ -179,8 +168,7 @@ public sealed class AnsiDisplay : IRenderer
 
         // Resetting the console style after full draw
         _stringBuilder.Append("\x1b[0m");
-        ClearChunks();
-        
+
         Console.Title = $"{_stringBuilder.Length}";
         
         return _stringBuilder.ToString();
@@ -211,5 +199,24 @@ public sealed class AnsiDisplay : IRenderer
 
         public bool IsEmpty => Symbol == '\0' && Fg == Color.Empty && Bg == Color.Empty;
         public bool IsCleared => Symbol == ClearedSymbol && Fg == Color.Empty && Bg == Color.Empty;
+
+        public static bool operator ==(Pixel a, Pixel b) => a.Fg == b.Fg && a.Bg == b.Bg && a.Symbol == b.Symbol;
+
+        public static bool operator !=(Pixel a, Pixel b) => !(a == b);
+        
+        public bool Equals(Pixel other)
+        {
+            return Symbol == other.Symbol && Fg.Equals(other.Fg) && Bg.Equals(other.Bg);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is Pixel other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Symbol, Fg, Bg);
+        }
     }
 }

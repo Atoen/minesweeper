@@ -26,25 +26,9 @@ public class Button : Widget
 
     public override void Render()
     {
-        Color = State switch
-        {
-            WidgetState.Pressed => PressedColor,
-            WidgetState.Highlighted => HighlightedColor,
-            _ => DefaultColor
-        };
-        
         if (Text.Animating) Text.Cycle();
-        
-        var textStart = Center + TextOffset + Coord.Left * (Text.Length / 2);
-        var start = Anchor + Offset;
-        
-        for (var x = start.X; x < start.X + Size.X; x++)
-        for (var y = start.Y; y < start.Y + Size.Y; y++)
-        {
-            if (y == Center.Y && x >= textStart.X && x < textStart.X + Text.Length) continue;
-            
-            Display.Display.Draw(x, y, ' ', Color.Black, Color);
-        }
+
+        Display.Display.DrawRect(Anchor + Offset, Size, Color);
 
         Display.Display.Print(Center.X + TextOffset.X, Center.Y + TextOffset.Y, Text.Text, Text.Foreground,
             Text.Background ?? Color);

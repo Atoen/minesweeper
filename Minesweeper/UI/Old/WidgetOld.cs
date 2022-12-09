@@ -1,6 +1,6 @@
 ﻿namespace Minesweeper.UI;
 
-public class WidgetOld : IRenderable
+public class WidgetOld
 {
     public Coord Pos;
     public Coord Size;
@@ -20,6 +20,7 @@ public class WidgetOld : IRenderable
         }
     }
 
+
     protected bool IsTextSetUp;
     
     protected Coord TextStart;
@@ -38,7 +39,7 @@ public class WidgetOld : IRenderable
         CurrentColor = color;
         DefaultColor = color;
 
-        Display.Display.AddToRenderList(this);
+        // Display.Display.AddToRenderList(this);
     }
 
     public virtual void Render()

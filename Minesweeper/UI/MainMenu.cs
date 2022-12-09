@@ -27,13 +27,6 @@ public static class MainMenu
         {
             DefaultColor = Color.PaleGoldenrod,
         }.Grid(0, 1, columnSpan: 2);
-        
-        // Background for difficulty presets
-        new Background(frame)
-        {
-            DefaultColor = Color.Gray,
-            InnerPadding = (1, 1)
-        }.Grid(1, 0, rowSpan: Presets.Count + 2, columnSpan: 4);
 
         // Titles for preset values
         new Label(frame, "Bombs")
@@ -143,6 +136,13 @@ public static class MainMenu
                 StartGame(GetSettings());
             }
         }.Grid(labelsRowOffset + Presets.Count + 1, 1, columnSpan: 2);
+        
+        // Background for difficulty presets
+        new Background(frame)
+        {
+            DefaultColor = Color.Gray,
+            InnerPadding = (1, 1)
+        }.Grid(1, 0, rowSpan: Presets.Count + 2, columnSpan: 4);
 
         DifficultyPreset GetSettings()
         {
@@ -156,8 +156,8 @@ public static class MainMenu
                 return new DifficultyPreset()
                 {
                     BombAmount = int.Parse(bombsEntry.Text.Text),
-                    GridWidth = int.Parse(widthEntry.Text.Text ?? "0"),
-                    GridHeight = int.Parse(heightEntry.Text.Text ?? "0")
+                    GridWidth = int.Parse(widthEntry.Text.Text),
+                    GridHeight = int.Parse(heightEntry.Text.Text)
                 };
             }
 

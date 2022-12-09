@@ -5,7 +5,13 @@ namespace Minesweeper.UI;
 public abstract class Widget : IRenderable
 {
     protected readonly Frame Parent;
-    public Color Color { get; protected set; }
+
+    public Color Color => State switch
+    {
+        WidgetState.Pressed => PressedColor,
+        WidgetState.Highlighted => HighlightedColor,
+        _ => DefaultColor
+    };
 
     public Coord Size;
     public Coord Anchor;
@@ -22,7 +28,9 @@ public abstract class Widget : IRenderable
 
     public Layer Layer { get; set; } = Layer.Foreground;
 
-    public WidgetState State { get; protected set; }
+    public WidgetState State { get; protected set; } = WidgetState.Default;
+
+    public bool ShouldRemove { get; protected set; }
 
     public Coord Center => Anchor + Offset + Size / 2;
     public Coord PaddedSize => Size + OuterPadding * 2;
@@ -49,13 +57,10 @@ public abstract class Widget : IRenderable
     protected T Grid<T>(int row, int column, int rowSpan = 1, int columnSpan = 1, GridAlignment alignment = GridAlignment.Center)
         where T : Widget
     {
-        Color = DefaultColor;
-        
         if (AutoResize) Resize();
         
         Parent.Grid(this, row, column, rowSpan, columnSpan, alignment);
-        Render();
-        
+
         Display.Display.AddToRenderList(this);
 
         return this as T ?? throw new InvalidOperationException();
@@ -65,13 +70,10 @@ public abstract class Widget : IRenderable
 
     protected T Place<T>(int posX, int posY) where T : Widget
     {
-        Color = DefaultColor;
-        
         if (AutoResize) Resize();
 
         Parent.Place(this, posX, posY);
-        Render();
-        
+
         Display.Display.AddToRenderList(this);
         
         return this as T ?? throw new InvalidOperationException();
@@ -79,14 +81,14 @@ public abstract class Widget : IRenderable
 
     public virtual void Render()
     {
-        Display.Display.DrawRect(Anchor + Offset, Size, Color, layer: Layer);
+        Display.Display.DrawRect(Anchor + Offset, Size, Color);
     }
 
     public virtual void Remove() => ShouldRemove = true;
 
     public virtual void Clear()
     {
-        Display.Display.ClearRect(Anchor + Offset, Size, Layer);
+        Display.Display.ClearRect(Anchor + Offset, Size);
     }
     
     protected bool IsInside(Coord pos)
@@ -98,8 +100,6 @@ public abstract class Widget : IRenderable
     }
 
     protected abstract void Resize();
-
-    public bool ShouldRemove { get; private set; }
 }
 
 public enum WidgetState

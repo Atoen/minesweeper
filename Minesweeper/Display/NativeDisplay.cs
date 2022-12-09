@@ -38,7 +38,7 @@ public sealed class NativeDisplay : IRenderer
         _lastBuffer = new CharInfo[width * height];
     }
     
-    public void Draw(int posX, int posY, char symbol, Color fg, Color bg, Layer layer)
+    public void Draw(int posX, int posY, char symbol, Color fg, Color bg)
     {
         lock(_threadLock)
         {
@@ -50,12 +50,7 @@ public sealed class NativeDisplay : IRenderer
             var cbg = bg.ConsoleColor();
 
             var color = (short) ((int) cfg | (int) cbg << 4);
-            // var plane = (int) layer;
-            
-            // var symbolInfo = _currentBuffer[bufferIndex];
-            
-            // if (symbolInfo.Symbol == symbol && symbolInfo.Color == color) return;
-            
+
             _currentBuffer[bufferIndex].Symbol = (byte) symbol;
             _currentBuffer[bufferIndex].Color = color;
         }
@@ -63,20 +58,17 @@ public sealed class NativeDisplay : IRenderer
 
     public void Draw(int posX, int posY, TileDisplay tile)
     {
-        Draw(posX, posY, tile.Symbol, tile.Foreground, tile.Background, Layer.Foreground);
+        Draw(posX, posY, tile.Symbol, tile.Foreground, tile.Background);
     }
 
-    public void ClearAt(int posX, int posY, Layer layer)
+    public void ClearAt(int posX, int posY)
     {
         lock (_threadLock)
         {
             if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
 
             var bufferIndex = posY * _displaySize.X + posX;
-            // var plane = (int) layer;
-        
-            // if (_currentBuffer[bufferIndex].Symbol == (byte) ' ' && _currentBuffer[bufferIndex].Color == 15) return;
-        
+
             _currentBuffer[bufferIndex] = CharInfo.Cleared;
         }
     }
@@ -88,6 +80,8 @@ public sealed class NativeDisplay : IRenderer
             CopyToBuffer();
 
             if (!Modified) return;
+            
+            Debug.WriteLine("Modified");
             
             WriteConsoleOutput(_fileHandle, _currentBuffer, _displaySize, _startPos, ref _screenRect);
             Modified = false;
@@ -103,7 +97,9 @@ public sealed class NativeDisplay : IRenderer
                 if (current[i].Symbol == last[i].Symbol && current[i].Color == last[i].Color) continue;
                 
                 Modified = true;
-                last[i] = current[i];
+                Array.Copy(_currentBuffer, _lastBuffer, _displaySize.X * _displaySize.Y);
+                
+                return;
             }
         }
     }
