@@ -31,8 +31,7 @@ public abstract class Widget : IRenderable
     public WidgetState State { get; protected set; } = WidgetState.Default;
 
     public bool ShouldRemove { get; protected set; }
-    public bool StateChanged { get; protected set; }
-    
+
     public Coord Center => Anchor + Offset + Size / 2;
     public Coord PaddedSize => Size + OuterPadding * 2;
 

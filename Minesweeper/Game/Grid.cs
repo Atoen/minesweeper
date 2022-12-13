@@ -3,17 +3,20 @@ using Minesweeper.UI;
 
 namespace Minesweeper.Game;
 
-public sealed class Grid : IRenderable
+public sealed class Grid : IDrawable
 {
-    public int Width { get; private set; }
-    public int Height { get; private set; }
+    public int Width { get; }
+    public int Height { get; }
+    public Coord Offset { get; set; }
+    public event Action? BombClicked;
+    public event Action? ClearedField;
 
     private readonly Tile[,] _tiles;
     
     private bool _firstClick = true;
     private int _bombs;
 
-    public Coord DrawOffset;
+    private AnsiDisplay.Pixel[,] _buffer = null!;
 
     public Grid(int bombs, int width, int height)
     {
@@ -30,6 +33,24 @@ public sealed class Grid : IRenderable
         {
             _tiles[x, y] = new Tile{Pos = {X = x, Y = y}};
         }
+    }
+
+    public void GenerateNew()
+    {
+        for (short x = 0; x < Width; x++)
+        for (short y = 0; y < Height; y++)
+        {
+            _tiles[x, y] = new Tile{Pos = {X = x, Y = y}};
+        }
+        
+        Draw();
+
+        _firstClick = true;
+    }
+
+    public void SetBuffer(AnsiDisplay.Pixel[,] buffer)
+    {
+        _buffer = buffer;
     }
 
     private void GenerateBombs(Coord clickPos)
@@ -88,7 +109,7 @@ public sealed class Grid : IRenderable
     {
         if (!IsInside(pos)) return;
 
-        if (_firstClick)
+        if (_firstClick && buttonState == MouseButtonState.Left)
         {
             GenerateBombs(pos);
             _firstClick = false;
@@ -116,13 +137,13 @@ public sealed class Grid : IRenderable
         
         if (!clickedTile.Flagged)
         {
-            Display.Draw(pos, Tiles.Flag);
+            _buffer[pos.X, pos.Y] = Tiles.Flag;
             clickedTile.Flagged = true;
                 
             return;
         }
-            
-        Display.Draw(pos, Tiles.Default);
+        
+        _buffer[pos.X, pos.Y] = Tiles.Default;
         clickedTile.Flagged = false;
     }
 
@@ -169,8 +190,8 @@ public sealed class Grid : IRenderable
                 
                 // If tile is empty then its neighbours are searched too 
                 if (tileToReveal.NeighbouringBombs == 0) newTiles.AddRange(tileToReveal.Neighbours);
-                
-                Display.Draw(tileToReveal.Pos + DrawOffset, Tiles.GetTile(tileToReveal.NeighbouringBombs));
+
+                _buffer[tileToReveal.Pos.X, tileToReveal.Pos.Y] = Tiles.GetTile(tileToReveal.NeighbouringBombs);
             }
 
             if (newTiles.Count == 0) break;
@@ -187,12 +208,13 @@ public sealed class Grid : IRenderable
             if (!tile.HasBomb) continue;
             
             tile.Revealed = true;
-            Display.Draw(tile.Pos + DrawOffset, Tiles.Bomb);
+            _buffer[tile.Pos.X, tile.Pos.Y] = Tiles.Bomb;
         }
         
+        BombClicked?.Invoke();
     }
     
-    public void Render()
+    public void Draw()
     {
         for (var x = 0; x < Width; x++)
         for (var y = 0; y < Height; y++)
@@ -200,22 +222,13 @@ public sealed class Grid : IRenderable
             var tile = _tiles[x, y];
 
             if (tile.Revealed)
-                Display.Draw(x, y, Tiles.GetTile(tile.NeighbouringBombs));
+                _buffer[x, y] = Tiles.GetTile(tile.NeighbouringBombs);
             else if (tile.Flagged)
-                Display.Draw(x, y, Tiles.Flag);
+                _buffer[x, y] = Tiles.Flag;
             else
-                Display.Draw(x, y, Tiles.Default);
+                _buffer[x, y] = Tiles.Default;
         }
     }
-
-    public void Clear()
-    {
-        Display.ClearRect(DrawOffset, (Width, Height));
-    }
-
-    public bool ShouldRemove { get; }
-    public bool StateChanged { get; }
-    public Layer Layer { get; set; }
 
     private bool IsInside(Coord pos)
     {

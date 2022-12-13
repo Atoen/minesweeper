@@ -9,8 +9,6 @@ public interface IRenderable
     void Clear();
     
     bool ShouldRemove { get; }
-
-    bool StateChanged { get; }
     
     public Layer Layer { get; set; }
 }

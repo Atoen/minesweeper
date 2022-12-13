@@ -165,7 +165,7 @@ public sealed class AnsiDisplay : IRenderer
         return _stringBuilder.ToString();
     }
 
-    private struct Pixel : IEquatable<Pixel>
+    public struct Pixel : IEquatable<Pixel>
     {
         private const char ClearedSymbol = ' ';
 
@@ -190,6 +190,9 @@ public sealed class AnsiDisplay : IRenderer
 
         public bool IsEmpty => Symbol == '\0' && Fg == Color.Empty && Bg == Color.Empty;
         public bool IsCleared => Symbol == ClearedSymbol && Fg == Color.Empty && Bg == Color.Empty;
+
+        public static implicit operator Pixel(TileDisplay tileDisplay) =>
+            new(tileDisplay.Symbol, tileDisplay.Foreground, tileDisplay.Background);
 
         public static bool operator ==(Pixel a, Pixel b)
         {

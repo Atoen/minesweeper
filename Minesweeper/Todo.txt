@@ -1,5 +1,4 @@
-﻿Display Layers (bg fg top)
-Resizing cells when it could be smaller
+﻿Resizing cells when it could be smaller
 Background padding fix
 Maybe cleaner ustring
 Namespace names change
