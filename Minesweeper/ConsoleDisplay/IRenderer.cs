@@ -1,6 +1,6 @@
 ﻿using Minesweeper.Game;
 
-namespace Minesweeper.Display;
+namespace Minesweeper.ConsoleDisplay;
 
 public interface IRenderer
 {

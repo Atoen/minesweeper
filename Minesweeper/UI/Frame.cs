@@ -150,26 +150,26 @@ public class Frame
 
     private void CheckIfNeedToRedraw()
     {
-        foreach (var (widget, pos, gridSpan) in _widgets)
+        foreach (var (widget, gridPos, gridSpan) in _widgets)
         {
             // Single cell widgets
             if (gridSpan == (1, 1))
             {
-                if (widget.Anchor == _grid[pos].Center && widget.PaddedSize == _grid[Pos].Size) continue;
+                if (widget.Anchor == _grid[gridPos].Center && widget.PaddedSize == _grid[gridPos].Size) continue;
 
                 widget.Clear();
                 
-                FillWidget(widget, _grid[pos].Size - widget.OuterPadding * 2);
+                FillWidget(widget, _grid[gridPos].Size - widget.OuterPadding * 2);
                 
-                AlignToGrid(widget, pos.X, pos.Y, _grid[pos].Alignment);
+                AlignToGrid(widget, gridPos.X, gridPos.Y, _grid[gridPos].Alignment);
                 
                 continue;
             }
 
             // multi cell widgets
-            var startPos = _grid[pos].Start;
+            var startPos = _grid[gridPos].Start;
             
-            var endCell = _grid[pos + gridSpan - (1, 1)];
+            var endCell = _grid[gridPos + gridSpan - (1, 1)];
             var endPos = endCell.Start + endCell.Size;
 
             var anchor = (startPos + endPos) / 2;

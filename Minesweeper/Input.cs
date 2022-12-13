@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using Minesweeper.Display;
 
 namespace Minesweeper;
 
@@ -193,9 +192,7 @@ public struct MouseState
     {
         Position = new Coord(record.MousePosition.X, record.MousePosition.Y);
         Buttons = (MouseButtonState) record.ButtonState;
-
         Wheel = (MouseWheelState) record.ButtonState;
-        
         Flags = (MouseEventFlags) record.EventFlags;
     }
 }

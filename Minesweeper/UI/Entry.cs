@@ -1,6 +1,4 @@
-﻿using Minesweeper.Display;
-
-namespace Minesweeper.UI;
+﻿namespace Minesweeper.UI;
 
 public class Entry : Widget
 {
@@ -34,12 +32,12 @@ public class Entry : Widget
     {
         if (_inEntryMode) Text.Cycle();
 
-        Display.Display.DrawRect(Anchor + Offset, Size, Color);
+        ConsoleDisplay.Display.DrawRect(Anchor + Offset, Size, Color);
         
         var textStart = Center + TextOffset + Coord.Left * (MaxTextLenght / 2);
-        Display.Display.DrawRect(textStart, (MaxTextLenght + 1, 1), TextBackground);
+        ConsoleDisplay.Display.DrawRect(textStart, (MaxTextLenght + 1, 1), TextBackground);
 
-        Display.Display.Print(
+        ConsoleDisplay.Display.Print(
             Center.X + TextOffset.X - MaxTextLenght / 2,
             Center.Y + TextOffset.Y, Text.Text, Text.Foreground,
             Text.Background ?? TextBackground, Alignment.Left);

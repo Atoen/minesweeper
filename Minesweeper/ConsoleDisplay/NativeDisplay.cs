@@ -2,7 +2,7 @@
 using Microsoft.Win32.SafeHandles;
 using Minesweeper.Game;
 
-namespace Minesweeper.Display;
+namespace Minesweeper.ConsoleDisplay;
 
 public sealed class NativeDisplay : IRenderer
 {

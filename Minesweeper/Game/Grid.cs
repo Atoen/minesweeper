@@ -1,16 +1,21 @@
-﻿namespace Minesweeper.Game;
+﻿using Minesweeper.ConsoleDisplay;
+using Minesweeper.UI;
 
-public static class Grid
+namespace Minesweeper.Game;
+
+public sealed class Grid : IRenderable
 {
-    public static int Width { get; private set; }
-    public static int Height { get; private set; }
+    public int Width { get; private set; }
+    public int Height { get; private set; }
 
-    private static Tile[,] _tiles = null!;
+    private readonly Tile[,] _tiles;
     
-    private static bool _firstClick = true;
-    private static int _bombs;
+    private bool _firstClick = true;
+    private int _bombs;
 
-    public static void Generate(int bombs, int width, int height)
+    public Coord DrawOffset;
+
+    public Grid(int bombs, int width, int height)
     {
         if (width < 3) width = 3;
         if (height < 3) height = 3;
@@ -25,11 +30,9 @@ public static class Grid
         {
             _tiles[x, y] = new Tile{Pos = {X = x, Y = y}};
         }
-        
-        Draw();
     }
 
-    private static void GenerateBombs(Coord clickPos)
+    private void GenerateBombs(Coord clickPos)
     {
         // Tiles near the clicked one are guaranteed not to have bombs
         var nearTiles = new List<Tile>();
@@ -81,7 +84,7 @@ public static class Grid
         }
     }
 
-    public static void ClickTile(Coord pos, MouseButtonState buttonState)
+    public void ClickTile(Coord pos, MouseButtonState buttonState)
     {
         if (!IsInside(pos)) return;
 
@@ -113,17 +116,17 @@ public static class Grid
         
         if (!clickedTile.Flagged)
         {
-            Display.Display.Draw(pos, Tiles.Flag);
+            Display.Draw(pos, Tiles.Flag);
             clickedTile.Flagged = true;
                 
             return;
         }
             
-        Display.Display.Draw(pos, Tiles.Default);
+        Display.Draw(pos, Tiles.Default);
         clickedTile.Flagged = false;
     }
 
-    private static void CheckSurrounding(Tile tile)
+    private void CheckSurrounding(Tile tile)
     {
         if (tile.HasBomb)
         {
@@ -149,7 +152,7 @@ public static class Grid
         tile.NeighbouringBombs = bombCount;
     }
 
-    private static void RevealNearbyTiles(Tile tile)
+    private void RevealNearbyTiles(Tile tile)
     {
         var tilesToReveal = new List<Tile> {tile};
 
@@ -167,7 +170,7 @@ public static class Grid
                 // If tile is empty then its neighbours are searched too 
                 if (tileToReveal.NeighbouringBombs == 0) newTiles.AddRange(tileToReveal.Neighbours);
                 
-                Display.Display.Draw(tileToReveal.Pos, Tiles.GetTile(tileToReveal.NeighbouringBombs));
+                Display.Draw(tileToReveal.Pos + DrawOffset, Tiles.GetTile(tileToReveal.NeighbouringBombs));
             }
 
             if (newTiles.Count == 0) break;
@@ -177,19 +180,19 @@ public static class Grid
         }
     }
 
-    private static void DisplayAllBombs()
+    private void DisplayAllBombs()
     {
         foreach (var tile in _tiles)
         {
             if (!tile.HasBomb) continue;
             
             tile.Revealed = true;
-            Display.Display.Draw(tile.Pos, Tiles.Bomb);
+            Display.Draw(tile.Pos + DrawOffset, Tiles.Bomb);
         }
         
     }
     
-    public static void Draw()
+    public void Render()
     {
         for (var x = 0; x < Width; x++)
         for (var y = 0; y < Height; y++)
@@ -197,15 +200,24 @@ public static class Grid
             var tile = _tiles[x, y];
 
             if (tile.Revealed)
-                Display.Display.Draw(x, y, Tiles.GetTile(tile.NeighbouringBombs));
+                Display.Draw(x, y, Tiles.GetTile(tile.NeighbouringBombs));
             else if (tile.Flagged)
-                Display.Display.Draw(x, y, Tiles.Flag);
+                Display.Draw(x, y, Tiles.Flag);
             else
-                Display.Display.Draw(x, y, Tiles.Default);
+                Display.Draw(x, y, Tiles.Default);
         }
     }
 
-    private static bool IsInside(Coord pos)
+    public void Clear()
+    {
+        Display.ClearRect(DrawOffset, (Width, Height));
+    }
+
+    public bool ShouldRemove { get; }
+    public bool StateChanged { get; }
+    public Layer Layer { get; set; }
+
+    private bool IsInside(Coord pos)
     {
         return pos.X >= 0 && pos.X < Width &&
                pos.Y >= 0 && pos.Y < Height;

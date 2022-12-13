@@ -28,9 +28,9 @@ public class Button : Widget
     {
         if (Text.Animating) Text.Cycle();
 
-        Display.Display.DrawRect(Anchor + Offset, Size, Color);
+        ConsoleDisplay.Display.DrawRect(Anchor + Offset, Size, Color);
 
-        Display.Display.Print(Center.X + TextOffset.X, Center.Y + TextOffset.Y, Text.Text, Text.Foreground,
+        ConsoleDisplay.Display.Print(Center.X + TextOffset.X, Center.Y + TextOffset.Y, Text.Text, Text.Foreground,
             Text.Background ?? Color);
     }
     

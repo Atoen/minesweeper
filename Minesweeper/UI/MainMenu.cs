@@ -1,4 +1,4 @@
-﻿using Minesweeper.Display;
+﻿using Minesweeper.ConsoleDisplay;
 
 namespace Minesweeper.UI;
 

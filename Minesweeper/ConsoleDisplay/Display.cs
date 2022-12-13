@@ -3,7 +3,7 @@ using System.Text;
 using Minesweeper.Game;
 using Minesweeper.UI;
 
-namespace Minesweeper.Display;
+namespace Minesweeper.ConsoleDisplay;
 
 public static class Display
 {

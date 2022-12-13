@@ -51,7 +51,7 @@ public class WidgetOld
         {
             if (x >= TextStart.X && x < TextStop.X && y == TextStart.Y) continue;
             
-            Display.Display.Draw(x, y, ' ', Color.Black, CurrentColor);
+            ConsoleDisplay.Display.Draw(x, y, ' ', Color.Black, CurrentColor);
         }
         
         RenderText();
@@ -59,11 +59,11 @@ public class WidgetOld
 
     public virtual void Remove() => ShouldRemove = true;
 
-    public virtual void Clear() => Display.Display.ClearRect(Pos, Size);
+    public virtual void Clear() => ConsoleDisplay.Display.ClearRect(Pos, Size);
 
     protected virtual void RenderText()
     {
-        Display.Display.Print(TextCenter.X, TextCenter.Y, Text, Color.Black, CurrentColor, Alignment);
+        ConsoleDisplay.Display.Print(TextCenter.X, TextCenter.Y, Text, Color.Black, CurrentColor, Alignment);
     }
 
     protected bool IsCursorOver(Coord pos)

@@ -1,5 +1,5 @@
 ﻿using Minesweeper;
-using Minesweeper.Display;
+using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI;
 
 Console.CancelKeyPress += delegate

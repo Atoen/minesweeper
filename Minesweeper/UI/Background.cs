@@ -1,4 +1,4 @@
-﻿using Minesweeper.Display;
+﻿using Minesweeper.ConsoleDisplay;
 
 namespace Minesweeper.UI;
 
@@ -19,5 +19,8 @@ public class Background : Widget
         return base.Grid<Background>(posX, posY);
     }
 
-    protected override void Resize() {}
+    protected override void Resize()
+    {
+        if (Size == Coord.Zero) return;
+    }
 }

@@ -24,9 +24,9 @@ public class Label : Widget
     {
         if (Text.Animating) Text.Cycle();
 
-        Display.Display.DrawRect(Anchor + Offset, Size, Color);
+        ConsoleDisplay.Display.DrawRect(Anchor + Offset, Size, Color);
 
-        Display.Display.Print(Center.X + TextOffset.X, Center.Y + TextOffset.Y, Text.Text, Text.Foreground,
+        ConsoleDisplay.Display.Print(Center.X + TextOffset.X, Center.Y + TextOffset.Y, Text.Text, Text.Foreground,
             Text.Background ?? Color);
     }
 
@@ -34,7 +34,7 @@ public class Label : Widget
     {
         var textStart = Center + TextOffset + Coord.Left * (Text.Length / 2);
         
-        Display.Display.ClearRect(textStart, (Text.Length, 1));
+        ConsoleDisplay.Display.ClearRect(textStart, (Text.Length, 1));
 
         base.Clear();
     }

@@ -1,4 +1,4 @@
-﻿namespace Minesweeper.Display;
+﻿namespace Minesweeper.ConsoleDisplay;
 
 public static class Colors
 {

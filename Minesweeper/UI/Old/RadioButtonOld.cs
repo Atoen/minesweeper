@@ -37,7 +37,7 @@ public sealed class RadioButtonOld : WidgetOld
         
         base.Render();
 
-        Display.Display.Draw(_buttonPos.X, _buttonPos.Y, ' ', Color.White,
+        ConsoleDisplay.Display.Draw(_buttonPos.X, _buttonPos.Y, ' ', Color.White,
             _variableOld.Val == _value ? Color.Black : Color.Gray);
     }
 
