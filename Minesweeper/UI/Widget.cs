@@ -12,6 +12,7 @@ public abstract class Widget : IRenderable
         WidgetState.Highlighted => HighlightedColor,
         _ => DefaultColor
     };
+    public WidgetState State { get; protected set; } = WidgetState.Default;
 
     public Coord Size;
     public Coord Anchor;
@@ -27,11 +28,10 @@ public abstract class Widget : IRenderable
     public Color PressedColor { get; set; } = Color.White;
 
     public Layer Layer { get; set; } = Layer.Foreground;
-
-    public WidgetState State { get; protected set; } = WidgetState.Default;
-
+    
     public bool ShouldRemove { get; protected set; }
 
+    public Coord Start => Anchor + Offset;
     public Coord Center => Anchor + Offset + Size / 2;
     public Coord PaddedSize => Size + OuterPadding * 2;
 
@@ -83,7 +83,7 @@ public abstract class Widget : IRenderable
 
     public virtual void Render()
     {
-        Display.DrawRect(Anchor + Offset, Size, Color);
+        Display.DrawRect(Start, Size, Color);
     }
 
     public virtual void Remove()
@@ -93,15 +93,13 @@ public abstract class Widget : IRenderable
 
     public virtual void Clear()
     {
-        Display.ClearRect(Anchor + Offset, Size);
+        Display.ClearRect(Start, Size);
     }
 
     protected bool IsInside(Coord pos)
     {
-        var start = Anchor + Offset;
-
-        return pos.X >= start.X && pos.X < start.X + Width &&
-               pos.Y >= start.Y && pos.Y < start.Y + Height;
+        return pos.X >= Start.X && pos.X < Start.X + Width &&
+               pos.Y >= Start.Y && pos.Y < Start.Y + Height;
     }
 
     protected abstract void Resize();

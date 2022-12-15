@@ -1,17 +1,59 @@
 ﻿using Minesweeper.ConsoleDisplay;
+using Minesweeper.Game;
 
 namespace Minesweeper.UI;
 
 public static class MainMenu
 {
-    private record struct DifficultyPreset(string Name, int BombAmount, int GridWidth, int GridHeight);
-    
     private static readonly List<DifficultyPreset> Presets = new()
     {
         new DifficultyPreset("Easy", 10, 12, 8),
         new DifficultyPreset("Medium", 20, 24, 12),
         new DifficultyPreset("Hard", 50, 30, 15),
     };
+
+    public static void Show2()
+    {
+        var frame = new Frame(2, 3)
+        {
+            Pos = (1, 1)
+        };
+        
+        new Button(frame, new UString("PLAY", Color.Black))
+        {
+            DefaultColor = Color.White,
+            HighlightedColor = Color.Yellow,
+            PressedColor = Color.Lime,
+        }.Grid(0, 0);
+        
+        new Button(frame, new UString("PLAY", Color.Black))
+        {
+            DefaultColor = Color.White,
+            HighlightedColor = Color.Yellow,
+            PressedColor = Color.Lime,
+        }.Grid(1, 0);
+        
+        new Button(frame, new UString("PLAY", Color.Black))
+        {
+            DefaultColor = Color.White,
+            HighlightedColor = Color.Yellow,
+            PressedColor = Color.Lime,
+        }.Grid(0, 1);
+        
+        new Button(frame, new UString("PLAY", Color.Black))
+        {
+            DefaultColor = Color.White,
+            HighlightedColor = Color.Yellow,
+            PressedColor = Color.Lime,
+        }.Grid(1, 1, columnSpan: 2);
+        
+        new Button(frame, new UString("PLAY", Color.Black))
+        {
+            DefaultColor = Color.White,
+            HighlightedColor = Color.Yellow,
+            PressedColor = Color.Lime,
+        }.Grid(0, 2);
+    }
 
     public static void Show()
     {
@@ -29,19 +71,19 @@ public static class MainMenu
         }.Grid(0, 1, columnSpan: 2);
 
         // Titles for preset values
-        new Label(frame, "Bombs")
+        new Label(frame, new UString("Bombs", Color.Black))
         {
             DefaultColor = Color.DarkGray,
             Fill = FillMode.Horizontal
         }.Grid(1, 1);
         
-        new Label(frame, "Width")
+        new Label(frame, new UString("Width", Color.Black))
         {
             DefaultColor = Color.DarkGray,
             Fill = FillMode.Horizontal
         }.Grid(1, 2);
         
-        new Label(frame, "Height")
+        new Label(frame, new UString("Height", Color.Black))
         {
             DefaultColor = Color.DarkGray,
             Fill = FillMode.Horizontal,
@@ -49,13 +91,13 @@ public static class MainMenu
         
         // Presets values
         var gradient = Colors.Gradient(Color.Green, Color.Orange, Presets.Count).ToList();
-        var radioVariable = new Variable();
+        var radioVariable = new Variable(1);
         
         for (var i = 0; i < Presets.Count; i++)
         {
             var preset = Presets[i];
         
-            new RadioButton(frame, preset.Name, radioVariable, i)
+            new RadioButton(frame, new UString(preset.Name, Color.Black), radioVariable, i)
             {
                 DefaultColor = gradient[i],
                 HighlightedColor = gradient[i].Dimmer(),
@@ -63,26 +105,26 @@ public static class MainMenu
                 Fill = FillMode.Horizontal
             }.Grid(i + labelsRowOffset, 0);
             
-            new Label(frame, preset.BombAmount.ToString())
+            new Label(frame, new UString(preset.BombAmount.ToString(), Color.Black))
             {
                 DefaultColor = Color.DarkGray,
                 Fill = FillMode.Horizontal
             }.Grid(i + labelsRowOffset, 1);
             
-            new Label(frame, preset.GridWidth.ToString())
+            new Label(frame, new UString(preset.GridWidth.ToString(), Color.Black))
             {
                 DefaultColor = Color.DarkGray,
                 Fill = FillMode.Horizontal
             }.Grid(i + labelsRowOffset, 2);
             
-            new Label(frame, preset.GridHeight.ToString())
+            new Label(frame, new UString(preset.GridHeight.ToString(), Color.Black))
             {
                 DefaultColor = Color.DarkGray,
                 Fill = FillMode.Horizontal
             }.Grid(i + labelsRowOffset, 3);
         }
         
-        new RadioButton(frame, "Custom", radioVariable, Presets.Count)
+        new RadioButton(frame, new UString("Custom", Color.Black), radioVariable, Presets.Count)
         {
             DefaultColor = Color.CornflowerBlue,
             HighlightedColor = Color.CornflowerBlue.Dimmer(),
@@ -124,7 +166,7 @@ public static class MainMenu
         }.Grid(5, 3);
 
         // Play button
-        new Button(frame, "PLAY")
+        new Button(frame, new UString("PLAY", Color.Black))
         {
             DefaultColor = Color.White,
             HighlightedColor = Color.Yellow,
@@ -153,7 +195,7 @@ public static class MainMenu
             
             if (selected == Presets.Count)
             {
-                return new DifficultyPreset()
+                return new DifficultyPreset
                 {
                     BombAmount = int.Parse(bombsEntry.Text.Text),
                     GridWidth = int.Parse(widthEntry.Text.Text),
@@ -167,7 +209,7 @@ public static class MainMenu
 
     private static void StartGame(DifficultyPreset preset)
     {
-        Game.Game.Start(preset.BombAmount, preset.GridWidth, preset.GridHeight);
+        Game.Game.Start(preset);
     }
 }
 

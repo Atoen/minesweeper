@@ -1,6 +1,8 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Reflection.Metadata.Ecma335;
+using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Minesweeper.Game;
+using Minesweeper.UI;
 
 namespace Minesweeper.ConsoleDisplay;
 
@@ -87,6 +89,8 @@ public sealed class NativeDisplay : IRenderer
             Modified = false;
         }
     }
+
+    public void ResetStyle() { }
 
     private unsafe void CopyToBuffer()
     {

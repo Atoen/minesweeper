@@ -2,7 +2,7 @@
 
 namespace Minesweeper.UI;
 
-public class UString
+public class UString : IText
 {
     public static readonly UString Empty = new("", Color.Black)
     {
@@ -14,8 +14,6 @@ public class UString
         get => _displayingCaret ? $"{_text}{Caret}" : _text;
         set => _text = value;
     }
-
-    public int Length => _text.Length;
     public char Caret { get; set; } = '_';
     
     public int CaretCycleSpeed { get; set; } = 10;
@@ -25,7 +23,7 @@ public class UString
     
     private string _text;
     private bool _displayingCaret;
-    private readonly IEnumerator _cycler;
+    private readonly IEnumerator _enumerator;
     private bool _animating;
 
     public bool Animating
@@ -39,6 +37,8 @@ public class UString
     }
 
     public bool Enabled { get; set; } = true;
+    
+    public int Length => Text.Length;
 
     public UString(string text, Color foreground, Color? background = null)
     {
@@ -47,10 +47,10 @@ public class UString
         Foreground = foreground;
         Background = background;
 
-        _cycler = CycleText();
+        _enumerator = CycleText();
     }
 
-    public void Cycle() => _cycler.MoveNext();
+    public void Cycle() => _enumerator.MoveNext();
 
     public void Append(string newText) => _text += newText;
     public void Append(char symbol) => _text += symbol;
@@ -78,4 +78,18 @@ public class UString
     }
 
     public override string ToString() => _text;
+}
+
+public interface IText
+{
+    public void Cycle();
+    
+    string Text { get; set; }
+    Color Foreground { get; set; }
+    Color? Background { get; set; }
+
+    bool Enabled { get; set; }
+    bool Animating { get; set; }
+
+    int Length => Text.Length;
 }

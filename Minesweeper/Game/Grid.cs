@@ -10,16 +10,19 @@ public sealed class Grid : IDrawable
     public Coord Offset { get; set; }
     public event Action? BombClicked;
     public event Action? ClearedField;
+    public event Action<int>? Flagged;
 
     private readonly Tile[,] _tiles;
     
-    private bool _firstClick = true;
+    private bool _revealed;
     private int _bombs;
 
     private AnsiDisplay.Pixel[,] _buffer = null!;
 
-    public Grid(int bombs, int width, int height)
+    public Grid(DifficultyPreset preset)
     {
+        preset.Deconstruct(out _,out var bombs, out var width, out var height);
+        
         if (width < 3) width = 3;
         if (height < 3) height = 3;
 
@@ -40,12 +43,12 @@ public sealed class Grid : IDrawable
         for (short x = 0; x < Width; x++)
         for (short y = 0; y < Height; y++)
         {
-            _tiles[x, y] = new Tile{Pos = {X = x, Y = y}};
+            _tiles[x, y] = new Tile {Pos = {X = x, Y = y}};
         }
-        
+
         Draw();
 
-        _firstClick = true;
+        _revealed = false;
     }
 
     public void SetBuffer(AnsiDisplay.Pixel[,] buffer)
@@ -109,10 +112,10 @@ public sealed class Grid : IDrawable
     {
         if (!IsInside(pos)) return;
 
-        if (_firstClick && buttonState == MouseButtonState.Left)
+        if (!_revealed && buttonState == MouseButtonState.Left)
         {
             GenerateBombs(pos);
-            _firstClick = false;
+            _revealed = true;
         }
         
         var clickedTile = _tiles[pos.X, pos.Y];
@@ -139,12 +142,16 @@ public sealed class Grid : IDrawable
         {
             _buffer[pos.X, pos.Y] = Tiles.Flag;
             clickedTile.Flagged = true;
-                
+            
+            Flagged?.Invoke(-1);
+            
             return;
         }
         
         _buffer[pos.X, pos.Y] = Tiles.Default;
         clickedTile.Flagged = false;
+        
+        Flagged?.Invoke(1);
     }
 
     private void CheckSurrounding(Tile tile)

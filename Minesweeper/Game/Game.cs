@@ -1,5 +1,6 @@
 ﻿using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI;
+using Timer = Minesweeper.UI.Timer;
 
 namespace Minesweeper.Game;
 
@@ -7,16 +8,28 @@ public static class Game
 {
     private static Grid _grid = null!;
     private static bool _gameIsRunning;
+    
+    private static readonly TimeSpan Time = TimeSpan.FromSeconds(200);
 
-    public static void Start(int bombs, int width, int height)
+    private static DifficultyPreset _preset;
+    private static int _remainingFlags;
+    
+    private static readonly UString FlagsText = new("", Color.Red);
+    private static readonly TString TimerText = new(new Timer(Time), Color.Red);
+
+    public static void Start(DifficultyPreset preset)
     {
         Input.MouseLeftClick += InputOnMouseClick;
         Input.MouseRightClick += InputOnMouseClick;
+
+        _preset = preset;
+        _remainingFlags = preset.BombAmount;
         
-        _grid = new Grid(bombs, width, height);
+        _grid = new Grid(preset);
 
         _grid.BombClicked += OnBombClicked;
-        
+        _grid.Flagged += ChangeFlagCount;
+
         DisplayInterface();
 
         _gameIsRunning = true;
@@ -24,12 +37,12 @@ public static class Game
 
     private static void DisplayInterface()
     {
-        var frame = new Frame(2, 3)
+        var frame = new Frame(3, 3)
         {
             Pos = (1, 1)
         };
 
-        new Button(frame, "Menu")
+        new Button(frame, new UString("Menu", Color.Black))
         {
             DefaultColor = Color.DarkGray,
             HighlightedColor = Color.Gray,
@@ -44,27 +57,34 @@ public static class Game
             }
         }.Grid(0, 0);
 
-       
+        FlagsText.Text = _preset.BombAmount.ToString();
+        new Label(frame, FlagsText)
+        {
+            DefaultColor = Color.DarkGray,
+            Fill = FillMode.Horizontal
+        }.Grid(1, 0);
+        
         new Button(frame,  new UString(":)", Color.Wheat))
         {
             DefaultColor = Color.DarkGreen,
             HighlightedColor = Color.DarkGreen.Dimmer(),
             PressedColor = Color.Green,
 
-            OnClick = () => _grid.GenerateNew()
-        }.Grid(0, 1);
-
-        new Label(frame, new UString("Timer", Color.Red))
+            OnClick = Restart
+        }.Grid(1, 1);
+        
+        TimerText.RestartTimer();
+        new Label(frame, TimerText)
         {
             DefaultColor = Color.DarkGray
-        }.Grid(0, 2);
+        }.Grid(1, 2);
         
         new Background(frame)
         {
             DefaultColor = Color.Gray,
-        }.Grid(0, 0, columnSpan: 3);
+        }.Grid(1, 0, columnSpan: 3);
 
-        new Canvas(frame, _grid).Grid(1, 0, columnSpan: 3);
+        new Canvas(frame, _grid).Grid(2, 0, columnSpan: 3);
     }
 
     private static void InputOnMouseClick(MouseState state)
@@ -77,6 +97,28 @@ public static class Game
     private static void OnBombClicked()
     {
         _gameIsRunning = false;
+        TimerText.Animating = false;
+    }
+
+    private static void ChangeFlagCount(int change)
+    {
+        _remainingFlags += change;
+        FlagsText.Text = _remainingFlags.ToString();
+
+        FlagsText.Background = _remainingFlags < 0 ? Color.DarkRed : null;
+    }
+
+    private static void Restart()
+    {
+        TimerText.Animating = true;
+        TimerText.RestartTimer();
+
+        _remainingFlags = _preset.BombAmount;
+        FlagsText.Text = _remainingFlags.ToString();
+        FlagsText.Background = null;
+        
+        _grid.GenerateNew();
+        _gameIsRunning = true;
     }
 
     private static void MainMenu()
@@ -89,3 +131,5 @@ public static class Game
         UI.MainMenu.Show();
     }
 }
+
+public record struct DifficultyPreset(string Name, int BombAmount, int GridWidth, int GridHeight);

@@ -9,9 +9,11 @@ Console.CancelKeyPress += delegate
     process.Refresh();
     var peakPhysical = process.PeakWorkingSet64;
     var peakPaged = process.PeakPagedMemorySize64;
-    
+
     Input.Stop();
     Display.Stop();
+    
+    Display.ResetStyle();
     
     Console.Clear();
     Console.WriteLine("Exiting...");

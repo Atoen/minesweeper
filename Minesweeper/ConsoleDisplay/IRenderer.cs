@@ -12,5 +12,5 @@ public interface IRenderer
 
     void Draw();
 
-    public bool Modified { get; set; }
+    void ResetStyle();
 }

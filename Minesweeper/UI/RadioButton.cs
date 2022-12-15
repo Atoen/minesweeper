@@ -8,8 +8,8 @@ public class RadioButton : Button
     
     private readonly Variable _variable;
     private readonly int _value;
-    
-    public RadioButton(Frame parent, UString text, Variable variable, int value) : base(parent, text)
+
+    public RadioButton(Frame parent, IText text, Variable variable, int value) : base(parent, text)
     {
         _variable = variable;
         _value = value;
@@ -38,7 +38,7 @@ public class RadioButton : Button
     public override void Render()
     {
         Text.Background = IsSelected ? Color.Brighter(50) : Color;
-        
+
         base.Render();
     }
 }
@@ -46,5 +46,6 @@ public class RadioButton : Button
 public sealed class Variable
 {
     public int Val { get; set; }
+
     public Variable(int val = 0) => Val = val;
 }

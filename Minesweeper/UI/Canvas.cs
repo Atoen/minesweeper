@@ -29,14 +29,14 @@ public class Canvas : Widget
 
     public override void Render()
     {
-        var start = Anchor + Offset + (Size - new Coord(_drawable.Width, _drawable.Height)) / 2;
-        _drawable.Offset = start;
+        var drawStart = Start + (Size - new Coord(_drawable.Width, _drawable.Height)) / 2;
+        _drawable.Offset = drawStart;
 
         for (var x = 0; x < _drawable.Width; x++)
         for (var y = 0; y < _drawable.Height; y++)
         {
             var pixel = _buffer[x, y];
-            Display.Draw(start.X + x, start.Y + y, pixel.Symbol, pixel.Fg, pixel.Bg);
+            Display.Draw(drawStart.X + x, drawStart.Y + y, pixel.Symbol, pixel.Fg, pixel.Bg);
         }
     }
 

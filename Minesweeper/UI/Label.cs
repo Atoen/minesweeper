@@ -2,10 +2,10 @@
 
 public class Label : Widget
 {
-    public UString Text { get; set; }
+    public IText Text { get; set; }
     public Coord TextOffset = Coord.Zero;
 
-    public Label(Frame parent, UString text) : base(parent)
+    public Label(Frame parent, IText text) : base(parent)
     {
         Text = text;
     }

@@ -19,8 +19,5 @@ public class Background : Widget
         return base.Grid<Background>(posX, posY);
     }
 
-    protected override void Resize()
-    {
-        if (Size == Coord.Zero) return;
-    }
+    protected override void Resize() { }
 }

@@ -59,6 +59,8 @@ public static class Display
 
     public static void ClearAt(int posX, int posY) => _renderer.ClearAt(posX, posY);
 
+    public static void ResetStyle() => _renderer.ResetStyle();
+
     public static void Print(int posX, int posY, string text, Color foreground, Color background,
         Alignment alignment = Alignment.Center)
     {
@@ -111,8 +113,6 @@ public static class Display
             stopwatch.Stop();
             var sleepTime = tickLenght - (int) stopwatch.ElapsedMilliseconds;
 
-            Debug.WriteLine(stopwatch.ElapsedMilliseconds);
-            
             stopwatch.Reset();
 
             if (sleepTime > 0) Thread.Sleep(sleepTime);

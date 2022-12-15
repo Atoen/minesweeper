@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Runtime.CompilerServices;
+using System.Text;
 using Minesweeper.Game;
 
 namespace Minesweeper.ConsoleDisplay;
@@ -23,7 +24,7 @@ public sealed class AnsiDisplay : IRenderer
         _currentPixels = new Pixel[width, height];
         _lastPixels = new Pixel[width, height];
     }
-
+    
     public void Draw(int posX, int posY, char symbol, Color fg, Color bg)
     {
         lock (_threadLock)
@@ -66,6 +67,8 @@ public sealed class AnsiDisplay : IRenderer
         }
     }
 
+    public void ResetStyle() => Console.Write("\x1b[0m");
+
     private void CopyToBuffer()
     {
         for (var x = 0; x < _displaySize.X; x++)
@@ -80,6 +83,7 @@ public sealed class AnsiDisplay : IRenderer
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private string GenerateDisplayString()
     {
         var lastFg = Color.Transparent;
