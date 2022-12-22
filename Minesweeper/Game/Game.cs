@@ -42,14 +42,15 @@ public static class Game
             Pos = (1, 1)
         };
 
-        new Button(frame, new UString("Menu", Color.Black))
+        new Button(frame)
         {
+            Text =  new UString("Menu", Color.Black),
             DefaultColor = Color.DarkGray,
             HighlightedColor = Color.Gray,
             PressedColor = Color.White,
             
             Fill = FillMode.Both,
-
+        
             OnClick = () => 
             {
                 frame.Clear();
@@ -58,14 +59,16 @@ public static class Game
         }.Grid(0, 0);
 
         FlagsText.Text = _preset.BombAmount.ToString();
-        new Label(frame, FlagsText)
+        new Label(frame)
         {
+            Text = FlagsText,
             DefaultColor = Color.DarkGray,
             Fill = FillMode.Horizontal
         }.Grid(1, 0);
         
-        new Button(frame,  new UString(":)", Color.Wheat))
+        new Button(frame)
         {
+            Text = new UString(":)", Color.Wheat),
             DefaultColor = Color.DarkGreen,
             HighlightedColor = Color.DarkGreen.Dimmer(),
             PressedColor = Color.Green,
@@ -74,8 +77,9 @@ public static class Game
         }.Grid(1, 1);
         
         TimerText.RestartTimer();
-        new Label(frame, TimerText)
+        new Label(frame)
         {
+            Text = TimerText,
             DefaultColor = Color.DarkGray
         }.Grid(1, 2);
         
@@ -127,6 +131,7 @@ public static class Game
         Input.MouseRightClick -= InputOnMouseClick;
 
         _grid.BombClicked -= OnBombClicked;
+        _grid.Flagged -= ChangeFlagCount;
         
         UI.MainMenu.Show();
     }

@@ -1,4 +1,6 @@
-﻿namespace Minesweeper.ConsoleDisplay;
+﻿using System.Text;
+
+namespace Minesweeper.ConsoleDisplay;
 
 public static class Colors
 {
@@ -31,8 +33,12 @@ public static class Colors
     }
 
     public static Color Dimmer(this Color color, int dimmingPercent = 20) => Brighter(color, -dimmingPercent);
+
+    public static void AppendToBuilder(this Color color, StringBuilder builder) => 
+        builder.Append($"\x1b[38;2;{color.R};{color.G};{color.B}m");
     
-    public static string AnsiString(this Color color) => $"{color.R};{color.G};{color.B}";
+    public static void AppendToBuilderBg(this Color color, StringBuilder builder) => 
+        builder.Append($"\x1b[48;2;{color.R};{color.G};{color.B}m");
 
     public static ConsoleColor ConsoleColor(this Color color)
     {

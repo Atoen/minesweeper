@@ -19,36 +19,41 @@ public static class MainMenu
             Pos = (1, 1)
         };
         
-        new Button(frame, new UString("PLAY", Color.Black))
+        new Button(frame)
         {
+            Text = new UString("PLAY", Color.Black),
             DefaultColor = Color.White,
             HighlightedColor = Color.Yellow,
             PressedColor = Color.Lime,
         }.Grid(0, 0);
         
-        new Button(frame, new UString("PLAY", Color.Black))
+        new Button(frame)
         {
+            Text = new UString("PLAY", Color.Black),
             DefaultColor = Color.White,
             HighlightedColor = Color.Yellow,
             PressedColor = Color.Lime,
         }.Grid(1, 0);
         
-        new Button(frame, new UString("PLAY", Color.Black))
+        new Button(frame)
         {
+            Text = new UString("PLAY", Color.Black),
             DefaultColor = Color.White,
             HighlightedColor = Color.Yellow,
             PressedColor = Color.Lime,
         }.Grid(0, 1);
         
-        new Button(frame, new UString("PLAY", Color.Black))
+        new Button(frame)
         {
+            Text = new UString("PLAY", Color.Black),
             DefaultColor = Color.White,
             HighlightedColor = Color.Yellow,
             PressedColor = Color.Lime,
         }.Grid(1, 1, columnSpan: 2);
         
-        new Button(frame, new UString("PLAY", Color.Black))
+        new Button(frame)
         {
+            Text = new UString("PLAY", Color.Black),
             DefaultColor = Color.White,
             HighlightedColor = Color.Yellow,
             PressedColor = Color.Lime,
@@ -65,26 +70,34 @@ public static class MainMenu
         var labelsRowOffset = 2;
 
         // Title label
-        new Label(frame, new UString("MINESWEEPER", Color.DarkBlue))
+        new Label(frame)
         {
+            Text = new UString("MINESWEEPER", Color.DarkBlue)
+            {
+                Mode = TextMode.Bold
+            },
+            
             DefaultColor = Color.PaleGoldenrod,
         }.Grid(0, 1, columnSpan: 2);
 
         // Titles for preset values
-        new Label(frame, new UString("Bombs", Color.Black))
+        new Label(frame)
         {
+            Text = new UString("Bombs", Color.Black),
             DefaultColor = Color.DarkGray,
             Fill = FillMode.Horizontal
         }.Grid(1, 1);
         
-        new Label(frame, new UString("Width", Color.Black))
+        new Label(frame)
         {
+            Text = new UString("Width", Color.Black),
             DefaultColor = Color.DarkGray,
             Fill = FillMode.Horizontal
         }.Grid(1, 2);
         
-        new Label(frame, new UString("Height", Color.Black))
+        new Label(frame)
         {
+            Text = new UString("Height", Color.Black),
             DefaultColor = Color.DarkGray,
             Fill = FillMode.Horizontal,
         }.Grid(1, 3);
@@ -97,35 +110,40 @@ public static class MainMenu
         {
             var preset = Presets[i];
         
-            new RadioButton(frame, new UString(preset.Name, Color.Black), radioVariable, i)
+            new RadioButton(frame, radioVariable, i)
             {
+                Text = new UString(preset.Name, Color.Black),
                 DefaultColor = gradient[i],
                 HighlightedColor = gradient[i].Dimmer(),
                 PressedColor = gradient[i].Brighter(),
                 Fill = FillMode.Horizontal
             }.Grid(i + labelsRowOffset, 0);
             
-            new Label(frame, new UString(preset.BombAmount.ToString(), Color.Black))
+            new Label(frame)
             {
+                Text = new UString(preset.BombAmount.ToString(), Color.Black),
                 DefaultColor = Color.DarkGray,
                 Fill = FillMode.Horizontal
             }.Grid(i + labelsRowOffset, 1);
             
-            new Label(frame, new UString(preset.GridWidth.ToString(), Color.Black))
+            new Label(frame)
             {
+                Text = new UString(preset.GridWidth.ToString(), Color.Black),
                 DefaultColor = Color.DarkGray,
                 Fill = FillMode.Horizontal
             }.Grid(i + labelsRowOffset, 2);
             
-            new Label(frame, new UString(preset.GridHeight.ToString(), Color.Black))
+            new Label(frame)
             {
+                Text =  new UString(preset.GridHeight.ToString(), Color.Black),
                 DefaultColor = Color.DarkGray,
                 Fill = FillMode.Horizontal
             }.Grid(i + labelsRowOffset, 3);
         }
         
-        new RadioButton(frame, new UString("Custom", Color.Black), radioVariable, Presets.Count)
+        new RadioButton(frame, radioVariable, Presets.Count)
         {
+            Text = new UString("Custom", Color.Black),
             DefaultColor = Color.CornflowerBlue,
             HighlightedColor = Color.CornflowerBlue.Dimmer(),
             PressedColor = Color.CornflowerBlue.Brighter()
@@ -166,8 +184,9 @@ public static class MainMenu
         }.Grid(5, 3);
 
         // Play button
-        new Button(frame, new UString("PLAY", Color.Black))
+        new Button(frame)
         {
+            Text = new UString("PLAY", Color.Black),
             DefaultColor = Color.White,
             HighlightedColor = Color.Yellow,
             PressedColor = Color.Lime,

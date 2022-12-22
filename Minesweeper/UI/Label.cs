@@ -1,14 +1,13 @@
-﻿namespace Minesweeper.UI;
+﻿using Minesweeper.ConsoleDisplay;
+
+namespace Minesweeper.UI;
 
 public class Label : Widget
 {
-    public IText Text { get; set; }
+    public required IText Text { get; init; }
     public Coord TextOffset = Coord.Zero;
 
-    public Label(Frame parent, IText text) : base(parent)
-    {
-        Text = text;
-    }
+    public Label(Frame parent) : base(parent) { }
 
     public override Label Grid(int row, int column, int rowSpan = 1, int columnSpan = 1, GridAlignment alignment = GridAlignment.Center)
     {
@@ -24,17 +23,17 @@ public class Label : Widget
     {
         if (Text.Animating) Text.Cycle();
 
-        ConsoleDisplay.Display.DrawRect(Anchor + Offset, Size, Color);
+        Display.DrawRect(Anchor + Offset, Size, Color);
 
-        ConsoleDisplay.Display.Print(Center.X + TextOffset.X, Center.Y + TextOffset.Y, Text.Text, Text.Foreground,
-            Text.Background ?? Color);
+        Display.Print(Center.X + TextOffset.X, Center.Y + TextOffset.Y, Text.Text, Text.Foreground,
+            background: Text.Background ?? Color, mode: Text.Mode);
     }
 
     public override void Clear()
     {
         var textStart = Center + TextOffset + Coord.Left * (Text.Length / 2);
         
-        ConsoleDisplay.Display.ClearRect(textStart, (Text.Length, 1));
+        Display.ClearRect(textStart, (Text.Length, 1));
 
         base.Clear();
     }

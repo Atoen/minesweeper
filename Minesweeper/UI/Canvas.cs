@@ -32,19 +32,21 @@ public class Canvas : Widget
         var drawStart = Start + (Size - new Coord(_drawable.Width, _drawable.Height)) / 2;
         _drawable.Offset = drawStart;
 
-        for (var x = 0; x < _drawable.Width; x++)
-        for (var y = 0; y < _drawable.Height; y++)
-        {
-            var pixel = _buffer[x, y];
-            Display.Draw(drawStart.X + x, drawStart.Y + y, pixel.Symbol, pixel.Fg, pixel.Bg);
-        }
+        Display.DrawBuffer(drawStart, _buffer);
+        
+        // for (var x = 0; x < _drawable.Width; x++)
+        // for (var y = 0; y < _drawable.Height; y++)
+        // {
+        //     var pixel = _buffer[x, y];
+        //     Display.Draw(drawStart.X + x, drawStart.Y + y, pixel.Symbol, pixel.Fg, pixel.Bg);
+        // }
     }
 
     public override void Clear()
     {
         var start = Anchor + Offset;
         
-        Display.ClearRect(start, (_drawable.Width, _drawable.Height));
+        Display.ClearRect(start, Size);
     }
 
     protected override void Resize()

@@ -1,17 +1,16 @@
-﻿using Minesweeper.ConsoleDisplay;
+﻿#nullable enable
+using Minesweeper.ConsoleDisplay;
 
 namespace Minesweeper.UI;
 
 public class Button : Widget
 {
     public Action? OnClick { get; init; }
-    public IText Text { get; set; }
+    public required IText Text { get; init; }
     public Coord TextOffset = Coord.Zero;
 
-    public Button(Frame parent, IText text) : base(parent)
+    public Button(Frame parent) : base(parent)
     {
-        Text = text;
-        
         Input.MouseLeftClick += LeftClick;
         Input.MouseEvent += MouseMove;
     }
@@ -33,7 +32,7 @@ public class Button : Widget
         Display.DrawRect(Start, Size, Color);
         
         Display.Print(Center.X + TextOffset.X, Center.Y + TextOffset.Y, Text.Text, Text.Foreground,
-            Text.Background ?? Color);
+            background: Text.Background ?? Color, mode: Text.Mode);
     }
     
     protected override void Resize()

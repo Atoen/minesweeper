@@ -52,11 +52,11 @@ public static class Input
 
             switch (record.EventType)
             {
-                case _MouseEvent:
+                case MouseEventCode:
                     HandleMouse(record.MouseEventRecord);
                     break;
 
-                case _KeyEvent:
+                case KeyEventCode:
                     _keyboardState.Assign(record.KeyEventRecord);
                     KeyEvent?.Invoke(_keyboardState);
                     break;
@@ -105,8 +105,8 @@ public static class Input
         EnableQuickEditMode = 0x0040,
         EnableWindowInput = 0x0008;
 
-    private const ushort _KeyEvent = 0x0001,
-        _MouseEvent = 0x0002,
+    private const ushort KeyEventCode = 0x0001,
+        MouseEventCode = 0x0002,
         WindowBufferSizeEvent = 0x0004;
 
     [StructLayout(LayoutKind.Explicit)]

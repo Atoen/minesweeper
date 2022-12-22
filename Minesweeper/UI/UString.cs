@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Minesweeper.ConsoleDisplay;
 
 namespace Minesweeper.UI;
 
@@ -21,6 +22,8 @@ public class UString : IText
     public Color Foreground { get; set; }
     public Color? Background { get; set; }
     
+    public TextMode Mode { get; set; }
+    
     private string _text;
     private bool _displayingCaret;
     private readonly IEnumerator _enumerator;
@@ -38,7 +41,7 @@ public class UString : IText
 
     public bool Enabled { get; set; } = true;
     
-    public int Length => Text.Length;
+    public int Length => _text.Length;
 
     public UString(string text, Color foreground, Color? background = null)
     {
@@ -87,7 +90,7 @@ public interface IText
     string Text { get; set; }
     Color Foreground { get; set; }
     Color? Background { get; set; }
-
+    TextMode Mode { get; set; }
     bool Enabled { get; set; }
     bool Animating { get; set; }
 

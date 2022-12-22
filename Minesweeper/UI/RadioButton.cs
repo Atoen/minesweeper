@@ -9,7 +9,7 @@ public class RadioButton : Button
     private readonly Variable _variable;
     private readonly int _value;
 
-    public RadioButton(Frame parent, IText text, Variable variable, int value) : base(parent, text)
+    public RadioButton(Frame parent, Variable variable, int value) : base(parent)
     {
         _variable = variable;
         _value = value;
@@ -37,7 +37,7 @@ public class RadioButton : Button
     
     public override void Render()
     {
-        Text.Background = IsSelected ? Color.Brighter(50) : Color;
+        Text.Mode = IsSelected ? TextMode.Underline : TextMode.Default;
 
         base.Render();
     }

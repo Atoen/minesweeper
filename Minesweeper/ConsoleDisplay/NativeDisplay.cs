@@ -1,5 +1,4 @@
-﻿using System.Reflection.Metadata.Ecma335;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Minesweeper.Game;
 using Minesweeper.UI;
@@ -48,12 +47,9 @@ public sealed class NativeDisplay : IRenderer
 
             var bufferIndex = posY * _displaySize.X + posX;
             
-            var cfg = fg.ConsoleColor();
-            var cbg = bg.ConsoleColor();
+            var color = (short) ((int) fg.ConsoleColor() | (int) bg.ConsoleColor() << 4);
 
-            var color = (short) ((int) cfg | (int) cbg << 4);
-
-            _currentBuffer[bufferIndex].Symbol = (byte) symbol;
+            _currentBuffer[bufferIndex].Symbol = symbol;
             _currentBuffer[bufferIndex].Color = color;
         }
     }
@@ -63,6 +59,62 @@ public sealed class NativeDisplay : IRenderer
         Draw(posX, posY, tile.Symbol, tile.Foreground, tile.Background);
     }
 
+    public void Print(int posX, int posY, string text, Color fg, Color bg, Alignment alignment, TextMode _)
+    {
+        lock (_threadLock)
+        {
+            if (posY < 0 || posY >= _displaySize.Y) return;
+
+            var startX = alignment switch
+            {
+                Alignment.Left => posX,
+                Alignment.Right => posX - text.Length,
+                _ => posX - text.Length / 2
+            };
+            
+            if (startX < 0) startX = 0;
+            if (startX >= _displaySize.X) startX = _displaySize.X - 1;
+        
+            var endX = startX + text.Length;
+            
+            if (endX >= _displaySize.X) endX = _displaySize.X - 1;
+
+            var color = (short) ((int) fg.ConsoleColor() | (int) bg.ConsoleColor() << 4);
+            
+            var bufferIndex = posY * _displaySize.X + startX;
+
+            for (var i = 0; i < endX - startX; i++)
+            {
+                _currentBuffer[bufferIndex + i].Color = color;
+                _currentBuffer[bufferIndex + i].Symbol = text[i];
+            }
+        }
+    }
+
+    public void DrawBuffer(Coord pos, Coord size, AnsiDisplay.Pixel[,] buffer)
+    {
+        lock (_threadLock)
+        {
+            if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
+
+            var endX = Math.Min(size.X, _displaySize.X - pos.X);
+            var endY = Math.Min(size.Y, _displaySize.Y - size.Y);
+            
+            for (var x = 0; x < endX; x++)
+            for (var y = 0; y < endY; y++)
+            {
+                var index = (y + pos.Y) * _displaySize.X + x + pos.X;
+                var pixel = buffer[x, y];
+                
+                _currentBuffer[index].Symbol = pixel.Symbol;
+
+                var color = (short) ((int) buffer[x, y].Fg.ConsoleColor() | (int) buffer[x, y].Bg.ConsoleColor() << 4);
+                _currentBuffer[index].Color = color;
+            }
+        }
+    }
+
+    
     public void ClearAt(int posX, int posY)
     {
         lock (_threadLock)
@@ -130,14 +182,11 @@ public sealed class NativeDisplay : IRenderer
     [StructLayout(LayoutKind.Explicit)]
     private struct CharInfo
     {
-        public static readonly CharInfo Empty = new() {Symbol = 0, Color = 0};
-        public static readonly CharInfo Cleared = new() {Symbol = (byte) ' ', Color = 0};
+        public static readonly CharInfo Empty = new() {Symbol = '\0', Color = 0};
+        public static readonly CharInfo Cleared = new() {Symbol = (char) ' ', Color = 0};
         
-        [FieldOffset(0)] public byte Symbol;
+        [FieldOffset(0)] public char Symbol;
         [FieldOffset(2)] public short Color;
-
-        public bool IsEmpty => Symbol == 0 && Color == 0;
-        public bool IsCleared => Symbol == (byte) ' ' && Color == 0;
     }
     
     [StructLayout(LayoutKind.Sequential)]

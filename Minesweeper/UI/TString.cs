@@ -1,4 +1,6 @@
-﻿namespace Minesweeper.UI;
+﻿using Minesweeper.ConsoleDisplay;
+
+namespace Minesweeper.UI;
 
 public class TString : IText
 {
@@ -9,7 +11,9 @@ public class TString : IText
     
     public Color Foreground { get; set; }
     public Color? Background { get; set; }
-
+    
+    public TextMode Mode { get; set; }
+    
     private readonly Timer _timer;
 
     public TString(Color foreground, Color? background = null)

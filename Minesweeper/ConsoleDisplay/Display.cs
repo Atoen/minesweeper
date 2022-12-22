@@ -62,21 +62,9 @@ public static class Display
     public static void ResetStyle() => _renderer.ResetStyle();
 
     public static void Print(int posX, int posY, string text, Color foreground, Color background,
-        Alignment alignment = Alignment.Center)
+        Alignment alignment = Alignment.Center, TextMode mode = TextMode.Default)
     {
-        var startX = alignment switch
-        {
-            Alignment.Left => posX,
-            Alignment.Right => posX - text.Length,
-            _ => posX - text.Length / 2
-        };
-            
-        var endX = startX + text.Length;
-
-        for (int x = startX - posX, i = 0; x < endX - posX; x++, i++)
-        {
-            _renderer.Draw(posX + x, posY, text[i], foreground, background);
-        }
+        _renderer.Print(posX, posY, text, foreground, background, alignment, mode);
     }
 
     public static void DrawRect(Coord pos, Coord size, Color color, char symbol = ' ')
@@ -95,6 +83,13 @@ public static class Display
         {
             _renderer.ClearAt(pos.X + x, pos.Y + y);
         }
+    }
+
+    public static void DrawBuffer(Coord pos, AnsiDisplay.Pixel[,] buffer)
+    {
+        var size = new Coord(buffer.GetLength(0), buffer.GetLength(1));
+        
+        _renderer.DrawBuffer(pos, size, buffer);
     }
 
     private static void Start()
@@ -158,7 +153,8 @@ public static class Display
 
         GetConsoleMode(handle, ref mode);
 
-        Mode = (mode & 0x4) == 0 ? DisplayMode.Native : DisplayMode.Ansi;
+        const int virtualTerminalProcessing = 0x4;
+        Mode = (mode & virtualTerminalProcessing) == 0 ? DisplayMode.Native : DisplayMode.Ansi;
     }
 }
 
@@ -172,11 +168,11 @@ public enum DisplayMode
 [Flags]
 public enum TextMode
 {
-    Default,
-    Bold,
-    Underline,
-    Italic,
-    Strikethrough
+    Default = 0,
+    Bold = 1,
+    Underline = 1 << 1,
+    Italic = 1 << 2,
+    Strikethrough = 1 << 3
 }
 
 public enum Layer

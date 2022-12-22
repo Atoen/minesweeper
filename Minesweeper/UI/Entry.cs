@@ -4,13 +4,13 @@ namespace Minesweeper.UI;
 
 public class Entry : Widget
 {
-    public UString Text { get; set; } = new("", Color.Black);
+    public UString Text { get; init; } = new("", Color.Black);
     public Coord TextOffset = Coord.Zero;
 
     public Color TextBackground { get; set; } = Color.Gray;
     public int MaxTextLenght { get; set; }
 
-    public TextEntryMode InputMode { get; set; } = TextEntryMode.All;
+    public TextEntryMode InputMode { get; init; } = TextEntryMode.All;
 
     private bool _inEntryMode;
     
@@ -42,7 +42,8 @@ public class Entry : Widget
         Display.Print(
             Center.X + TextOffset.X - MaxTextLenght / 2,
             Center.Y + TextOffset.Y, Text.Text, Text.Foreground,
-            Text.Background ?? TextBackground, Alignment.Left);
+            Text.Background ?? TextBackground, Alignment.Left,
+            Text.Mode);
     }
 
     private void KeyEvent(KeyboardState obj)
@@ -75,6 +76,7 @@ public class Entry : Widget
         
         _inEntryMode = false;
         Text.Animating = false;
+        Text.Mode = TextMode.Default;
 
         if (InputMode != TextEntryMode.Digits) return;
         
@@ -86,6 +88,7 @@ public class Entry : Widget
         if (IsInside(obj.Position))
         {
             _inEntryMode = !_inEntryMode;
+            Text.Mode = _inEntryMode ? TextMode.Italic : TextMode.Default;
         }
         else
         {
