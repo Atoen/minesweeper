@@ -3,8 +3,7 @@
 public sealed class GridUi
 {
     private readonly Cell[,] _cells;
-    public int InsidePaddingX;
-    public int InsidePaddingY;
+    public Coord InnerPadding;
 
     public Coord Pos = Coord.Zero;
 
@@ -46,20 +45,18 @@ public sealed class GridUi
         var rows = _cells.GetLength(0);
         var columns = _cells.GetLength(1);
 
-        var padding = new Coord(InsidePaddingX, InsidePaddingY);
-
         _cells[0, 0].Start = Pos;
         
         // Manually setting first row and first column
         for (var r = 1; r < rows; r++)
         {
-            _cells[r, 0].Start.Y = _cells[r - 1, 0].Size.Y + _cells[r - 1, 0].Start.Y + padding.Y;
+            _cells[r, 0].Start.Y = _cells[r - 1, 0].Size.Y + _cells[r - 1, 0].Start.Y + InnerPadding.Y;
             _cells[r, 0].Start.X = Pos.X; // Offset of whole grid
         }
         
         for (var c = 1; c < columns; c++)
         {
-            _cells[0, c].Start.X = _cells[0, c - 1].Size.X + _cells[0, c - 1].Start.X + padding.X;
+            _cells[0, c].Start.X = _cells[0, c - 1].Size.X + _cells[0, c - 1].Start.X + InnerPadding.X;
             _cells[0, c].Start.Y = Pos.Y; // Offset of whole grid
         }
 
@@ -67,7 +64,7 @@ public sealed class GridUi
         for (var r = 1; r < rows; r++)
         for (var c = 1; c < columns; c++)
         {
-            _cells[r, c].Start = _cells[r - 1, c - 1].Start + _cells[r - 1, c - 1].Size + padding;
+            _cells[r, c].Start = _cells[r - 1, c - 1].Start + _cells[r - 1, c - 1].Size + InnerPadding;
         }
     }
 

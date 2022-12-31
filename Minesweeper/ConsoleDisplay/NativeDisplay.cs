@@ -41,14 +41,14 @@ public sealed class NativeDisplay : IRenderer
     
     public void Draw(int posX, int posY, char symbol, Color fg, Color bg)
     {
+        if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
+
+        var bufferIndex = posY * _displaySize.X + posX;
+        
+        var color = (short) ((int) fg.ConsoleColor() | (int) bg.ConsoleColor() << 4);
+
         lock(_threadLock)
         {
-            if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
-
-            var bufferIndex = posY * _displaySize.X + posX;
-            
-            var color = (short) ((int) fg.ConsoleColor() | (int) bg.ConsoleColor() << 4);
-
             _currentBuffer[bufferIndex].Symbol = symbol;
             _currentBuffer[bufferIndex].Color = color;
         }
@@ -61,28 +61,28 @@ public sealed class NativeDisplay : IRenderer
 
     public void Print(int posX, int posY, string text, Color fg, Color bg, Alignment alignment, TextMode _)
     {
+        if (posY < 0 || posY >= _displaySize.Y) return;
+
+        var startX = alignment switch
+        {
+            Alignment.Left => posX,
+            Alignment.Right => posX - text.Length,
+            _ => posX - text.Length / 2
+        };
+        
+        if (startX < 0) startX = 0;
+        if (startX >= _displaySize.X) startX = _displaySize.X - 1;
+    
+        var endX = startX + text.Length;
+        
+        if (endX >= _displaySize.X) endX = _displaySize.X - 1;
+
+        var color = (short) ((int) fg.ConsoleColor() | (int) bg.ConsoleColor() << 4);
+        
+        var bufferIndex = posY * _displaySize.X + startX;
+
         lock (_threadLock)
         {
-            if (posY < 0 || posY >= _displaySize.Y) return;
-
-            var startX = alignment switch
-            {
-                Alignment.Left => posX,
-                Alignment.Right => posX - text.Length,
-                _ => posX - text.Length / 2
-            };
-            
-            if (startX < 0) startX = 0;
-            if (startX >= _displaySize.X) startX = _displaySize.X - 1;
-        
-            var endX = startX + text.Length;
-            
-            if (endX >= _displaySize.X) endX = _displaySize.X - 1;
-
-            var color = (short) ((int) fg.ConsoleColor() | (int) bg.ConsoleColor() << 4);
-            
-            var bufferIndex = posY * _displaySize.X + startX;
-
             for (var i = 0; i < endX - startX; i++)
             {
                 _currentBuffer[bufferIndex + i].Color = color;
@@ -93,13 +93,13 @@ public sealed class NativeDisplay : IRenderer
 
     public void DrawBuffer(Coord pos, Coord size, AnsiDisplay.Pixel[,] buffer)
     {
+        if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
+
+        var endX = Math.Min(size.X, _displaySize.X - pos.X);
+        var endY = Math.Min(size.Y, _displaySize.Y - size.Y);
+            
         lock (_threadLock)
         {
-            if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
-
-            var endX = Math.Min(size.X, _displaySize.X - pos.X);
-            var endY = Math.Min(size.Y, _displaySize.Y - size.Y);
-            
             for (var x = 0; x < endX; x++)
             for (var y = 0; y < endY; y++)
             {
@@ -117,12 +117,12 @@ public sealed class NativeDisplay : IRenderer
     
     public void ClearAt(int posX, int posY)
     {
+        if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
+
+        var bufferIndex = posY * _displaySize.X + posX;
+
         lock (_threadLock)
         {
-            if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
-
-            var bufferIndex = posY * _displaySize.X + posX;
-
             _currentBuffer[bufferIndex] = CharInfo.Cleared;
         }
     }

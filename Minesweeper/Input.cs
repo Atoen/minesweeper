@@ -1,21 +1,21 @@
 ﻿using System.Runtime.InteropServices;
+using Minesweeper.ConsoleDisplay;
+using Minesweeper.UI;
 
 namespace Minesweeper;
 
 public static class Input
 {
     internal static event Action<KeyboardState>? KeyEvent;
-    internal static event Action<MouseState>? MouseEvent;
-    internal static event Action<MouseState>? MouseLeftClick;
-    internal static event Action<MouseState>? MouseRightClick; 
-    internal static event Action<MouseState>? DoubleClick;
     internal static event Action<WindowState>? WindowEvent;
 
     private static bool _running;
     private static uint _lastMouseButton = unchecked((uint) -1);
     
-    private static MouseState _mouseState;
+    private static readonly MouseState MouseState = new();
     private static KeyboardState _keyboardState;
+    
+    private static readonly object LockObject = new();
 
     internal static void Init()
     {
@@ -57,7 +57,7 @@ public static class Input
                     break;
 
                 case KeyEventCode:
-                    _keyboardState.Assign(record.KeyEventRecord);
+                    _keyboardState.Assign(ref record.KeyEventRecord);
                     KeyEvent?.Invoke(_keyboardState);
                     break;
 
@@ -68,31 +68,80 @@ public static class Input
         }
     }
 
+    private static readonly List<Control> Controls = new();
+    public static void Register(Control control)
+    {
+        lock (LockObject)
+        {
+            Controls.Add(control);
+        }
+    }
+
+    public static void Unregister(Control control)
+    {
+        lock (LockObject)
+        {
+            Controls.Remove(control);
+        }
+    }
+
     private static void HandleMouse(MouseEventRecord mouseRecord)
     {
-        _mouseState.Assign(ref mouseRecord);
-        
-        if (_lastMouseButton == 0)
-        {
-            if ((_mouseState.Buttons & MouseButtonState.Left) != 0)
-            {
-                MouseLeftClick?.Invoke(_mouseState);
-            }
+        MouseState.Assign(ref mouseRecord);
 
-            if ((_mouseState.Buttons & MouseButtonState.Right) != 0)
+        var layer = (Layer) (-1);
+        Control? hit = null;
+
+        var pos = MouseState.Position;
+
+        void Miss(Control control, MouseButton button)
+        {
+            if (control.IsEnabled && control.MouseEventMask.HasValue(MouseEventMask.MouseMove)) control.MouseExit();
+
+            if (control.IsFocused && button.HasValue(MouseButton.Left)) control.LostFocus();
+        }
+
+        lock (LockObject)
+        {
+            foreach (var control in Controls)
             {
-                MouseRightClick?.Invoke(_mouseState);
+                if (control.ContainsPoint(pos) && control.Layer > layer)
+                {
+                    // Previously marked as hit - now detected something on higher layer blocking the cursor 
+                    if (hit is not null) Miss(hit, MouseState.Button);
+
+                    layer = control.Layer;
+                    hit = control;
+                }
+                else
+                {
+                    Miss(control, MouseState.Button);
+                }
             }
         }
 
-        if (mouseRecord.EventFlags == (ulong) MouseEventFlags.DoubleClicked)
+        if (hit is null || !hit.UsesMouseEvents || !hit.IsEnabled) return;
+
+        if (hit.MouseEventMask.HasValue(MouseEventMask.MouseClick) && _lastMouseButton == 0)
         {
-            DoubleClick?.Invoke(_mouseState);
+            if (MouseState.Button.HasValue(MouseButton.Left))
+            {
+                hit.MouseLeftDown();
+                hit.GotFocus();
+            }
+
+            if (MouseState.Button.HasValue(MouseButton.Right))
+            {
+                
+            }
         }
 
         _lastMouseButton = mouseRecord.ButtonState;
 
-        MouseEvent?.Invoke(_mouseState);
+        if (hit.MouseEventMask.HasValue(MouseEventMask.MouseMove))
+        {
+            hit.MouseMove(MouseState);
+        }
     }
 
     internal static void Stop() => _running = false;
@@ -112,10 +161,10 @@ public static class Input
     [StructLayout(LayoutKind.Explicit)]
     private struct InputRecord
     {
-        [FieldOffset(0)] public readonly ushort EventType;
-        [FieldOffset(4)] public readonly KeyEventRecord KeyEventRecord;
-        [FieldOffset(4)] public readonly MouseEventRecord MouseEventRecord;
-        [FieldOffset(4)] public readonly WindowState WindowBufferSizeEventRecord;
+        [FieldOffset(0)] public ushort EventType;
+        [FieldOffset(4)] public KeyEventRecord KeyEventRecord;
+        [FieldOffset(4)] public MouseEventRecord MouseEventRecord;
+        [FieldOffset(4)] public WindowState WindowBufferSizeEventRecord;
     }
 
     [StructLayout(LayoutKind.Explicit)]
@@ -167,13 +216,13 @@ public static class Input
     }
 }
 
-internal struct KeyboardState
+public struct KeyboardState
 {
     public ConsoleKey Key;
     public char Char;
     public bool Pressed;
 
-    public void Assign(Input.KeyEventRecord record)
+    public void Assign(ref Input.KeyEventRecord record)
     {
         Key = (ConsoleKey) record.VirtualKeyCode;
         Pressed = record.KeyDown;
@@ -181,24 +230,24 @@ internal struct KeyboardState
     }
 }
 
-public struct MouseState
+public class MouseState
 {
     public Coord Position;
-    public MouseButtonState Buttons;
+    public MouseButton Button;
     public MouseEventFlags Flags;
     public MouseWheelState Wheel;
 
     public void Assign(ref Input.MouseEventRecord record)
     {
         Position = new Coord(record.MousePosition.X, record.MousePosition.Y);
-        Buttons = (MouseButtonState) record.ButtonState;
+        Button = (MouseButton) record.ButtonState;
         Wheel = (MouseWheelState) record.ButtonState;
         Flags = (MouseEventFlags) record.EventFlags;
     }
 }
 
 [Flags]
-public enum MouseButtonState
+public enum MouseButton
 {
     None = 0,
     Left = 1,

@@ -2,7 +2,7 @@
 
 namespace Minesweeper.UI;
 
-public class TString : IText
+public class TimerText : IAnimatedText
 {
     public string Text { get; set; }
     public bool Enabled { get; set; }
@@ -16,10 +16,10 @@ public class TString : IText
     
     private readonly Timer _timer;
 
-    public TString(Color foreground, Color? background = null)
+    public TimerText(Color foreground, Color? background = null)
         : this(false, TimeSpan.Zero, foreground, background) {}
 
-    public TString(bool countingDown, TimeSpan timeSpan, Color foreground, Color? background = null)
+    public TimerText(bool countingDown, TimeSpan timeSpan, Color foreground, Color? background = null)
     {
         Foreground = foreground;
         Background = background;
@@ -33,7 +33,7 @@ public class TString : IText
         _timer.Elapsed += delegate { Enabled = false; };
     }
 
-    public TString(Timer timer, Color foreground, Color? background = null)
+    public TimerText(Timer timer, Color foreground, Color? background = null)
     {
         Foreground = foreground;
         Background = background;

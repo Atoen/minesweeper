@@ -9,15 +9,16 @@ public static class Display
 {
     public static int Width { get; private set; }
     public static int Height { get; private set; }
-    
     public static DisplayMode Mode { get; private set; }
 
     private static bool _refreshing;
 
     private static readonly List<IRenderable> Renderables = new();
-    private static readonly List<IRenderable> AddedRenderables = new();
-
+    private static readonly List<IRenderable> RemovedRenderables = new();
+        
     private static IRenderer _renderer = null!;
+
+    private static readonly object LockObject = new();
 
     public static void Init(DisplayMode mode = DisplayMode.Auto)
     {
@@ -44,7 +45,25 @@ public static class Display
 
     public static void Stop() => _refreshing = false;
     
-    public static void AddToRenderList(IRenderable renderable) => AddedRenderables.Add(renderable);
+    public static void AddToRenderList(IRenderable renderable)
+    {
+        lock (LockObject)
+        {
+            Renderables.Add(renderable);
+            
+            // Placing foreground and top renderables later so they don't get covered by background
+            Renderables.Sort((r1, r2) => r1.Layer.CompareTo(r2.Layer));
+        }
+    }
+
+    public static void RemoveFromRenderList(IRenderable renderable)
+    {
+        lock (LockObject)
+        {
+            Renderables.Remove(renderable);
+            RemovedRenderables.Add(renderable);
+        }
+    }
 
     public static void Draw(Coord pos, TileDisplay tileDisplay) =>
         _renderer.Draw(pos.X, pos.Y, tileDisplay);
@@ -116,28 +135,22 @@ public static class Display
 
     private static void Draw()
     {
-        foreach (var renderable in Renderables)
+        lock (LockObject)
         {
-            if (renderable.ShouldRemove)
+            foreach (var removed in RemovedRenderables)
             {
-                renderable.Clear();
-                continue;
+                removed.Clear();
             }
             
-            renderable.Render();
+            RemovedRenderables.Clear();
+
+            foreach (var renderable in Renderables)
+            {
+                renderable.Render();
+            }
+            
+            _renderer.Draw();
         }
-        
-        Renderables.RemoveAll(r => r.ShouldRemove);
-        
-        _renderer.Draw();
-        
-        if (AddedRenderables.Count == 0) return;
-
-        Renderables.AddRange(AddedRenderables);
-        AddedRenderables.Clear();
-
-        // Placing foreground and top renderables later so they don't get covered by background
-        Renderables.Sort((r1, r2) => r1.Layer.CompareTo(r2.Layer));
     }
 
     private static void GetDisplayMode()
@@ -172,7 +185,9 @@ public enum TextMode
     Bold = 1,
     Underline = 1 << 1,
     Italic = 1 << 2,
-    Strikethrough = 1 << 3
+    Strikethrough = 1 << 3,
+    DoubleUnderline = 1 << 4,
+    Overline = 1 << 5
 }
 
 public enum Layer

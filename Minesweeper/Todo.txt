@@ -1,5 +1,3 @@
-﻿Resizing cells when it could be smaller
-Background padding fix
-Maybe cleaner ustring
-Namespace names change
-Render only changed widgets (ansi)
+﻿Bubbling (maybe tunneling) events
+Widgets inside other widgets
+Panel + Grid finish

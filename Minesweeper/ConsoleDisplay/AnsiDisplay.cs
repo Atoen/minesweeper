@@ -30,10 +30,10 @@ public sealed class AnsiDisplay : IRenderer
     
     public void Draw(int posX, int posY, char symbol, Color fg, Color bg)
     {
+        if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
+
         lock (_threadLock)
         {
-            if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
-
             _currentPixels[posX, posY].Symbol = symbol;
             _currentPixels[posX, posY].Fg = fg;
             _currentPixels[posX, posY].Bg = bg;
@@ -47,24 +47,24 @@ public sealed class AnsiDisplay : IRenderer
 
     public void Print(int posX, int posY, string text, Color fg, Color bg, Alignment alignment, TextMode mode)
     {
+        if (posY < 0 || posY >= _displaySize.Y) return;
+        
+        var startX = alignment switch
+        {
+            Alignment.Left => posX,
+            Alignment.Right => posX - text.Length,
+            _ => posX - text.Length / 2
+        };
+        
+        if (startX < 0) startX = 0;
+        if (startX >= _displaySize.X) startX = _displaySize.X - 1;
+    
+        var endX = startX + text.Length;
+        
+        if (endX >= _displaySize.X) endX = _displaySize.X - 1;
+        
         lock (_threadLock)
         {
-            if (posY < 0 || posY >= _displaySize.Y) return;
-            
-            var startX = alignment switch
-            {
-                Alignment.Left => posX,
-                Alignment.Right => posX - text.Length,
-                _ => posX - text.Length / 2
-            };
-            
-            if (startX < 0) startX = 0;
-            if (startX >= _displaySize.X) startX = _displaySize.X - 1;
-        
-            var endX = startX + text.Length;
-            
-            if (endX >= _displaySize.X) endX = _displaySize.X - 1;
-        
             for (int x = startX - posX, i = 0; x < endX - posX; x++, i++)
             {
                 _currentPixels[posX + x, posY].Symbol = text[i];
@@ -77,13 +77,13 @@ public sealed class AnsiDisplay : IRenderer
 
     public void DrawBuffer(Coord pos, Coord size, Pixel[,] buffer)
     {
+        if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
+
+        var endX = Math.Min(size.X, _displaySize.X - pos.X);
+        var endY = Math.Min(size.Y, _displaySize.Y - size.Y);
+            
         lock (_threadLock)
         {
-            if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
-
-            var endX = Math.Min(size.X, _displaySize.X - pos.X);
-            var endY = Math.Min(size.Y, _displaySize.Y - size.Y);
-            
             for (var x = 0; x < endX; x++)
             for (var y = 0; y < endY; y++)
             {
@@ -94,10 +94,10 @@ public sealed class AnsiDisplay : IRenderer
 
     public void ClearAt(int posX, int posY)
     {
+        
+        if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
         lock (_threadLock)
         {
-            if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
-
             _currentPixels[posX, posY] = Pixel.Cleared;
         }
     }
@@ -140,7 +140,9 @@ public sealed class AnsiDisplay : IRenderer
             {TextMode.Bold, "\x1b[1m"},
             {TextMode.Italic, "\x1b[3m"},
             {TextMode.Underline, "\x1b[4m"},
-            {TextMode.Strikethrough, "\x1b[9m"},
+            {TextMode.DoubleUnderline, "\x1b[21m"},
+            {TextMode.Overline, "\x1b[53m"},
+            {TextMode.Strikethrough, "\x1b[9m"}
         });
 
     private void AppendTextMode(TextMode mode, StringBuilder builder)

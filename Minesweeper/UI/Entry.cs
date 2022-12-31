@@ -4,8 +4,9 @@ namespace Minesweeper.UI;
 
 public class Entry : Widget
 {
-    public UString Text { get; init; } = new("", Color.Black);
+    public EntryText Text { get; init; } = new("", Color.Black);
     public Coord TextOffset = Coord.Zero;
+    public TextMode EntryTextMode { get; set; } = TextMode.Italic;
 
     public Color TextBackground { get; set; } = Color.Gray;
     public int MaxTextLenght { get; set; }
@@ -13,30 +14,30 @@ public class Entry : Widget
     public TextEntryMode InputMode { get; init; } = TextEntryMode.All;
 
     private bool _inEntryMode;
-    
-    public Entry(Frame parent) : base(parent)
-    {
-        Input.MouseLeftClick += LeftClick;
-        Input.KeyEvent += KeyEvent;
-    }
-    
-    public override Entry Grid(int row, int column, int rowSpan = 1, int columnSpan = 1, GridAlignment alignment = GridAlignment.Center)
-    {
-        return base.Grid<Entry>(row, column, rowSpan, columnSpan, alignment);
-    }
 
-    public override Entry Place(int posX, int posY)
+    public Entry()
     {
-        return base.Grid<Entry>(posX, posY);
+        MouseEventMask = MouseEventMask.MouseClick;
     }
+    
+    // public override Entry Grid(int row, int column, int rowSpan = 1, int columnSpan = 1, GridAlignment alignment = GridAlignment.Center)
+    // {
+    //     return base.Grid<Entry>(row, column, rowSpan, columnSpan, alignment);
+    // }
+    //
+    // public override Entry Place(int posX, int posY)
+    // {
+    //     return base.Grid<Entry>(posX, posY);
+    // }
 
     public override void Render()
     {
-        if (_inEntryMode) Text.Cycle();
+        if (_inEntryMode && State != UI.State.Disabled) Text.Cycle();
 
-        Display.DrawRect(Start, Size, Color);
+        Display.DrawRect(Position, Size, Color);
         
         var textStart = Center + TextOffset + Coord.Left * (MaxTextLenght / 2);
+
         Display.DrawRect(textStart, (MaxTextLenght + 1, 1), TextBackground);
 
         Display.Print(
@@ -48,12 +49,11 @@ public class Entry : Widget
 
     private void KeyEvent(KeyboardState obj)
     {
-        if (!_inEntryMode || !obj.Pressed) return;
+        if (!_inEntryMode || !obj.Pressed || State == UI.State.Disabled) return;
 
         if (obj.Key == ConsoleKey.Enter)
         {
             ExitEntryMode();
-
             return;
         }
 
@@ -83,12 +83,27 @@ public class Entry : Widget
         if (string.IsNullOrWhiteSpace(Text.Text)) Text.Text = "0";
     }
 
+    protected override void OnMouseLeftDown()
+    {
+        _inEntryMode = !_inEntryMode;
+        Text.Mode = _inEntryMode ? EntryTextMode : TextMode.Default;
+        
+        Text.Animating = _inEntryMode;
+    }
+
+    protected override void OnLostFocus()
+    {
+        ExitEntryMode();
+    }
+
     private void LeftClick(MouseState obj)
     {
-        if (IsInside(obj.Position))
+        if (State == UI.State.Disabled) return;
+        
+        if (ContainsPoint(obj.Position))
         {
             _inEntryMode = !_inEntryMode;
-            Text.Mode = _inEntryMode ? TextMode.Italic : TextMode.Default;
+            Text.Mode = _inEntryMode ? EntryTextMode : TextMode.Default;
         }
         else
         {
@@ -114,14 +129,6 @@ public class Entry : Widget
             TextEntryMode.Digits => char.IsDigit(symbol),
             _ => !char.IsControl(symbol)
         };
-    }
-    
-    public override void Remove()
-    {
-        Input.MouseLeftClick -= LeftClick;
-        Input.KeyEvent -= KeyEvent;
-        
-        base.Remove();
     }
 }
 

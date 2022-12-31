@@ -6,7 +6,7 @@ public sealed class RadioButtonOld : WidgetOld
     public Color PressedColor = Color.White;
     public Action? OnClick;
     
-    private WidgetState _uiState = WidgetState.Default;
+    private State _uiState = State.Default;
     private Alignment _buttonAlignment;
     private VariableOld _variableOld;
     private int _value;
@@ -16,22 +16,20 @@ public sealed class RadioButtonOld : WidgetOld
         Alignment buttonAlignment = Alignment.Left, Alignment alignment = Alignment.Center)
         : base(color, text, alignment)
     {
-        Input.MouseLeftClick += LeftClick;
-        Input.MouseEvent += MouseMove;
 
         _variableOld = variableOld;
         _value = value;
         _buttonAlignment = buttonAlignment;
 
-        if (variableOld.Val == value) _uiState = WidgetState.Highlighted;
+        if (variableOld.Val == value) _uiState = State.Highlighted;
     }
 
     public override void Render()
     {
         CurrentColor = _uiState switch
         {
-            WidgetState.Pressed => PressedColor,
-            WidgetState.Highlighted => HighlightedColor,
+            State.Pressed => PressedColor,
+            State.Highlighted => HighlightedColor,
             _ => DefaultColor
         };
         
@@ -75,25 +73,17 @@ public sealed class RadioButtonOld : WidgetOld
         };
     }
 
-    public override void Remove()
-    {
-        Input.MouseLeftClick -= LeftClick;
-        Input.MouseEvent -= MouseMove;
-        
-        base.Remove();
-    }
-    
     private void MouseMove(MouseState state)
     {
         // if (_variable.Val == _value) return;
         
         if (IsCursorOver(state.Position))
         {
-            if (state.Buttons == 0) _uiState = WidgetState.Highlighted;
+            if (state.Button == 0) _uiState = State.Highlighted;
             return;
         }
 
-        _uiState = _variableOld.Val == _value ? WidgetState.Highlighted : WidgetState.Default;
+        _uiState = _variableOld.Val == _value ? State.Highlighted : State.Default;
     }
     
     private void LeftClick(MouseState state)
@@ -102,7 +92,7 @@ public sealed class RadioButtonOld : WidgetOld
 
         _variableOld.Val = _value;
         
-        _uiState = WidgetState.Pressed;
+        _uiState = State.Pressed;
         OnClick?.Invoke();
     }
 }

@@ -27,10 +27,7 @@ public sealed class Spinbox : WidgetOld
         MaxVal = maxVal;
 
         CurrentVal = defaultVal;
-
-        Input.MouseEvent += MouseWheel;
-        Input.MouseLeftClick += LeftClick;
-        Input.DoubleClick += DoubleClick;
+        
         Input.KeyEvent += KeyEvent;
 
         _textCycle = CycleText();
@@ -38,9 +35,6 @@ public sealed class Spinbox : WidgetOld
 
     public override void Remove()
     {
-        Input.MouseEvent -= MouseWheel;
-        Input.MouseLeftClick -= LeftClick;
-        Input.DoubleClick -= DoubleClick;
         Input.KeyEvent -= KeyEvent;
         
         ExitKeyboardMode();

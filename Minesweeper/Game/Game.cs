@@ -14,14 +14,11 @@ public static class Game
     private static DifficultyPreset _preset;
     private static int _remainingFlags;
     
-    private static readonly UString FlagsText = new("", Color.Red);
-    private static readonly TString TimerText = new(new Timer(Time), Color.Red);
+    private static readonly EntryText FlagsText = new("", Color.Red);
+    private static readonly TimerText TimerText = new(new Timer(Time), Color.Red);
 
     public static void Start(DifficultyPreset preset)
     {
-        Input.MouseLeftClick += InputOnMouseClick;
-        Input.MouseRightClick += InputOnMouseClick;
-
         _preset = preset;
         _remainingFlags = preset.BombAmount;
         
@@ -37,65 +34,65 @@ public static class Game
 
     private static void DisplayInterface()
     {
-        var frame = new Frame(3, 3)
-        {
-            Pos = (1, 1)
-        };
-
-        new Button(frame)
-        {
-            Text =  new UString("Menu", Color.Black),
-            DefaultColor = Color.DarkGray,
-            HighlightedColor = Color.Gray,
-            PressedColor = Color.White,
-            
-            Fill = FillMode.Both,
-        
-            OnClick = () => 
-            {
-                frame.Clear();
-                MainMenu();
-            }
-        }.Grid(0, 0);
-
-        FlagsText.Text = _preset.BombAmount.ToString();
-        new Label(frame)
-        {
-            Text = FlagsText,
-            DefaultColor = Color.DarkGray,
-            Fill = FillMode.Horizontal
-        }.Grid(1, 0);
-        
-        new Button(frame)
-        {
-            Text = new UString(":)", Color.Wheat),
-            DefaultColor = Color.DarkGreen,
-            HighlightedColor = Color.DarkGreen.Dimmer(),
-            PressedColor = Color.Green,
-
-            OnClick = Restart
-        }.Grid(1, 1);
-        
-        TimerText.RestartTimer();
-        new Label(frame)
-        {
-            Text = TimerText,
-            DefaultColor = Color.DarkGray
-        }.Grid(1, 2);
-        
-        new Background(frame)
-        {
-            DefaultColor = Color.Gray,
-        }.Grid(1, 0, columnSpan: 3);
-
-        new Canvas(frame, _grid).Grid(2, 0, columnSpan: 3);
+        // var frame = new Frame(3, 3)
+        // {
+        //     Pos = (1, 1)
+        // };
+        //
+        // new Button(frame)
+        // {
+        //     Text =  new UString("Menu", Color.Black),
+        //     DefaultColor = Color.DarkGray,
+        //     HighlightedColor = Color.Gray,
+        //     PressedColor = Color.White,
+        //     
+        //     Fill = FillMode.Both,
+        //
+        //     OnClick = () => 
+        //     {
+        //         frame.Clear();
+        //         MainMenu();
+        //     }
+        // }.Grid(0, 0);
+        //
+        // FlagsText.Text = _preset.BombAmount.ToString();
+        // new Label(frame)
+        // {
+        //     Text = FlagsText,
+        //     DefaultColor = Color.DarkGray,
+        //     Fill = FillMode.Horizontal
+        // }.Grid(1, 0);
+        //
+        // new Button(frame)
+        // {
+        //     Text = new UString(":)", Color.Wheat),
+        //     DefaultColor = Color.DarkGreen,
+        //     HighlightedColor = Color.DarkGreen.Dimmer(),
+        //     PressedColor = Color.Green,
+        //
+        //     OnClick = Restart
+        // }.Grid(1, 1);
+        //
+        // TimerText.RestartTimer();
+        // new Label(frame)
+        // {
+        //     Text = TimerText,
+        //     DefaultColor = Color.DarkGray
+        // }.Grid(1, 2);
+        //
+        // new Background(frame)
+        // {
+        //     DefaultColor = Color.Gray,
+        // }.Grid(1, 0, columnSpan: 3);
+        //
+        // new Canvas(frame, _grid).Grid(2, 0, columnSpan: 3);
     }
 
     private static void InputOnMouseClick(MouseState state)
     {
         if (!_gameIsRunning) return;
         
-        _grid.ClickTile(state.Position - _grid.Offset, state.Buttons);
+        _grid.ClickTile(state.Position - _grid.Offset, state.Button);
     }
 
     private static void OnBombClicked()
@@ -127,9 +124,6 @@ public static class Game
 
     private static void MainMenu()
     {
-        Input.MouseLeftClick -= InputOnMouseClick;
-        Input.MouseRightClick -= InputOnMouseClick;
-
         _grid.BombClicked -= OnBombClicked;
         _grid.Flagged -= ChangeFlagCount;
         

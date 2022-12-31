@@ -21,8 +21,8 @@ public sealed class Grid : IDrawable
 
     public Grid(DifficultyPreset preset)
     {
-        preset.Deconstruct(out _,out var bombs, out var width, out var height);
-        
+        var (_, bombs, width, height) = preset;
+
         if (width < 3) width = 3;
         if (height < 3) height = 3;
 
@@ -108,11 +108,11 @@ public sealed class Grid : IDrawable
         }
     }
 
-    public void ClickTile(Coord pos, MouseButtonState buttonState)
+    public void ClickTile(Coord pos, MouseButton button)
     {
         if (!IsInside(pos)) return;
 
-        if (!_revealed && buttonState == MouseButtonState.Left)
+        if (!_revealed && button == MouseButton.Left)
         {
             GenerateBombs(pos);
             _revealed = true;
@@ -121,7 +121,7 @@ public sealed class Grid : IDrawable
         var clickedTile = _tiles[pos.X, pos.Y];
         if (clickedTile.Revealed) return;
         
-        if (buttonState == MouseButtonState.Left)
+        if (button == MouseButton.Left)
         {
             if (clickedTile.Flagged) return;
 
@@ -136,7 +136,7 @@ public sealed class Grid : IDrawable
             return;
         }
 
-        if (buttonState != MouseButtonState.Right) return;
+        if (button != MouseButton.Right) return;
         
         if (!clickedTile.Flagged)
         {

@@ -2,6 +2,8 @@
 
 public class Frame
 {
+    private record WidgetEntry(Widget Widget, Coord GridPos, Coord GridSpan);
+    
     private readonly GridUi _grid;
     private readonly List<WidgetEntry> _widgets = new();
     private readonly Coord _padding;
@@ -24,8 +26,7 @@ public class Frame
         
         _grid = new GridUi(rows, columns)
         {
-            InsidePaddingX = paddingX,
-            InsidePaddingY = paddingY,
+            InnerPadding = _padding
         };
     }
     
@@ -100,8 +101,8 @@ public class Frame
     {
         _widgets.Add(new WidgetEntry(widget, Coord.Zero, Coord.Zero));
         
-        widget.Anchor = new Coord(posX, posY);
-        widget.Offset = Coord.Zero;
+        // widget.Anchor = new Coord(posX, posY);
+        // widget.Offset = Coord.Zero;
     }
 
     public void Clear()
@@ -155,7 +156,7 @@ public class Frame
             // Single cell widgets
             if (gridSpan == (1, 1))
             {
-                if (widget.Anchor == _grid[gridPos].Center && widget.PaddedSize == _grid[gridPos].Size) continue;
+                // if (widget.Anchor == _grid[gridPos].Center && widget.PaddedSize == _grid[gridPos].Size) continue;
 
                 widget.Clear();
                 
@@ -175,13 +176,13 @@ public class Frame
             var anchor = (startPos + endPos) / 2;
             var size = endPos - startPos;
 
-            if (widget.Anchor == anchor && widget.Size == size) continue;
-            
-            widget.Clear();
-            
-            widget.Size = size;
-            widget.Anchor = anchor;
-            widget.Offset = -widget.Size / 2;
+            // if (widget.Anchor == anchor && widget.Size == size) continue;
+            //
+            // widget.Clear();
+            //
+            // widget.Size = size;
+            // widget.Anchor = anchor;
+            // widget.Offset = -widget.Size / 2;
         }
     }
 
@@ -191,21 +192,21 @@ public class Frame
         var cellSize = cell.Size;
         var widgetSize = widget.Size;
         
-        widget.Anchor = cell.Center;
-
-        widget.Offset = alignment switch
-        {
-            GridAlignment.Center => -widgetSize / 2,
-            GridAlignment.N => Coord.Up * (cellSize.Y / 2) + Coord.Left * (widgetSize.X / 2),
-            GridAlignment.NE => Coord.Up * (cellSize.Y / 2) + Coord.Right * (cellSize.X / 2 - widgetSize.X),
-            GridAlignment.NW => -cellSize / 2,
-            GridAlignment.S => Coord.Left * (widgetSize.X / 2) + Coord.Up * (widgetSize.Y - cellSize.Y / 2),
-            GridAlignment.SE => Coord.Down * (cellSize.Y / 2 - widgetSize.Y) + Coord.Right * (cellSize.X / 2 - widgetSize.X),
-            GridAlignment.SW => Coord.Left * (cellSize.X / 2) + Coord.Up * (widgetSize.Y - cellSize.Y / 2),
-            GridAlignment.E => Coord.Right * (cellSize.X / 2 - widgetSize.X) + Coord.Up * (widgetSize.Y / 2),
-            GridAlignment.W => Coord.Left * (cellSize.X / 2) + Coord.Up * (widgetSize.Y / 2),
-            _ => throw new ArgumentOutOfRangeException(nameof(alignment), alignment, null)
-        };
+        // widget.Anchor = cell.Center;
+        //
+        // widget.Offset = alignment switch
+        // {
+        //     GridAlignment.Center => -widgetSize / 2,
+        //     GridAlignment.N => Coord.Up * (cellSize.Y / 2) + Coord.Left * (widgetSize.X / 2),
+        //     GridAlignment.NE => Coord.Up * (cellSize.Y / 2) + Coord.Right * (cellSize.X / 2 - widgetSize.X),
+        //     GridAlignment.NW => -cellSize / 2,
+        //     GridAlignment.S => Coord.Left * (widgetSize.X / 2) + Coord.Up * (widgetSize.Y - cellSize.Y / 2),
+        //     GridAlignment.SE => Coord.Down * (cellSize.Y / 2 - widgetSize.Y) + Coord.Right * (cellSize.X / 2 - widgetSize.X),
+        //     GridAlignment.SW => Coord.Left * (cellSize.X / 2) + Coord.Up * (widgetSize.Y - cellSize.Y / 2),
+        //     GridAlignment.E => Coord.Right * (cellSize.X / 2 - widgetSize.X) + Coord.Up * (widgetSize.Y / 2),
+        //     GridAlignment.W => Coord.Left * (cellSize.X / 2) + Coord.Up * (widgetSize.Y / 2),
+        //     _ => throw new ArgumentOutOfRangeException(nameof(alignment), alignment, null)
+        // };
     }
 
     private void AlignToGridMultiCell(Widget widget, int row, int column, int rowSpan, int columnSpan)
@@ -214,11 +215,9 @@ public class Frame
 
         var endCell = _grid[row + rowSpan - 1, column + columnSpan - 1];
         var endPos = endCell.Start + endCell.Size;
-
-        widget.Size = endPos - startPos;
-        widget.Anchor = (startPos + endPos) / 2;
-        widget.Offset = -widget.Size / 2;
-    }
-
-    private record WidgetEntry(Widget Widget, Coord GridPos, Coord GridSpan);
+        //
+        // widget.Size = endPos - startPos;
+        // widget.Anchor = (startPos + endPos) / 2;
+        // widget.Offset = -widget.Size / 2;
+    } 
 }
