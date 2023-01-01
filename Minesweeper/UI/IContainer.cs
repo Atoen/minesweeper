@@ -1,6 +1,9 @@
-﻿namespace Minesweeper.UI;
+﻿using System.Collections.ObjectModel;
+using Minesweeper.Utils;
+
+namespace Minesweeper.UI;
 
 public interface IContainer
 {
-    public List<VisualElement> Children { get; }
+    public ObservableList<VisualComponent> Children { get; }
 }

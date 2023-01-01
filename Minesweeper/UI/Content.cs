@@ -11,7 +11,7 @@ public abstract class Content : IRenderable
     public Color Foreground { get; set; }
     public Color? Background { get; set; }
 
-    public VisualElement Parent { get; set; } = null!;
+    public VisualComponent Parent { get; set; } = null!;
 
     public bool Enabled { get; set; } = true;
     

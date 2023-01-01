@@ -92,7 +92,7 @@ public static class Game
     {
         if (!_gameIsRunning) return;
         
-        _grid.ClickTile(state.Position - _grid.Offset, state.Button);
+        _grid.ClickTile(state.Position - _grid.Offset, state.Buttons);
     }
 
     private static void OnBombClicked()

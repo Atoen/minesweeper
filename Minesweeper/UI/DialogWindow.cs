@@ -1,4 +1,5 @@
 ﻿using Minesweeper.ConsoleDisplay;
+using Minesweeper.UI.Events;
 
 namespace Minesweeper.UI;
 
@@ -23,10 +24,12 @@ public class DialogWindow : Control, IRenderable
         Display.ClearRect(Position, Size);
     }
 
-    protected override void OnMouseLeftDown()
+    public override void OnMouseLeftDown(MouseEventArgs e)
     {
         Display.RemoveFromRenderList(this);
         
         Remove();
+        
+        base.OnMouseLeftDown(e);
     }
 }

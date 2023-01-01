@@ -1,6 +1,8 @@
 ﻿using System.Runtime.InteropServices;
 using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI;
+using Minesweeper.UI.Events;
+using Minesweeper.Utils;
 
 namespace Minesweeper;
 
@@ -96,9 +98,15 @@ public static class Input
 
         void Miss(Control control, MouseButton button)
         {
-            if (control.IsEnabled && control.MouseEventMask.HasValue(MouseEventMask.MouseMove)) control.MouseExit();
+            var args = CreateMouseArgs(MouseState, control);
+            
+            if (control is {IsMouseOver: true, IsEnabled: true} &&
+                control.MouseEventMask.HasValue(MouseEventMask.MouseMove))
+            {
+                control.OnMouseExit(args);
+            }
 
-            if (control.IsFocused && button.HasValue(MouseButton.Left)) control.LostFocus();
+            if (control.IsFocused && button.HasValue(MouseButton.Left)) control.OnLostFocus(args);
         }
 
         lock (LockObject)
@@ -108,29 +116,31 @@ public static class Input
                 if (control.ContainsPoint(pos) && control.Layer > layer)
                 {
                     // Previously marked as hit - now detected something on higher layer blocking the cursor 
-                    if (hit is not null) Miss(hit, MouseState.Button);
+                    if (hit is not null) Miss(hit, MouseState.Buttons);
 
                     layer = control.Layer;
                     hit = control;
                 }
                 else
                 {
-                    Miss(control, MouseState.Button);
+                    Miss(control, MouseState.Buttons);
                 }
             }
         }
 
         if (hit is null || !hit.UsesMouseEvents || !hit.IsEnabled) return;
 
+        var args = CreateMouseArgs(MouseState, hit);
+
         if (hit.MouseEventMask.HasValue(MouseEventMask.MouseClick) && _lastMouseButton == 0)
         {
-            if (MouseState.Button.HasValue(MouseButton.Left))
+            if (MouseState.Buttons.HasValue(MouseButton.Left))
             {
-                hit.MouseLeftDown();
-                hit.GotFocus();
+                hit.OnMouseLeftDown(args);
+                hit.OnGotFocus(args);
             }
 
-            if (MouseState.Button.HasValue(MouseButton.Right))
+            if (MouseState.Buttons.HasValue(MouseButton.Right))
             {
                 
             }
@@ -138,11 +148,30 @@ public static class Input
 
         _lastMouseButton = mouseRecord.ButtonState;
 
-        if (hit.MouseEventMask.HasValue(MouseEventMask.MouseMove))
-        {
-            hit.MouseMove(MouseState);
-        }
+        if (!hit.MouseEventMask.HasValue(MouseEventMask.MouseMove)) return;
+        
+        if (!hit.IsMouseOver) hit.OnMouseEnter(args);
+            
+        hit.OnMouseMove(args);
     }
+    
+    private static MouseEventArgs CreateMouseArgs(MouseState state, Control source) => new(source)
+    {
+        CursorPosition = state.Position,
+        RelativeCursorPosition = state.Position - source.Position,
+
+        LeftButton = state.Buttons.HasValue(MouseButton.Left)
+            ? MouseButtonState.Pressed
+            : MouseButtonState.Released,
+
+        RightButton = state.Buttons.HasValue(MouseButton.Right)
+            ? MouseButtonState.Pressed
+            : MouseButtonState.Released,
+
+        MiddleButton = state.Buttons.HasValue(MouseButton.Middle)
+            ? MouseButtonState.Pressed
+            : MouseButtonState.Released
+    };
 
     internal static void Stop() => _running = false;
 
@@ -233,14 +262,14 @@ public struct KeyboardState
 public class MouseState
 {
     public Coord Position;
-    public MouseButton Button;
+    public MouseButton Buttons;
     public MouseEventFlags Flags;
     public MouseWheelState Wheel;
 
     public void Assign(ref Input.MouseEventRecord record)
     {
         Position = new Coord(record.MousePosition.X, record.MousePosition.Y);
-        Button = (MouseButton) record.ButtonState;
+        Buttons = (MouseButton) record.ButtonState;
         Wheel = (MouseWheelState) record.ButtonState;
         Flags = (MouseEventFlags) record.EventFlags;
     }

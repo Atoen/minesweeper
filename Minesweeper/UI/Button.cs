@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using Minesweeper.ConsoleDisplay;
+using Minesweeper.UI.Events;
 
 namespace Minesweeper.UI;
 
@@ -14,24 +15,9 @@ public class Button : Widget
         MouseEventMask = MouseEventMask.MouseMove | MouseEventMask.MouseClick;
     }
 
-    // public override Button Grid(int row, int column, int rowSpan = 1, int columnSpan = 1, GridAlignment alignment = GridAlignment.Center)
-    // {
-    //     return base.Grid<Button>(row, column, rowSpan, columnSpan, alignment);
-    // }
-    //
-    // public override Button Place(int posX, int posY)
-    // {
-    //     return base.Grid<Button>(posX, posY);
-    // }
-
     public override void Render()
     {
-        // if (Text.Animating && State != State.Disabled) Text.Cycle();
-        //
-        // Display.DrawRect(Position, Size, Color);
-        //
-        // Display.Print(Center.X + TextOffset.X, Center.Y + TextOffset.Y, Text.Text, Text.Foreground,
-        //     background: Text.Background ?? Color, mode: Text.Mode);
+
     }
     
     protected override void Resize()
@@ -41,9 +27,11 @@ public class Button : Widget
         Size = Size.ExpandTo(minSize);
     }
     
-    protected override void OnMouseLeftDown()
+    public override void OnMouseLeftDown(MouseEventArgs e)
     {
         State = State.Pressed;
         OnClick?.Invoke();
+        
+        base.OnMouseLeftDown(e);
     }
 }

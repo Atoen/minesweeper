@@ -1,11 +1,10 @@
-﻿using System.Net.NetworkInformation;
-using Minesweeper.ConsoleDisplay;
+﻿using Minesweeper.ConsoleDisplay;
 
 namespace Minesweeper.UI;
 
-public abstract class VisualElement : Control, IRenderable
+public abstract class VisualComponent : Control, IRenderable
 {
-    protected VisualElement(bool renderOnItsOwn = false)
+    protected VisualComponent(bool renderOnItsOwn = false)
     {
         if (renderOnItsOwn)
         {
@@ -48,21 +47,24 @@ public abstract class VisualElement : Control, IRenderable
     public virtual void Render()
     {
         Display.DrawRect(Position, Size, Color);
+        Content?.Render();
     }
 
     public virtual void Clear()
     {
         Display.ClearRect(Position, Size);
+        Content?.Clear();
     }
 
     public override void Remove()
     {
         Display.RemoveFromRenderList(this);
+        Parent?.Children.Remove(this);
 
         base.Remove();
     }
 
-    public void Resize()
+    public virtual void Resize()
     {
         var minSize = InnerPadding * 2;
         if (Content is not null) minSize += Content.Size;

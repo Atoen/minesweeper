@@ -1,4 +1,5 @@
 ﻿using Minesweeper.ConsoleDisplay;
+using Minesweeper.UI.Events;
 
 namespace Minesweeper.UI;
 
@@ -15,24 +16,9 @@ public class Entry : Widget
 
     private bool _inEntryMode;
 
-    public Entry()
-    {
-        MouseEventMask = MouseEventMask.MouseClick;
-    }
-    
-    // public override Entry Grid(int row, int column, int rowSpan = 1, int columnSpan = 1, GridAlignment alignment = GridAlignment.Center)
-    // {
-    //     return base.Grid<Entry>(row, column, rowSpan, columnSpan, alignment);
-    // }
-    //
-    // public override Entry Place(int posX, int posY)
-    // {
-    //     return base.Grid<Entry>(posX, posY);
-    // }
-
     public override void Render()
     {
-        if (_inEntryMode && State != UI.State.Disabled) Text.Cycle();
+        if (_inEntryMode && State != State.Disabled) Text.Cycle();
 
         Display.DrawRect(Position, Size, Color);
         
@@ -49,7 +35,7 @@ public class Entry : Widget
 
     private void KeyEvent(KeyboardState obj)
     {
-        if (!_inEntryMode || !obj.Pressed || State == UI.State.Disabled) return;
+        if (!_inEntryMode || !obj.Pressed || State == State.Disabled) return;
 
         if (obj.Key == ConsoleKey.Enter)
         {
@@ -83,36 +69,23 @@ public class Entry : Widget
         if (string.IsNullOrWhiteSpace(Text.Text)) Text.Text = "0";
     }
 
-    protected override void OnMouseLeftDown()
+    public override void OnMouseLeftDown(MouseEventArgs e)
     {
         _inEntryMode = !_inEntryMode;
         Text.Mode = _inEntryMode ? EntryTextMode : TextMode.Default;
         
         Text.Animating = _inEntryMode;
+        
+        base.OnMouseLeftDown(e);
     }
 
-    protected override void OnLostFocus()
+    public override void OnLostFocus(MouseEventArgs e)
     {
         ExitEntryMode();
+        
+        base.OnLostFocus(e);
     }
 
-    private void LeftClick(MouseState obj)
-    {
-        if (State == UI.State.Disabled) return;
-        
-        if (ContainsPoint(obj.Position))
-        {
-            _inEntryMode = !_inEntryMode;
-            Text.Mode = _inEntryMode ? EntryTextMode : TextMode.Default;
-        }
-        else
-        {
-            ExitEntryMode();
-        }
-        
-        Text.Animating = _inEntryMode;
-    }
-    
     protected override void Resize()
     {
         var minSize = new Coord(MaxTextLenght + 1 + 2 * InnerPadding.X, 1 + 2 * InnerPadding.Y);

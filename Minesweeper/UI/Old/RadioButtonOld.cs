@@ -79,7 +79,7 @@ public sealed class RadioButtonOld : WidgetOld
         
         if (IsCursorOver(state.Position))
         {
-            if (state.Button == 0) _uiState = State.Highlighted;
+            if (state.Buttons == 0) _uiState = State.Highlighted;
             return;
         }
 

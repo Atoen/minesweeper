@@ -1,10 +1,13 @@
-﻿using Minesweeper.ConsoleDisplay;
+﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using Minesweeper.ConsoleDisplay;
+using Minesweeper.Utils;
 
 namespace Minesweeper.UI;
 
 public class Panel : Control, IContainer
 {
-    public List<VisualElement> Children { get; } = new();
+    public ObservableList<VisualComponent> Children { get; } = new();
 
     public Panel(IContainer? parent = null) : base(parent)
     {
@@ -12,14 +15,23 @@ public class Panel : Control, IContainer
     }
 }
 
-public class Grid : VisualElement, IContainer
+public class Grid : VisualComponent, IContainer
 {
     public Grid() : base(true)
     {
         Layer = Layer.Background;
+        
+        Children.Changed += OnChildrenChanged;
     }
-    
-    public List<VisualElement> Children { get; } = new();
+
+    private void OnChildrenChanged(object? sender, CollectionChangedEventArgs<VisualComponent> e)
+    {
+        e.Element.Parent = e.ChangeType == ChangeType.Add ? this : null;
+        
+        Children.Sort((c1, c2) => c1.Layer.CompareTo(c2.Layer));
+    }
+
+    public ObservableList<VisualComponent> Children { get; } = new();
 
     private readonly List<Row> _rows = new();
     private readonly List<Column> _columns = new();
@@ -63,44 +75,83 @@ public class Grid : VisualElement, IContainer
     {
         _columns.Clear();
         _columns.AddRange(columns);
+        
+        SetColumnSizes();
     }
 
-    public void SetRow(VisualElement element, int row)
+    private void SetColumnSizes()
+    {
+        if (Width == 0) return;
+
+        var columns = _columns.Count;
+        var padding = (columns - 1) * CellsPadding.X;
+        
+        var sizeToDivide = Width - padding;
+
+        var columWidth = sizeToDivide / columns;
+        var remainder = sizeToDivide % columns;
+
+        for (var i = 0; i < columns; i++)
+        {
+            var width = columWidth + remainder;
+            if (remainder > 0) remainder--;
+
+            _columns[i].Width = width;
+        }
+    }
+    
+    public void SetRow(VisualComponent component, int row)
     {
         if (row > _rows.Count || row < 0)
         {
             throw new InvalidOperationException($"Invalid row index. Actual value: {row}");
         }
         
-        if (element.AutoResize) element.Resize();
+        if (component.AutoResize) component.Resize();
 
-        element.Position.Y = _rows[row].Height + Position.Y;
+        var rowPos = 0;
+        for (var i = 0; i < row; i++)
+        {
+            rowPos += _rows[i].Height;
+        }
+
+        rowPos += _rows[row].Height / 2;
+
+        component.Position.Y = rowPos + Position.Y - component.Height / 2;
     }
 
-    public void SetColumn(VisualElement element, int column)
+    public void SetColumn(VisualComponent component, int column)
     {
         if (column > _rows.Count || column < 0)
         {
             throw new InvalidOperationException($"Invalid column index. Actual value: {column}");
         }
         
-        if (element.AutoResize) element.Resize();
+        if (component.AutoResize) component.Resize();
+        
+        var columnPos = 0;
+        for (var i = 0; i < column; i++)
+        {
+            columnPos += _columns[i].Width;
+        }
 
-        element.Position.X = _columns[column].Width + Position.X;
+        columnPos += _columns[column].Width / 2;
+
+        component.Position.X = columnPos + Position.X - component.Width / 2;
     }
 
-    public void SetRowAndColumn(VisualElement element, int row, int column)
+    public void SetRowAndColumn(VisualComponent component, int row, int column)
     {
-        SetRow(element, row);
-        SetColumn(element, column);
+        SetRow(component, row);
+        SetColumn(component, column);
     }
 
-    public void SetRowSpan(VisualElement element, int rowSpan)
+    public void SetRowSpan(VisualComponent component, int rowSpan)
     {
         
     }
 
-    public void SetColumnSpan(VisualElement element, int columnSpan)
+    public void SetColumnSpan(VisualComponent component, int columnSpan)
     {
         
     }

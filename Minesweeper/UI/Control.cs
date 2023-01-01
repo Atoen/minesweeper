@@ -1,4 +1,5 @@
 ﻿using Minesweeper.ConsoleDisplay;
+using Minesweeper.UI.Events;
 
 namespace Minesweeper.UI;
 
@@ -11,13 +12,13 @@ public abstract class Control
         Input.Register(this);
     }
     
-    public IContainer? Parent { get; }
+    public IContainer? Parent { get; set; }
 
     public bool IsMouseOver { get; protected set; }
     public bool IsFocused { get; protected set; }
     public State State { get; protected set; } = State.Default;
 
-    public MouseEventMask MouseEventMask { get; protected set; } = MouseEventMask.None;
+    public MouseEventMask MouseEventMask { get; protected set; } = MouseEventMask.All;
     public bool IsEnabled => State != State.Disabled;
     public bool UsesMouseEvents => MouseEventMask != MouseEventMask.None;
     public Layer Layer { get; set; } = Layer.Foreground;
@@ -26,8 +27,12 @@ public abstract class Control
     
     public Coord Size;
     public Coord Position;
-    public Coord Center => Position + Size / 2;
-    
+    public Coord Center
+    {
+        get => Position + Size / 2;
+        set => Position = value - Size / 2;
+    }
+
     public int Width
     {
         get => Size.X;
@@ -57,59 +62,57 @@ public abstract class Control
         Input.Unregister(this);
     }
 
-    public void MouseLeftDown() => OnMouseLeftDown();
+    public delegate void MouseEventHandler(object sender, MouseEventArgs e);
+    public event MouseEventHandler? MouseEnter;
+    public event MouseEventHandler? MouseLeave;
+    public event MouseEventHandler? MouseDown;
+    public event MouseEventHandler? MouseLeftDown;
+    public event MouseEventHandler? MouseRightDown;
+    public event MouseEventHandler? MouseMove;
 
-    public void MouseExit() 
+    public virtual void OnMouseEnter(MouseEventArgs e)
     {
-        if (!IsMouseOver) return;
+        IsMouseOver = true;
 
+        MouseEnter?.Invoke(this, e);
+    }
+
+    public virtual void OnMouseExit(MouseEventArgs e)
+    {
         IsMouseOver = false;
-        OnMouseExit();
+        MouseLeave?.Invoke(this, e);
     }
 
-    public void MouseMove(MouseState state)
+    public virtual void OnMouseMove(MouseEventArgs e)
     {
-        if (!IsMouseOver)
-        {
-            IsMouseOver = true;
-            OnMouseEnter();
-        }
-        
-        OnMouseMove(state);
+        MouseMove?.Invoke(this, e);
     }
 
-    public void LostFocus()
+    public virtual void OnMouseLeftDown(MouseEventArgs e)
     {
-        IsFocused = false;
-        OnLostFocus();
+        MouseLeftDown?.Invoke(this, e);
+        MouseDown?.Invoke(this, e);
     }
 
-    public void GotFocus()
+    public virtual void OnMouseLeftUp() { }
+
+    public virtual void OnMouseRightDown(MouseEventArgs e)
+    {
+        MouseRightDown?.Invoke(this, e);
+        MouseDown?.Invoke(this, e);
+    }
+
+    public virtual void OnMouseRightUp() { }
+
+    public virtual void OnGotFocus(MouseEventArgs e)
     {
         IsFocused = true;
-        OnGotFocus();
     }
 
-    protected virtual void OnMouseLeftDown() { }
-    
-    protected virtual void OnMouseEnter()
+    public virtual void OnLostFocus(MouseEventArgs e)
     {
-        State = State.Highlighted;
+        IsFocused = false;
     }
-
-    protected virtual void OnMouseExit()
-    {
-        State = State.Default;
-    }
-
-    protected virtual void OnMouseMove(MouseState state)
-    {
-        if (state.Button == MouseButton.None) State = State.Highlighted;
-    }
-
-    protected virtual void OnGotFocus() { }
-
-    protected virtual void OnLostFocus() { }
 }
 
 public enum State
@@ -127,14 +130,6 @@ public enum MouseEventMask
     MouseMove = 1,
     MouseClick = 1 << 1,
     MouseDoubleClick = 1 << 2,
-    MouseWheel = 1 << 3
-}
-
-public static class EnumExtensions
-{
-    public static bool HasValue<T>(this T value, T flag) where T : Enum
-    {
-        var f = Convert.ToInt32(flag);
-        return (Convert.ToInt32(value) & f) == f;
-    }
+    MouseWheel = 1 << 3,
+    All = MouseMove | MouseClick | MouseDoubleClick | MouseWheel
 }

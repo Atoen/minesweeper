@@ -5,11 +5,6 @@ namespace Minesweeper.UI;
 
 public class EntryText : Content, IAnimatedText
 {
-    public static readonly EntryText Empty = new("", Color.Black)
-    {
-        Enabled = false
-    };
-
     public string Text
     {
         get => _displayingCaret ? $"{_text}{Caret}" : _text;

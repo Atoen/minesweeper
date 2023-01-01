@@ -1,4 +1,7 @@
-﻿using Minesweeper.Game;
+﻿using System.Runtime.InteropServices.ComTypes;
+using Minesweeper.ConsoleDisplay;
+using Minesweeper.Game;
+using Minesweeper.UI.Events;
 
 namespace Minesweeper.UI;
 
@@ -24,14 +27,52 @@ public static class MainMenu
         grid.SetRowDefinitions(new Row(), new Row());
         grid.SetColumnDefinitions(new Column(), new Column());
 
-        var label = new Label
+        var label2 = new Label
         {
-            Content = new Text("Label", Color.Blue),
+            Text = new Text("Label 2", Color.Blue),
             DefaultColor = Color.Red
         };
         
-        grid.SetRowAndColumn(label, 1, 1);
-        grid.Children.Add(label);
+        var label3 = new Label
+        {
+            Text = new Text("Label 3", Color.Blue),
+            DefaultColor = Color.Red,
+        };
+        
+        var label4 = new Label
+        {
+            Text = new Text("Label 4", Color.Blue),
+            DefaultColor = Color.Red,
+        };
+        
+        var label1 = new Label
+        {
+            Text = new Text("Label 1", Color.Blue),
+            DefaultColor = Color.White,
+            Layer = Layer.Top
+        };
+
+        label1.MouseMove += delegate(object _, MouseEventArgs args)
+        {
+            args.OriginalSource.Center = args.CursorPosition;
+        };
+        
+        label2.MouseMove += delegate(object _, MouseEventArgs args)
+        {
+            args.OriginalSource.Center = args.CursorPosition;
+        };
+
+        grid.SetRowAndColumn(label1, 1, 1);
+        grid.Children.Add(label1);
+        
+        grid.SetRowAndColumn(label2, 0, 1);
+        grid.Children.Add(label2);
+        
+        grid.SetRowAndColumn(label3, 1, 0);
+        grid.Children.Add(label3);
+        
+        grid.SetRowAndColumn(label4, 0, 0);
+        grid.Children.Add(label4);
     }
     
     //     var frame = new Frame(Presets.Count + 4, 4)

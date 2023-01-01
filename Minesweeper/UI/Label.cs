@@ -1,27 +1,40 @@
-﻿using Minesweeper.ConsoleDisplay;
+﻿namespace Minesweeper.UI;
 
-namespace Minesweeper.UI;
-
-public class Label : VisualElement
+public class Label : VisualComponent
 {
+    public Label()
+    {
+        _text = new Text("") {Parent = this};
+    }
+    
+    private Text _text;
+
+    public Text Text
+    {
+        get => _text;
+        set
+        {
+            _text = value;
+            _text.Parent = this;
+        }
+    }
+
     public override void Render()
     {
-        // if (Text.Animating) Text.Cycle();
-
-        Display.DrawRect(Position, Size, Color);
-        
-        Content?.Render();
-
-        // Display.Print(Center.X + TextOffset.X, Center.Y + TextOffset.Y, Text.Text, Text.Foreground,
-        //     background: Text.Background ?? Color, mode: Text.Mode);
+        base.Render();
+        _text.Render();
     }
 
     public override void Clear()
     {
-        // var textStart = Center + TextOffset + Coord.Left * (Text.Length / 2);
-        //
-        // Display.ClearRect(textStart, (Text.Length, 1));
-
         base.Clear();
+        _text.Clear();
+    }
+
+    public override void Resize()
+    {
+        var minSize = InnerPadding * 2 + _text.Size;
+        
+        Size = Size.ExpandTo(minSize);
     }
 }

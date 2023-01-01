@@ -1,4 +1,5 @@
 ﻿using Minesweeper.ConsoleDisplay;
+using Minesweeper.UI.Events;
 
 namespace Minesweeper.UI;
 
@@ -21,26 +22,16 @@ public class RadioButton : Button
         if (IsSelected) State = State.Highlighted;
     }
 
-    private void OnVariableChange()
+    private void OnVariableChange(object? sender, EventArgs eventArgs)
     {
         if (!IsSelected && IsEnabled) State = State.Default;
     }
 
-    // public override RadioButton Grid(int row, int column, int rowSpan = 1, int columnSpan = 1, GridAlignment alignment = GridAlignment.Center)
-    // {
-    //     return base.Grid<RadioButton>(row, column, rowSpan, columnSpan, alignment);
-    // }
-    //
-    // public override RadioButton Place(int posX, int posY)
-    // {
-    //     return base.Grid<RadioButton>(posX, posY);
-    // }
-    
-    protected override void OnMouseLeftDown()
+    public override void OnMouseLeftDown(MouseEventArgs e)
     {
         _variable.Val = _value;
         
-        base.OnMouseLeftDown();
+        base.OnMouseLeftDown(e);
     }
 
     public override void Render()
@@ -63,12 +54,12 @@ public sealed class Variable
         get => _val;
         set
         {
-            if (_val != value) ValueChanged?.Invoke();
+            if (_val != value) ValueChanged?.Invoke(this, EventArgs.Empty);
             _val = value;
         }
     }
 
     public Variable(int val = 0) => Val = val;
 
-    public event Action? ValueChanged;
+    public event EventHandler? ValueChanged;
 }
