@@ -18,10 +18,10 @@ public class Text : Content
         Size = new Coord(Length, 1);
     }
     
-    public Text(string text, Color foreground, Color background) : this(text, foreground)
-    {
-        Background = background;
-    }
+    public Text(string text, Color foreground, Color background) : this(text, foreground) => Background = background;
+
+    public TextMode Mode { get; set; } = TextMode.Default;
+    public Alignment Alignment { get; set; } = Alignment.Center;
 
     private string _text;
 
@@ -39,11 +39,18 @@ public class Text : Content
 
     public override void Render()
     {
-        Display.Print(Position.X, Position.Y, String, Foreground, Background ?? Parent.Color);
+        Display.Print(Position.X, Position.Y, String, Foreground, Background ?? Parent.Color, Alignment, Mode);
     }
 
     public override void Clear()
     {
-        Display.ClearRect(Position, Size);
+        var startPos = Alignment switch
+        {
+            Alignment.Left => Position,
+            Alignment.Right => new Coord(Position.X - Length, Position.Y),
+            _ => new Coord(Position.X - Length / 2, Position.Y)
+        };
+        
+        Display.ClearRect(startPos, Size);
     }
 }

@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Minesweeper.Game;
@@ -112,7 +111,7 @@ public sealed class AnsiDisplay : IRenderer
 
             Console.Write(GenerateDisplayString());
             _stringBuilder.Clear();
-
+            
             Modified = false;
         }
     }
@@ -128,7 +127,7 @@ public sealed class AnsiDisplay : IRenderer
 
             Modified = true;
             Array.Copy(_currentPixels, _lastPixels, _displaySize.X * _displaySize.Y);
-
+            
             return;
         }
     }
@@ -185,7 +184,7 @@ public sealed class AnsiDisplay : IRenderer
         {
             var pixel = _currentPixels[x, y];
 
-            // Printing the already gathered pixels if next one has different colors
+            // Printing the already gathered pixels if next one has different visual properties
             if (pixel.Fg != lastFg || pixel.Bg != lastBg || pixel.Mode != lastMode || (previousIsCleared && pixel.IsEmpty))
             {
                 if (symbolsBuilder.Length != 0)
@@ -259,29 +258,30 @@ public sealed class AnsiDisplay : IRenderer
         // Resetting the console style after full draw
         _stringBuilder.Append("\x1b[0m");
 
-        Console.Title = $"{_stringBuilder.Length}";
+        Console.Title = _stringBuilder.Length.ToString();
 
         return _stringBuilder.ToString();
     }
 
     public struct Pixel : IEquatable<Pixel>
     {
-        private const char ClearedSymbol = ' ';
-
-        internal static readonly Pixel Empty = new('\0', TextMode.Default, Color.Empty, Color.Empty);
-        internal static readonly Pixel Cleared = new(ClearedSymbol, TextMode.Default, Color.Empty, Color.Empty);
-
-        private uint _symbolData = 0;
-
         private Pixel(char symbol, TextMode mode, Color fg, Color bg)
         {
-            _symbolData = (uint) (symbol & 0xfffffff) << 8;
-            _symbolData |= (uint) ((int) mode & 0xf);
-            
+            Symbol = symbol;
+            Mode = mode;
             Fg = fg;
             Bg = bg;
         }
         
+        private const char ClearedSymbol = ' ';
+
+        public static readonly Pixel Empty = new('\0', TextMode.Default, Color.Empty, Color.Empty);
+        public static readonly Pixel Cleared = new(ClearedSymbol, TextMode.Default, Color.Empty, Color.Empty);
+
+        public TextMode Mode;
+        public char Symbol;
+
+
         public Color Fg = Color.Empty;
         public Color Bg = Color.Empty;
 
@@ -293,24 +293,12 @@ public sealed class AnsiDisplay : IRenderer
         public bool IsEmpty => Symbol == '\0' && Fg == Color.Empty && Bg == Color.Empty;
         public bool IsCleared => Symbol == ClearedSymbol && Fg == Color.Empty && Bg == Color.Empty;
 
-        public char Symbol
-        {
-            get => (char) ((_symbolData >> 8) & 0xfffffff);
-            set => _symbolData = (_symbolData & 0xff) | (uint) (value & 0xfffffff) << 8;
-        }
-
-        public TextMode Mode
-        {
-            get => (TextMode) (_symbolData & 0xff);
-            set => _symbolData = (_symbolData & ~(uint) 0xff) | (uint) value & 0xff;
-        }
-        
         public static implicit operator Pixel(TileDisplay tileDisplay) =>
             new(tileDisplay.Symbol, TextMode.Default, tileDisplay.Foreground, tileDisplay.Background);
 
         public static bool operator ==(Pixel a, Pixel b)
         {
-            return a.Fg == b.Fg && a.Bg == b.Bg && a._symbolData == b._symbolData;
+            return a.Fg == b.Fg && a.Bg == b.Bg && a.Symbol == b.Symbol && a.Mode == b.Mode;
         }
 
         public static bool operator !=(Pixel a, Pixel b)
@@ -318,19 +306,19 @@ public sealed class AnsiDisplay : IRenderer
             return !(a == b);
         }
 
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Symbol, Fg, Bg);
+        }
+
         public bool Equals(Pixel other)
         {
-            return _symbolData == other._symbolData && Fg.Equals(other.Fg) && Bg.Equals(other.Bg);
+            return Mode == other.Mode && Symbol == other.Symbol && Fg.Equals(other.Fg) && Bg.Equals(other.Bg);
         }
 
         public override bool Equals(object? obj)
         {
             return obj is Pixel other && Equals(other);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Symbol, Fg, Bg);
         }
     }
 }

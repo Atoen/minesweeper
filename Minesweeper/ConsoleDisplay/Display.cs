@@ -65,11 +65,9 @@ public static class Display
         }
     }
 
-    public static void Draw(Coord pos, TileDisplay tileDisplay) =>
-        _renderer.Draw(pos.X, pos.Y, tileDisplay);
+    public static void Draw(Coord pos, TileDisplay tileDisplay) => _renderer.Draw(pos.X, pos.Y, tileDisplay);
 
-    public static void Draw(int posX, int posY, TileDisplay tileDisplay) =>
-        _renderer.Draw(posX, posY, tileDisplay);
+    public static void Draw(int posX, int posY, TileDisplay tileDisplay) => _renderer.Draw(posX, posY, tileDisplay);
 
     public static void Draw(int posX, int posY, char symbol, Color foreground, Color background) =>
         _renderer.Draw(posX, posY, symbol, foreground, background);

@@ -2,7 +2,7 @@
 
 namespace Minesweeper.UI;
 
-public abstract class VisualComponent : Control, IRenderable
+public abstract class VisualComponent : Component, IRenderable
 {
     protected VisualComponent(bool renderOnItsOwn = false)
     {
@@ -10,22 +10,11 @@ public abstract class VisualComponent : Control, IRenderable
         {
             Display.AddToRenderList(this);
         }
+        
+        PositionChanged += OnPositionChanged;
     }
 
-    private Content? _content;
-    public Content? Content
-    {
-        get => _content;
-        set
-        {
-            _content = value;
-            if (_content == null) return;
-            
-            _content.Parent = this;
-        }
-    }
-    
-    public Coord ContentOffset = Coord.Zero;
+    public Layer Layer { get; set; } = Layer.Foreground;
 
     public Color DefaultColor { get; set; } = Color.Aqua;
     public Color HighlightedColor { get; set; } = Color.Blue;
@@ -34,41 +23,45 @@ public abstract class VisualComponent : Control, IRenderable
     public Coord InnerPadding = new(1, 1);
     public Coord OuterPadding = Coord.Zero;
 
+    public int PaddedWidth => Width + OuterPadding.X * 2;
+    public int PaddedHeight => Height + OuterPadding.Y * 2;
+
     public Coord PaddedSize => Size + OuterPadding * 2;
     
-    public Color Color => State switch
+    public Color Color
     {
-        State.Pressed => PressedColor,
-        State.Highlighted => HighlightedColor,
-        State.Disabled => DefaultColor.Dimmer(),
-        _ => DefaultColor
-    };
+        get
+        {
+            if (!Enabled) return DefaultColor.Dimmer();
+            
+            return State switch
+            {
+                State.Pressed => PressedColor,
+                State.Highlighted => HighlightedColor,
+                _ => DefaultColor
+            };
+        }
+    }
+
+    private void OnPositionChanged(object? sender, PositionChangedEventArgs e)
+    {
+        Display.ClearRect(e.OldPosition, Size);
+    }
     
+    public virtual void Resize() { }
+
     public virtual void Render()
     {
         Display.DrawRect(Position, Size, Color);
-        Content?.Render();
     }
 
     public virtual void Clear()
     {
         Display.ClearRect(Position, Size);
-        Content?.Clear();
     }
 
-    public override void Remove()
+    public virtual void Remove()
     {
         Display.RemoveFromRenderList(this);
-        Parent?.Children.Remove(this);
-
-        base.Remove();
-    }
-
-    public virtual void Resize()
-    {
-        var minSize = InnerPadding * 2;
-        if (Content is not null) minSize += Content.Size;
-
-        Size = Size.ExpandTo(minSize);
     }
 }

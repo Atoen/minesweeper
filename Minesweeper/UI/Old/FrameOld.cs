@@ -1,10 +1,10 @@
-﻿namespace Minesweeper.UI;
+﻿namespace Minesweeper.UI.Old;
 
-public class Frame
+public class FrameOld
 {
     private record WidgetEntry(Widget Widget, Coord GridPos, Coord GridSpan);
     
-    private readonly GridUi _grid;
+    private readonly GridUiOld _grid;
     private readonly List<WidgetEntry> _widgets = new();
     private readonly Coord _padding;
     private Coord _pos = Coord.Zero;
@@ -19,12 +19,12 @@ public class Frame
         }
     }
 
-    public Frame(int rows, int columns, int paddingX = 1, int paddingY = 1)
+    public FrameOld(int rows, int columns, int paddingX = 1, int paddingY = 1)
     {
         _padding.X = paddingX;
         _padding.Y = paddingY;
         
-        _grid = new GridUi(rows, columns)
+        _grid = new GridUiOld(rows, columns)
         {
             InnerPadding = _padding
         };
@@ -36,7 +36,7 @@ public class Frame
 
         var multiCell = rowSpan != 1 || columnSpan != 1;
 
-        if (widget.Fill != FillMode.None && !multiCell)
+        if (widget.ResizeMode != ResizeMode.None && !multiCell)
         {
             FillWidget(widget, _grid[row, column].Size);
         }
@@ -127,25 +127,25 @@ public class Frame
 
     private void FillWidget(Widget widget, Coord cellSize)
     {
-        switch (widget.Fill)
+        switch (widget.ResizeMode)
         {
-            case FillMode.Vertical:
+            case ResizeMode.Vertical:
                 widget.Height = Math.Max(widget.Height, cellSize.Y);
                 break;
             
-            case FillMode.Horizontal:
+            case ResizeMode.Horizontal:
                 widget.Width = Math.Max(widget.Width, cellSize.X);
                 break;
             
-            case FillMode.Both:
+            case ResizeMode.Both:
                 widget.Size = widget.Size.ExpandTo(cellSize);
                 break;
             
-            case FillMode.None:
+            case ResizeMode.None:
                 break;
             
             default:
-                throw new ArgumentOutOfRangeException(nameof(widget), widget.Fill, null);
+                throw new ArgumentOutOfRangeException(nameof(widget), widget.ResizeMode, null);
         }
     }
 

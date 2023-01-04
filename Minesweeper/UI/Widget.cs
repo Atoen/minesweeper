@@ -4,25 +4,8 @@ namespace Minesweeper.UI;
 
 public abstract class Widget : Control, IRenderable
 {
-    public Color DefaultColor { get; set; } = Color.Aqua;
-    public Color HighlightedColor { get; set; } = Color.Blue;
-    public Color PressedColor { get; set; } = Color.White;
-    
-    public Color Color => State switch
-    {
-        State.Pressed => PressedColor,
-        State.Highlighted => HighlightedColor,
-        State.Disabled => DefaultColor.Dimmer(),
-        _ => DefaultColor
-    };
-    
-    public FillMode Fill { get; init; } = FillMode.None;
-    
-    public Coord InnerPadding = new(1, 1);
-    public Coord OuterPadding = Coord.Zero;
-    
-    public Coord PaddedSize => Size + OuterPadding * 2;
-    
+    public ResizeMode ResizeMode { get; init; } = ResizeMode.None;
+
     // public abstract Widget Grid(int row, int column, int rowSpan = 1, int columnSpan = 1,
     //     GridAlignment alignment = GridAlignment.Center);
 
@@ -51,18 +34,6 @@ public abstract class Widget : Control, IRenderable
     //     //
     //     // return this as T ?? throw new InvalidOperationException();
     // }
-
-    public virtual void Render()
-    {
-        Display.DrawRect(Position, Size, Color);
-    }
-    
-    public virtual void Clear()
-    {
-        Display.ClearRect(Position, Size);
-    }
-
-    protected abstract void Resize();
 
     public override void Remove()
     {

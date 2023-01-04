@@ -40,12 +40,12 @@ public class Canvas : Widget
         Display.ClearRect(Position, Size);
     }
 
-    protected override void Resize()
-    {
-        var minSize = new Coord(_drawable.Width, _drawable.Height);
-    
-        Size = Size.ExpandTo(minSize);
-    }
+    // protected override void Resize()
+    // {
+    //     var minSize = new Coord(_drawable.Width, _drawable.Height);
+    //
+    //     Size = Size.ExpandTo(minSize);
+    // }
 }
 
 public interface IDrawable

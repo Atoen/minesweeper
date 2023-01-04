@@ -1,65 +1,21 @@
-﻿using Minesweeper.ConsoleDisplay;
-using Minesweeper.UI.Events;
+﻿using Minesweeper.UI.Events;
 
 namespace Minesweeper.UI;
 
-public abstract class Control
+public abstract class Control : VisualComponent
 {
-    protected Control(IContainer? parent = null)
+    protected Control(bool renderOnItsOwn = false) : base(renderOnItsOwn)
     {
-        Parent = parent;
-        
         Input.Register(this);
     }
-    
-    public IContainer? Parent { get; set; }
 
     public bool IsMouseOver { get; protected set; }
     public bool IsFocused { get; protected set; }
-    public State State { get; protected set; } = State.Default;
-
-    public MouseEventMask MouseEventMask { get; protected set; } = MouseEventMask.All;
-    public bool IsEnabled => State != State.Disabled;
-    public bool UsesMouseEvents => MouseEventMask != MouseEventMask.None;
-    public Layer Layer { get; set; } = Layer.Foreground;
     
-    public bool AutoResize { get; init; } = true;
-    
-    public Coord Size;
-    public Coord Position;
-    public Coord Center
-    {
-        get => Position + Size / 2;
-        set => Position = value - Size / 2;
-    }
-
-    public int Width
-    {
-        get => Size.X;
-        set => Size.X = value;
-    }
-
-    public int Height
-    {
-        get => Size.Y;
-        set => Size.Y = value;
-    }
-    
-    public void SetEnabled(bool enabled)
-    {
-        if (State == State.Disabled && enabled) State = State.Default;
-        else if (!enabled) State = State.Disabled;
-    }
-    
-    public bool ContainsPoint(Coord pos)
-    {
-        return pos.X >= Position.X && pos.X < Position.X + Width &&
-               pos.Y >= Position.Y && pos.Y < Position.Y + Height;
-    }
-    
-    public virtual void Remove()
+    public override void Remove()
     {
         Input.Unregister(this);
+        base.Remove();
     }
 
     public delegate void MouseEventHandler(object sender, MouseEventArgs e);
@@ -113,23 +69,4 @@ public abstract class Control
     {
         IsFocused = false;
     }
-}
-
-public enum State
-{
-    Default,
-    Highlighted,
-    Pressed,
-    Disabled
-}
-
-[Flags]
-public enum MouseEventMask
-{
-    None = 0,
-    MouseMove = 1,
-    MouseClick = 1 << 1,
-    MouseDoubleClick = 1 << 2,
-    MouseWheel = 1 << 3,
-    All = MouseMove | MouseClick | MouseDoubleClick | MouseWheel
 }

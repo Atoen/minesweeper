@@ -1,6 +1,6 @@
 ﻿namespace Minesweeper.UI;
 
-public class Label : VisualComponent
+public class Label : ContentControl
 {
     public Label()
     {
@@ -8,7 +8,6 @@ public class Label : VisualComponent
     }
     
     private Text _text;
-
     public Text Text
     {
         get => _text;
@@ -36,5 +35,7 @@ public class Label : VisualComponent
         var minSize = InnerPadding * 2 + _text.Size;
         
         Size = Size.ExpandTo(minSize);
+        
+        base.Resize();
     }
 }

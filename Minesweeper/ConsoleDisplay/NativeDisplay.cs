@@ -138,11 +138,12 @@ public sealed class NativeDisplay : IRenderer
             Debug.WriteLine("Modified");
             
             WriteConsoleOutput(_fileHandle, _currentBuffer, _displaySize, _startPos, ref _screenRect);
+
             Modified = false;
         }
     }
 
-    public void ResetStyle() { }
+    public void ResetStyle() => Console.ResetColor();
 
     private unsafe void CopyToBuffer()
     {

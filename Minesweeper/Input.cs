@@ -98,15 +98,19 @@ public static class Input
 
         void Miss(Control control, MouseButton button)
         {
-            var args = CreateMouseArgs(MouseState, control);
-            
-            if (control is {IsMouseOver: true, IsEnabled: true} &&
-                control.MouseEventMask.HasValue(MouseEventMask.MouseMove))
+            MouseEventArgs? args = null;
+
+            if (control is {IsMouseOver: true, Enabled: true})
             {
+                args = CreateMouseArgs(MouseState, control);
                 control.OnMouseExit(args);
             }
 
-            if (control.IsFocused && button.HasValue(MouseButton.Left)) control.OnLostFocus(args);
+            if (control.IsFocused && button.HasValue(MouseButton.Left))
+            {
+                args ??= CreateMouseArgs(MouseState, control);
+                control.OnLostFocus(args);
+            }
         }
 
         lock (LockObject)
@@ -128,30 +132,25 @@ public static class Input
             }
         }
 
-        if (hit is null || !hit.UsesMouseEvents || !hit.IsEnabled) return;
+        if (hit is null || !hit.Enabled) return;
 
         var args = CreateMouseArgs(MouseState, hit);
 
-        if (hit.MouseEventMask.HasValue(MouseEventMask.MouseClick) && _lastMouseButton == 0)
+        if (MouseState.Buttons.HasValue(MouseButton.Left))
         {
-            if (MouseState.Buttons.HasValue(MouseButton.Left))
-            {
-                hit.OnMouseLeftDown(args);
-                hit.OnGotFocus(args);
-            }
+            hit.OnMouseLeftDown(args);
+            hit.OnGotFocus(args);
+        }
 
-            if (MouseState.Buttons.HasValue(MouseButton.Right))
-            {
-                
-            }
+        if (MouseState.Buttons.HasValue(MouseButton.Right))
+        {
+            hit.OnMouseRightDown(args);
         }
 
         _lastMouseButton = mouseRecord.ButtonState;
 
-        if (!hit.MouseEventMask.HasValue(MouseEventMask.MouseMove)) return;
-        
         if (!hit.IsMouseOver) hit.OnMouseEnter(args);
-            
+
         hit.OnMouseMove(args);
     }
     
@@ -175,7 +174,7 @@ public static class Input
 
     internal static void Stop() => _running = false;
 
-    #region NativeMethods
+    #region Native Methods
 
     private const uint StdInputHandle = unchecked((uint) -10);
 

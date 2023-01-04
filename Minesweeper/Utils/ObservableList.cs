@@ -1,24 +1,17 @@
 ﻿namespace Minesweeper.Utils;
 
-public static class EnumExtensions
+public class ObservableList<T> : List<T>
 {
-    public static bool HasValue<T>(this T value, T flag) where T : Enum
-    {
-        var f = Convert.ToInt32(flag);
-        return (Convert.ToInt32(value) & f) == f;
-    }
-}
-
-public sealed class ObservableList<T> : List<T>
-{
-    public event EventHandler<CollectionChangedEventArgs<T>>? Changed;
+    public event EventHandler<CollectionChangedEventArgs<T>>? ElementChanged;
+    public event EventHandler? CollectionChanged; 
 
     public new void Add(T item)
     {
         base.Add(item);
 
         var args = new CollectionChangedEventArgs<T>(ChangeType.Add, item);
-        Changed?.Invoke(this, args);
+        ElementChanged?.Invoke(this, args);
+        CollectionChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public new bool Remove(T item)
@@ -28,7 +21,8 @@ public sealed class ObservableList<T> : List<T>
         if (result)
         {
             var args = new CollectionChangedEventArgs<T>(ChangeType.Remove, item);
-            Changed?.Invoke(this, args);
+            ElementChanged?.Invoke(this, args);
+            CollectionChanged?.Invoke(this, EventArgs.Empty);
         }
 
         return result;
@@ -36,26 +30,42 @@ public sealed class ObservableList<T> : List<T>
 
     public new void AddRange(IEnumerable<T> collection)
     {
-        var items = collection.ToList();
-        base.AddRange(items);
+        var newItems = collection.ToList();
+        base.AddRange(newItems);
 
-        foreach (var item in items)
+        if (newItems.Count > 0)
+        {
+            CollectionChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        foreach (var item in newItems)
         {
             var args = new CollectionChangedEventArgs<T>(ChangeType.Add, item);
-            Changed?.Invoke(this, args);
+            ElementChanged?.Invoke(this, args);
         }
     }
 
     public new void Clear()
     {
         var items = this as List<T>;
+
+        if (Count > 0)
+        {
+            CollectionChanged?.Invoke(this, EventArgs.Empty);
+        }
+        
         base.Clear();
 
         foreach (var item in items)
         {
             var args = new CollectionChangedEventArgs<T>(ChangeType.Remove, item);
-            Changed?.Invoke(this, args);
+            ElementChanged?.Invoke(this, args);
         }
+    }
+
+    protected void OnCollectionChanged()
+    {
+        CollectionChanged?.Invoke(this, EventArgs.Empty);
     }
 }
 

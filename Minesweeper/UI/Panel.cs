@@ -7,49 +7,58 @@ namespace Minesweeper.UI;
 
 public class Panel : Control, IContainer
 {
-    public ObservableList<VisualComponent> Children { get; } = new();
-
-    public Panel(IContainer? parent = null) : base(parent)
-    {
-        
-    }
+    public ObservableList<Control> Children { get; } = new();
+    
 }
 
-public class Grid : VisualComponent, IContainer
+public class Grid2 : VisualComponent, IContainer
 {
-    public Grid() : base(true)
+    public Grid2() : base(true)
     {
         Layer = Layer.Background;
         
-        Children.Changed += OnChildrenChanged;
+        Children.ElementChanged += OnChildrenElementChanged;
     }
 
-    private void OnChildrenChanged(object? sender, CollectionChangedEventArgs<VisualComponent> e)
+    public ObservableList<Control> Children { get; } = new();
+
+    private readonly RowCollection2 _rows = new();
+    private readonly ColumnCollection2 _columns = new();
+    private Coord _cellsPadding = new(1, 1);
+
+    public VerticalAlignment VerticalAlignment { get; set; } = VerticalAlignment.Middle;
+    public HorizontalAlignment HorizontalAlignment { get; set; } = HorizontalAlignment.Middle;
+    
+    public bool ShowGridLines { get; set; }
+
+    public Coord CellsPadding
+    {
+        get => _cellsPadding;
+        set
+        {
+            _cellsPadding = value;
+            _columns.Padding = value.X;
+            _rows.Padding = value.Y;
+        }
+    }
+
+    public ResizeMode ResizeMode { get; set; } = ResizeMode.Both;
+    
+    private void OnChildrenElementChanged(object? sender, CollectionChangedEventArgs<Control> e)
     {
         e.Element.Parent = e.ChangeType == ChangeType.Add ? this : null;
         
         Children.Sort((c1, c2) => c1.Layer.CompareTo(c2.Layer));
     }
 
-    public ObservableList<VisualComponent> Children { get; } = new();
-
-    private readonly List<Row> _rows = new();
-    private readonly List<Column> _columns = new();
-
-    public VerticalAlignment VerticalAlignment { get; set; } = VerticalAlignment.Middle;
-    public HorizontalAlignment HorizontalAlignment { get; set; } = HorizontalAlignment.Middle;
-    
-    public bool ShowGridLines { get; set; }
-    public Coord CellsPadding = new(1, 1);
-
-    public void SetRowDefinitions(params Row[] rows)
+    public void SetRowDefinitions(params Row2[] rows)
     {
         _rows.Clear();
         _rows.AddRange(rows);
         
         SetRowSizes();
     }
-
+    
     private void SetRowSizes()
     {
         if (Height == 0) return;
@@ -71,7 +80,7 @@ public class Grid : VisualComponent, IContainer
         }
     }
 
-    public void SetColumnDefinitions(params Column[] columns)
+    public void SetColumnDefinitions(params Column2[] columns)
     {
         _columns.Clear();
         _columns.AddRange(columns);
@@ -99,49 +108,74 @@ public class Grid : VisualComponent, IContainer
             _columns[i].Width = width;
         }
     }
-    
-    public void SetRow(VisualComponent component, int row)
+
+    private void ResizeContent()
     {
-        if (row > _rows.Count || row < 0)
+        Width = _columns.Width;
+        Height = _rows.Height;
+    }
+    
+    public void SetRow(VisualComponent component, int rowIndex)
+    {
+        if (rowIndex > _rows.Count || rowIndex < 0)
         {
-            throw new InvalidOperationException($"Invalid row index. Actual value: {row}");
+            throw new InvalidOperationException($"Invalid row index. Actual value: {rowIndex}");
         }
         
         if (component.AutoResize) component.Resize();
 
+        var selectedRow = _rows[rowIndex];
+        if (selectedRow.Height < component.PaddedHeight && ResizeMode is ResizeMode.Both or ResizeMode.Horizontal)
+        {
+            selectedRow.Height = component.PaddedHeight;
+            ResizeContent();
+        } 
+
         var rowPos = 0;
-        for (var i = 0; i < row; i++)
+        for (var i = 0; i < rowIndex; i++)
         {
             rowPos += _rows[i].Height;
         }
 
-        rowPos += _rows[row].Height / 2;
+        rowPos += _rows[rowIndex].Height / 2;
 
-        component.Position.Y = rowPos + Position.Y - component.Height / 2;
+        // component.Position.Y = rowPos + Position.Y - component.Height / 2;
+        //
+        // component.Position.Y = _rows.PositionOf(rowIndex) + Position.Y;
     }
 
-    public void SetColumn(VisualComponent component, int column)
+    public void SetColumn(VisualComponent component, int columnIndex)
     {
-        if (column > _rows.Count || column < 0)
+        if (columnIndex > _rows.Count || columnIndex < 0)
         {
-            throw new InvalidOperationException($"Invalid column index. Actual value: {column}");
+            throw new InvalidOperationException($"Invalid column index. Actual value: {columnIndex}");
         }
         
         if (component.AutoResize) component.Resize();
+
+        var selectedColumn = _columns[columnIndex];
+        if (selectedColumn.Width < component.PaddedWidth && ResizeMode is ResizeMode.Both or ResizeMode.Vertical)
+        {
+            selectedColumn.Width = component.PaddedWidth;
+            
+            ResizeContent();
+        } 
         
         var columnPos = 0;
-        for (var i = 0; i < column; i++)
+        for (var i = 0; i < columnIndex; i++)
         {
             columnPos += _columns[i].Width;
         }
 
-        columnPos += _columns[column].Width / 2;
+        columnPos += selectedColumn.Width / 2;
 
-        component.Position.X = columnPos + Position.X - component.Width / 2;
+        // component.Position.X = columnPos + Position.X - component.Width / 2;
     }
 
-    public void SetRowAndColumn(VisualComponent component, int row, int column)
+    public void SetRowAndColumn(Control component, int row, int column)
     {
+        if (!Children.Contains(component)) Children.Add(component);
+        
         SetRow(component, row);
         SetColumn(component, column);
     }
@@ -177,15 +211,59 @@ public class Grid : VisualComponent, IContainer
     }
 }
 
-public class Row
+public class RowCollection2 : List<Row2>
+{
+    public int Padding { get; set; } = 1;
+    public int Height => this.Sum(row => row.Height) + PaddingCount * Padding;
+    public int PaddingCount => Count > 0 ? Count - 1 : 0;
+    
+    public int PositionOf(int index)
+    {
+        if (index >= Count || index < 0) throw new IndexOutOfRangeException();
+
+        var xPos = this.Take(index).Sum(row => row.Height);
+        if (index > 0) xPos += (index - 1) * Padding;
+
+        return xPos;
+    }
+
+}
+
+public class Row2
 {
     public int Height = 0;
 }
 
-public class Column
+public class ColumnCollection2 : List<Column2>
+{
+    public int Padding { get; set; } = 1;
+    public int Width => this.Sum(column => column.Width) + PaddingCount * Padding;
+    public int PaddingCount => Count > 0 ? Count - 1 : 0;
+
+    public int PositionOf(int index)
+    {
+        if (index >= Count || index < 0) throw new IndexOutOfRangeException();
+
+        var yPos = this.Take(index).Sum(column => column.Width);
+        if (index > 0) yPos += (index - 1) * Padding;
+
+        return yPos;
+    }
+}
+
+
+public class Column2
 {
     public int Width = 0;
 }
+
+public enum GridUnitType
+{
+    Auto,
+    Pixel,
+    Weighted
+}
+
 
 public enum HorizontalAlignment
 {
@@ -201,7 +279,7 @@ public enum VerticalAlignment
     Middle
 }
 
-public enum FillMode
+public enum ResizeMode
 {
     None,
     Vertical,

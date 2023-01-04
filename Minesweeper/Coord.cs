@@ -16,7 +16,7 @@ public record struct Coord(int X, int Y)
 
     [Pure]
     public Coord ExpandTo(Coord other) => new(Math.Max(X, other.X), Math.Max(Y, other.Y));
-
+    
     public static implicit operator Coord((int x, int y) v) => new(v.x, v.y);
 
     public static Coord operator +(Coord a, Coord b) => new(a.X + b.X, a.Y + b.Y);
@@ -32,5 +32,4 @@ public record struct Coord(int X, int Y)
     public static Coord operator +(Coord a) => a;
 
     public override string ToString() => $"({X} {Y})";
-
 }

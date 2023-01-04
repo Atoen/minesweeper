@@ -1,13 +1,13 @@
-﻿namespace Minesweeper.UI;
+﻿namespace Minesweeper.UI.Old;
 
-public sealed class GridUi
+public sealed class GridUiOld
 {
     private readonly Cell[,] _cells;
     public Coord InnerPadding;
 
     public Coord Pos = Coord.Zero;
 
-    public GridUi(int rows, int columns)
+    public GridUiOld(int rows, int columns)
     {
         _cells = new Cell[rows, columns];
     }

@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices.ComTypes;
-using Minesweeper.ConsoleDisplay;
+﻿using Minesweeper.ConsoleDisplay;
 using Minesweeper.Game;
 using Minesweeper.UI.Events;
 
@@ -18,61 +17,43 @@ public static class MainMenu
     {
         var grid = new Grid
         {
-            Width = 30,
-            Height = 10,
-            ShowGridLines = true,
-            Position = new Coord(5, 5)
+            Width = 10,
+            Height = 8,
+            Position = new Coord(5, 5),
+            ShowGridLines = true
+        };
+        
+        grid.Columns.Add(new Column());
+        grid.Rows.Add(new Row());
+
+        var label = new Label
+        {
+            DefaultColor = Color.Orange,
+            Text = new Text(nameof(Label))
         };
 
-        grid.SetRowDefinitions(new Row(), new Row());
-        grid.SetColumnDefinitions(new Column(), new Column());
-
-        var label2 = new Label
+        var button = new Button
         {
-            Text = new Text("Label 2", Color.Blue),
-            DefaultColor = Color.Red
-        };
-        
-        var label3 = new Label
-        {
-            Text = new Text("Label 3", Color.Blue),
-            DefaultColor = Color.Red,
-        };
-        
-        var label4 = new Label
-        {
-            Text = new Text("Label 4", Color.Blue),
-            DefaultColor = Color.Red,
-        };
-        
-        var label1 = new Label
-        {
-            Text = new Text("Label 1", Color.Blue),
-            DefaultColor = Color.White,
+            DefaultColor = Color.Orchid,
+            Text = new Text("Button"),
             Layer = Layer.Top
         };
 
-        label1.MouseMove += delegate(object _, MouseEventArgs args)
+        label.MouseLeftDown += delegate
         {
-            args.OriginalSource.Center = args.CursorPosition;
+            var pos = grid.Position;
+            pos.X++;
+
+            grid.Position = pos;
         };
         
-        label2.MouseMove += delegate(object _, MouseEventArgs args)
+        label.MouseRightDown += delegate(object sender, MouseEventArgs args)
         {
-            args.OriginalSource.Center = args.CursorPosition;
+            label.Content = null;
         };
 
-        grid.SetRowAndColumn(label1, 1, 1);
-        grid.Children.Add(label1);
-        
-        grid.SetRowAndColumn(label2, 0, 1);
-        grid.Children.Add(label2);
-        
-        grid.SetRowAndColumn(label3, 1, 0);
-        grid.Children.Add(label3);
-        
-        grid.SetRowAndColumn(label4, 0, 0);
-        grid.Children.Add(label4);
+        label.Content = button;
+        grid.SetColumnAndRow(label, 0, 0);
     }
     
     //     var frame = new Frame(Presets.Count + 4, 4)

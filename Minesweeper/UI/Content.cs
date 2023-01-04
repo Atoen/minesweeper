@@ -6,7 +6,7 @@ public abstract class Content : IRenderable
 {
     public Coord Size { get; protected set; }
 
-    public Coord Position => Parent.Center + Parent.ContentOffset;
+    public Coord Position => Parent.Center;
     
     public Color Foreground { get; set; }
     public Color? Background { get; set; }

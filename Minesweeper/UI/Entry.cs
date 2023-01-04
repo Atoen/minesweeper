@@ -18,7 +18,7 @@ public class Entry : Widget
 
     public override void Render()
     {
-        if (_inEntryMode && State != State.Disabled) Text.Cycle();
+        if (_inEntryMode && Enabled) Text.Cycle();
 
         Display.DrawRect(Position, Size, Color);
         
@@ -35,7 +35,7 @@ public class Entry : Widget
 
     private void KeyEvent(KeyboardState obj)
     {
-        if (!_inEntryMode || !obj.Pressed || State == State.Disabled) return;
+        if (!_inEntryMode || !obj.Pressed || !Enabled) return;
 
         if (obj.Key == ConsoleKey.Enter)
         {
@@ -86,12 +86,12 @@ public class Entry : Widget
         base.OnLostFocus(e);
     }
 
-    protected override void Resize()
-    {
-        var minSize = new Coord(MaxTextLenght + 1 + 2 * InnerPadding.X, 1 + 2 * InnerPadding.Y);
-
-        Size = Size.ExpandTo(minSize);
-    }
+    // protected override void Resize()
+    // {
+    //     var minSize = new Coord(MaxTextLenght + 1 + 2 * InnerPadding.X, 1 + 2 * InnerPadding.Y);
+    //
+    //     Size = Size.ExpandTo(minSize);
+    // }
 
     private bool CheckIfAllowed(char symbol)
     {

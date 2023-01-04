@@ -3,25 +3,16 @@ using Minesweeper.UI.Events;
 
 namespace Minesweeper.UI;
 
-public class DialogWindow : Control, IRenderable
+public class DialogWindow : Control
 {
-    public DialogWindow(IContainer parent) : base(parent)
+    public DialogWindow()
     {
-        MouseEventMask = MouseEventMask.MouseClick | MouseEventMask.MouseMove;
         Layer = Layer.Top;
         
         Position = new Coord(4, 5);
         Size = new Coord(16, 5);
-    }
-    
-    public void Render()
-    {
-        Display.DrawRect(Position, Size, Color.Red);
-    }
-
-    public void Clear()
-    {
-        Display.ClearRect(Position, Size);
+        
+        DefaultColor = Color.Red;
     }
 
     public override void OnMouseLeftDown(MouseEventArgs e)

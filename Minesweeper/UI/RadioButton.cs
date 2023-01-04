@@ -24,7 +24,7 @@ public class RadioButton : Button
 
     private void OnVariableChange(object? sender, EventArgs eventArgs)
     {
-        if (!IsSelected && IsEnabled) State = State.Default;
+        if (!IsSelected && Enabled) State = State.Default;
     }
 
     public override void OnMouseLeftDown(MouseEventArgs e)
@@ -36,7 +36,7 @@ public class RadioButton : Button
 
     public override void Render()
     {
-        AnimatedText.Mode = IsSelected ? SelectedTextMode : TextMode.Default;
+        // AnimatedText.Mode = IsSelected ? SelectedTextMode : TextMode.Default;
 
         if (IsSelected && State == State.Default) State = State.Highlighted;
         else if (!IsSelected && !IsMouseOver) State = State.Default;
