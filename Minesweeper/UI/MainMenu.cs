@@ -28,15 +28,12 @@ public static class MainMenu
 
         var label = new Label
         {
-            DefaultColor = Color.Orange,
-            Text = new Text(nameof(Label))
+            DefaultColor = Color.Orange
         };
 
         var button = new Button
         {
-            DefaultColor = Color.Orchid,
-            Text = new Text("Button"),
-            Layer = Layer.Top
+            DefaultColor = Color.Orchid
         };
 
         label.MouseLeftDown += delegate
@@ -47,13 +44,17 @@ public static class MainMenu
             grid.Position = pos;
         };
         
-        label.MouseRightDown += delegate(object sender, MouseEventArgs args)
+        label.MouseRightDown += delegate
         {
             label.Content = null;
         };
 
         label.Content = button;
+        var label2 = new Label();
+        label.Content = label2;
+        
         grid.SetColumnAndRow(label, 0, 0);
+
     }
     
     //     var frame = new Frame(Presets.Count + 4, 4)

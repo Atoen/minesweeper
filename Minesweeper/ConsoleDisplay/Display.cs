@@ -52,7 +52,7 @@ public static class Display
             Renderables.Add(renderable);
             
             // Placing foreground and top renderables later so they don't get covered by background
-            Renderables.Sort((r1, r2) => r1.Layer.CompareTo(r2.Layer));
+            Renderables.Sort((r1, r2) => r1.ZIndex.CompareTo(r2.ZIndex));
         }
     }
 
@@ -186,11 +186,4 @@ public enum TextMode
     Strikethrough = 1 << 3,
     DoubleUnderline = 1 << 4,
     Overline = 1 << 5
-}
-
-public enum Layer
-{
-    Background = 0,
-    Foreground = 1,
-    Top = 2
 }

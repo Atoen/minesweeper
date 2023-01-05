@@ -1,10 +1,15 @@
-﻿namespace Minesweeper.UI;
+﻿using Minesweeper.ConsoleDisplay;
+
+namespace Minesweeper.UI;
 
 public class Label : ContentControl
 {
     public Label()
     {
-        _text = new Text("") {Parent = this};
+        _text = new Text(nameof(Label))
+        {
+            Parent = this
+        };
     }
     
     private Text _text;
@@ -22,6 +27,12 @@ public class Label : ContentControl
     {
         base.Render();
         _text.Render();
+    }
+    
+    public override void Remove()
+    {
+        Display.RemoveFromRenderList(this);
+        Display.RemoveFromRenderList(_text);
     }
 
     public override void Clear()

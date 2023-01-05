@@ -2,31 +2,38 @@
 
 public abstract class ContentControl : Control, IContent
 {
-    protected ContentControl(bool renderOnItsOwn = false) : base(renderOnItsOwn) { }
-    
     private Control? _content;
 
     public Control? Content
     {
         get => _content;
-        set
-        {
-            if (value is null)
-            {
-                if (_content != null) _content.Parent = null;
-                
-                _content?.Remove();
-            }
-            
-            _content = value;
-            
-            if (_content is null) return;
-            
-            _content.Parent = this;
+        set => SetContent(value);
+    }
 
-            if (_content.AutoResize) _content.Resize();
-            if (AutoResize) Resize();
+    private void SetContent(Control? value)
+    {
+        if (value == this)
+        {
+            throw new InvalidOperationException("Control cannot be its own content.");
         }
+
+        if (_content != null)
+        {
+            _content.Parent = null;
+            _content.Remove();
+        }
+        
+        if (value is null)
+        {
+            _content = null;
+            return;
+        }
+
+        _content = value;
+        _content.Parent = this;
+
+        if (_content.AutoResize) _content.Resize();
+        if (AutoResize) Resize();
     }
 
     public override void Render()
@@ -44,9 +51,15 @@ public abstract class ContentControl : Control, IContent
     public override void Resize()
     {
         var minSize = InnerPadding * 2;
-        if (Content is not null) minSize += Content.PaddedSize;
+        if (Content is not null)
+        {
+            minSize += Content.PaddedSize;
+            Content.Position = InnerPadding;
+        }
     
         Size = Size.ExpandTo(minSize);
+        
+        if (Parent is {AutoResize: true}) Parent.Resize();
     }
 }
 

@@ -4,18 +4,13 @@ namespace Minesweeper.UI;
 
 public abstract class VisualComponent : Component, IRenderable
 {
-    protected VisualComponent(bool renderOnItsOwn = false)
+    protected VisualComponent()
     {
-        if (renderOnItsOwn)
-        {
-            Display.AddToRenderList(this);
-        }
-        
+        Display.AddToRenderList(this);
+
         PositionChanged += OnPositionChanged;
     }
-
-    public Layer Layer { get; set; } = Layer.Foreground;
-
+    
     public Color DefaultColor { get; set; } = Color.Aqua;
     public Color HighlightedColor { get; set; } = Color.Blue;
     public Color PressedColor { get; set; } = Color.White;
@@ -45,11 +40,9 @@ public abstract class VisualComponent : Component, IRenderable
 
     private void OnPositionChanged(object? sender, PositionChangedEventArgs e)
     {
-        Display.ClearRect(e.OldPosition, Size);
+        Display.ClearRect(Position - e.Delta, Size);
     }
     
-    public virtual void Resize() { }
-
     public virtual void Render()
     {
         Display.DrawRect(Position, Size, Color);

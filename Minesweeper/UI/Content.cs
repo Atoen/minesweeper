@@ -23,5 +23,5 @@ public abstract class Content : IRenderable
 
     public abstract void Clear();
 
-    public Layer Layer { get; set; }
+    public int ZIndex { get; set; }
 }

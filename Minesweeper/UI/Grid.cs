@@ -5,10 +5,8 @@ namespace Minesweeper.UI;
 
 public class Grid : Control, IContainer
 {
-    public Grid() : base(true)
+    public Grid()
     {
-        Layer = Layer.Background;
-        
         Children.ElementChanged += ChildrenOnElementChanged;
         
         Columns.CollectionChanged += ColumnsOnCollectionChanged;
@@ -55,18 +53,7 @@ public class Grid : Control, IContainer
 
     private void ChildrenOnElementChanged(object? sender, CollectionChangedEventArgs<Control> e)
     {
-        var element = e.Element;
-        
-        if (e.ChangeType == ChangeType.Add)
-        {
-            element.Parent = this;
-        }
-        else
-        {
-            e.Element.Parent = null;
-        }
-
-        Children.Sort((c1, c2) => c1.Layer.CompareTo(c2.Layer));
+        e.Element.Parent = e.ChangeType == ChangeType.Add ? this : null;
     }
 
     private void ColumnsOnCollectionChanged(object? sender, EventArgs e) =>
@@ -186,4 +173,33 @@ public sealed class Row : IGridLayoutElement
 public interface IGridLayoutElement
 {
     public int Size { get; set; }
+}
+
+public enum GridUnitType
+{
+    Auto,
+    Pixel,
+    Weighted
+}
+
+public enum HorizontalAlignment
+{
+    Left,
+    Right,
+    Middle
+}
+
+public enum VerticalAlignment
+{
+    Top,
+    Bottom,
+    Middle
+}
+
+public enum ResizeMode
+{
+    None,
+    Vertical,
+    Horizontal,
+    Both
 }

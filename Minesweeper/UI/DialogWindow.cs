@@ -7,7 +7,7 @@ public class DialogWindow : Control
 {
     public DialogWindow()
     {
-        Layer = Layer.Top;
+        ZIndex = 10;
         
         Position = new Coord(4, 5);
         Size = new Coord(16, 5);

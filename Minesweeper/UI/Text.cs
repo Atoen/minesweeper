@@ -2,28 +2,49 @@
 
 namespace Minesweeper.UI;
 
-public class Text : Content
+public class Text : VisualComponent
 {
-    public Text(string text)
+    public Text(string text) : this(text, Color.Black)
     {
-        _text = text;
-        Foreground = Color.Black;
-        Size = new Coord(Length, 1);
-    }
-
-    public Text(string text, Color foreground)
-    {
-        _text = text;
-        Foreground = foreground;
-        Size = new Coord(Length, 1);
+        Background = Color.Transparent;
     }
     
-    public Text(string text, Color foreground, Color background) : this(text, foreground) => Background = background;
+    public Text(string text, Color foreground)
+    {
+        String = text;
+        Foreground = foreground;
+        Background = Color.Transparent;
 
-    public TextMode Mode { get; set; } = TextMode.Default;
+        ZIndexUpdateMode = ZIndexUpdateMode.SameAsParent;
+    }
+
+    public Text(string text, Color foreground, Color background) : this(text, foreground)
+    {
+        Background = background;
+    }
+
+    private VisualComponent _parent = null!;
+    public new VisualComponent Parent
+    {
+        get => _parent;
+        set
+        {
+            _parent = value;
+            base.Parent = value;
+        }
+    }
+
+    public Color Foreground { get; set; }
+    public Color Background
+    {
+        get => DefaultColor;
+        set => DefaultColor = value;
+    }
+
+    public TextMode TextMode { get; set; } = TextMode.Default;
     public Alignment Alignment { get; set; } = Alignment.Center;
-
-    private string _text;
+    
+    private string _text = null!;
 
     public string String
     {
@@ -34,14 +55,17 @@ public class Text : Content
             Size = new Coord(Length, 1);
         }
     }
-    
+
     public int Length => _text.Length;
 
     public override void Render()
     {
-        Display.Print(Position.X, Position.Y, String, Foreground, Background ?? Parent.Color, Alignment, Mode);
+        var background = Background == Color.Transparent ? Parent.Color : Background;
+        var position = Parent.Center;
+        
+        Display.Print(position.X, position.Y, _text, Foreground, background, Alignment, TextMode);
     }
-
+    
     public override void Clear()
     {
         var startPos = Alignment switch

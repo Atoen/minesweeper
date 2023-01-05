@@ -1,4 +1,5 @@
-﻿using Minesweeper.UI.Events;
+﻿using Minesweeper.ConsoleDisplay;
+using Minesweeper.UI.Events;
 
 namespace Minesweeper.UI;
 
@@ -6,7 +7,7 @@ public class Button : ContentControl
 {
     public Button()
     {
-        _text = new Text("") {Parent = this};
+        _text = new Text(nameof(Button)) {Parent = this};
     }
     
     private Text _text;
@@ -33,7 +34,13 @@ public class Button : ContentControl
         var minSize = InnerPadding * 2 + _text.Size;
         Size = Size.ExpandTo(minSize);
     }
-    
+
+    public override void Remove()
+    {
+        Display.RemoveFromRenderList(this);
+        Display.RemoveFromRenderList(_text);
+    }
+
     public override void Clear()
     {
         base.Clear();

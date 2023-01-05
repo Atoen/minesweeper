@@ -4,13 +4,15 @@ namespace Minesweeper.UI;
 
 public abstract class Control : VisualComponent
 {
-    protected Control(bool renderOnItsOwn = false) : base(renderOnItsOwn)
+    protected Control()
     {
         Input.Register(this);
     }
 
     public bool IsMouseOver { get; protected set; }
     public bool IsFocused { get; protected set; }
+
+    public bool IsFocusable { get; set; } = true;
     
     public override void Remove()
     {

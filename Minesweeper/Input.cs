@@ -91,7 +91,7 @@ public static class Input
     {
         MouseState.Assign(ref mouseRecord);
 
-        var layer = (Layer) (-1);
+        var zIndex = int.MinValue;
         Control? hit = null;
 
         var pos = MouseState.Position;
@@ -106,7 +106,7 @@ public static class Input
                 control.OnMouseExit(args);
             }
 
-            if (control.IsFocused && button.HasValue(MouseButton.Left))
+            if (control is {IsFocusable: true, IsFocused: true} && button.HasValue(MouseButton.Left))
             {
                 args ??= CreateMouseArgs(MouseState, control);
                 control.OnLostFocus(args);
@@ -117,12 +117,12 @@ public static class Input
         {
             foreach (var control in Controls)
             {
-                if (control.ContainsPoint(pos) && control.Layer > layer)
+                if (control.ContainsPoint(pos) && control.ZIndex > zIndex)
                 {
                     // Previously marked as hit - now detected something on higher layer blocking the cursor 
                     if (hit is not null) Miss(hit, MouseState.Buttons);
 
-                    layer = control.Layer;
+                    zIndex = control.ZIndex;
                     hit = control;
                 }
                 else
@@ -136,15 +136,19 @@ public static class Input
 
         var args = CreateMouseArgs(MouseState, hit);
 
-        if (MouseState.Buttons.HasValue(MouseButton.Left))
+        if (_lastMouseButton == 0)
         {
-            hit.OnMouseLeftDown(args);
-            hit.OnGotFocus(args);
-        }
+            if (MouseState.Buttons.HasValue(MouseButton.Left))
+            {
+                hit.OnMouseLeftDown(args);
+                
+                if (hit.IsFocusable) hit.OnGotFocus(args);
+            }
 
-        if (MouseState.Buttons.HasValue(MouseButton.Right))
-        {
-            hit.OnMouseRightDown(args);
+            if (MouseState.Buttons.HasValue(MouseButton.Right))
+            {
+                hit.OnMouseRightDown(args);
+            }
         }
 
         _lastMouseButton = mouseRecord.ButtonState;
