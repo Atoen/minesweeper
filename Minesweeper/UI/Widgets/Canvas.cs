@@ -1,6 +1,6 @@
 ﻿using Minesweeper.ConsoleDisplay;
 
-namespace Minesweeper.UI;
+namespace Minesweeper.UI.Widgets;
 
 public class Canvas : Widget
 {

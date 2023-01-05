@@ -1,7 +1,7 @@
 ﻿using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI.Events;
 
-namespace Minesweeper.UI;
+namespace Minesweeper.UI.Widgets;
 
 public class Button : ContentControl
 {
@@ -47,25 +47,25 @@ public class Button : ContentControl
         _text.Clear();
     }
 
-    public override void OnMouseEnter(MouseEventArgs e)
+    protected override void OnMouseEnter(MouseEventArgs e)
     {
         State = State.Highlighted;
         base.OnMouseEnter(e);
     }
 
-    public override void OnMouseExit(MouseEventArgs e)
+    protected override void OnMouseExit(MouseEventArgs e)
     {
         State = State.Default;
         base.OnMouseExit(e);
     }
 
-    public override void OnMouseMove(MouseEventArgs e)
+    protected override void OnMouseMove(MouseEventArgs e)
     {
         if (e.LeftButton == MouseButtonState.Released) State = State.Highlighted;
         base.OnMouseMove(e);
     }
 
-    public override void OnMouseLeftDown(MouseEventArgs e)
+    protected override void OnMouseLeftDown(MouseEventArgs e)
     {
         State = State.Pressed;
         OnClick?.Invoke();

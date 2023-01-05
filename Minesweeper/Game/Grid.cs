@@ -1,5 +1,6 @@
 ﻿using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI;
+using Minesweeper.UI.Widgets;
 
 namespace Minesweeper.Game;
 
@@ -108,51 +109,51 @@ public sealed class Grid : IDrawable
         }
     }
 
-    public void ClickTile(Coord pos, MouseButton button)
-    {
-        if (!IsInside(pos)) return;
-
-        if (!_revealed && button == MouseButton.Left)
-        {
-            GenerateBombs(pos);
-            _revealed = true;
-        }
-        
-        var clickedTile = _tiles[pos.X, pos.Y];
-        if (clickedTile.Revealed) return;
-        
-        if (button == MouseButton.Left)
-        {
-            if (clickedTile.Flagged) return;
-
-            if (clickedTile.HasBomb)
-            {
-                DisplayAllBombs();
-                return;
-            }
-
-            RevealNearbyTiles(clickedTile);
-            
-            return;
-        }
-
-        if (button != MouseButton.Right) return;
-        
-        if (!clickedTile.Flagged)
-        {
-            _buffer[pos.X, pos.Y] = Tiles.Flag;
-            clickedTile.Flagged = true;
-            
-            Flagged?.Invoke(-1);
-            
-            return;
-        }
-        
-        _buffer[pos.X, pos.Y] = Tiles.Default;
-        clickedTile.Flagged = false;
-        
-        Flagged?.Invoke(1);
-    }
+    // public void ClickTile(Coord pos, MouseButton button)
+    // {
+    //     if (!IsInside(pos)) return;
+    //
+    //     if (!_revealed && button == MouseButton.Left)
+    //     {
+    //         GenerateBombs(pos);
+    //         _revealed = true;
+    //     }
+    //     
+    //     var clickedTile = _tiles[pos.X, pos.Y];
+    //     if (clickedTile.Revealed) return;
+    //     
+    //     if (button == MouseButton.Left)
+    //     {
+    //         if (clickedTile.Flagged) return;
+    //
+    //         if (clickedTile.HasBomb)
+    //         {
+    //             DisplayAllBombs();
+    //             return;
+    //         }
+    //
+    //         RevealNearbyTiles(clickedTile);
+    //         
+    //         return;
+    //     }
+    //
+    //     if (button != MouseButton.Right) return;
+    //     
+    //     if (!clickedTile.Flagged)
+    //     {
+    //         _buffer[pos.X, pos.Y] = Tiles.Flag;
+    //         clickedTile.Flagged = true;
+    //         
+    //         Flagged?.Invoke(-1);
+    //         
+    //         return;
+    //     }
+    //     
+    //     _buffer[pos.X, pos.Y] = Tiles.Default;
+    //     clickedTile.Flagged = false;
+    //     
+    //     Flagged?.Invoke(1);
+    // }
 
     private void CheckSurrounding(Tile tile)
     {

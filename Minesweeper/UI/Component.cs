@@ -4,31 +4,22 @@ public abstract class Component
 {
     public event EventHandler<PositionChangedEventArgs>? PositionChanged;
     public event EventHandler<SizeChangedEventArgs>? SizeChanged; 
+    
     public State State { get; protected set; } = State.Default;
     public bool Enabled { get; protected set; } = true;
-    public bool AutoResize { get; set; } = true;
+    
+    public ResizeMode ResizeMode { get; set; } = ResizeMode.Stretch;
+    public ZIndexUpdateMode ZIndexUpdateMode { get; set; } = ZIndexUpdateMode.OneHigherThanParent;
     
     private int _zIndex;
     public int ZIndex
     {
-        get
-        {
-            if (ZIndexUpdateMode == ZIndexUpdateMode.Manual || Parent == null) return _zIndex;
-            
-            return ZIndexUpdateMode switch
-            {
-                ZIndexUpdateMode.SameAsParent => Parent.ZIndex,
-                ZIndexUpdateMode.OneHigherThanParent => Parent.ZIndex + 1,
-                _ => _zIndex
-            };
-        }
+        get => GetZIndex();
         set
         {
             if (ZIndexUpdateMode == ZIndexUpdateMode.Manual) _zIndex = value;
         }
     }
-
-    public ZIndexUpdateMode ZIndexUpdateMode { get; set; } = ZIndexUpdateMode.OneHigherThanParent;
 
     private Component? _parent;
     public Component? Parent
@@ -37,73 +28,68 @@ public abstract class Component
         set => SetParent(value);
     }
 
-    private void SetParent(Component? value)
-    {
-        if (value == this)
-        {
-            throw new InvalidOperationException("Component cannot be its own parent.");
-        }
-
-        if (value is null)
-        {
-            if (_parent != null) _parent.PositionChanged -= OnPositionChanged;
-            GlobalPosition = Position;
-            _parent = null;
-
-            return;
-        }
-
-        _parent = value;
-        _parent.PositionChanged += OnPositionChanged;
-    }
-
     private Coord _parentOffset;
-
-    public Coord Position
-    {
-        get => Parent is null ? GlobalPosition :  _parentOffset + Parent.Position;
-        set
-        {
-            if (value != Position)
-            {
-                PositionChanged?.Invoke(this, new PositionChangedEventArgs(Position, value));
-            }
-            
-            if (Parent is null)
-            {
-                GlobalPosition = value;
-                _parentOffset = Coord.Zero;
-                return;
-            }
-
-            _parentOffset = value;
-            GlobalPosition = Parent.Position + _parentOffset;
-        }
-    }
 
     public Coord GlobalPosition;
 
+    public Coord Position
+    {
+        get => _parent == null ? GlobalPosition : _parent.Position + _parentOffset;
+        set => SetPosition(value);
+    }
+    
     public Coord Center
     {
         get => Position + Size / 2;
         set => Position = value - Size / 2;
     }
-
-    public Coord Size;
     
+    private Coord _size;
+    public Coord Size
+    {
+        get => _size;
+        set
+        {
+            if (value != _size)
+            {
+                SizeChanged?.Invoke(this, new SizeChangedEventArgs(_size, value));
+            }
+
+            _size = value;
+        }
+    }
+
     public int Width
     {
-        get => Size.X;
-        set => Size.X = value;
+        get => _size.X;
+        set
+        {
+            if (value != _size.X)
+            {
+                SizeChanged?.Invoke(this, new SizeChangedEventArgs(_size, _size with {X = value}));
+            }
+            
+            _size.X = value;
+        }
     }
 
     public int Height
     {
-        get => Size.Y;
-        set => Size.Y = value;
+        get => _size.Y;
+        set
+        {
+            if (value != _size.Y)
+            {
+                SizeChanged?.Invoke(this, new SizeChangedEventArgs(_size, _size with {Y = value}));
+            }
+            
+            _size.Y = value;
+        }
     }
-    
-    public virtual void Resize() {}
+
+    public virtual void Resize()
+    {
+    }
 
     public void SetEnabled(bool enabled)
     {
@@ -118,10 +104,77 @@ public abstract class Component
         return pos.X >= Position.X && pos.X < Position.X + Width &&
                pos.Y >= Position.Y && pos.Y < Position.Y + Height;
     }
+    
+    private int GetZIndex()
+    {
+        if (ZIndexUpdateMode == ZIndexUpdateMode.Manual || _parent == null) return _zIndex;
+
+        return ZIndexUpdateMode switch
+        {
+            ZIndexUpdateMode.SameAsParent => _parent.ZIndex,
+            ZIndexUpdateMode.OneHigherThanParent => _parent.ZIndex + 1,
+            _ => _zIndex
+        };
+    }
+
+    private void SetParent(Component? value)
+    {
+        if (value == this)
+        {
+            throw new InvalidOperationException("Component cannot be its own parent.");
+        }
+
+        if (value != _parent && _parent != null)
+        {
+            _parent.PositionChanged -= OnPositionChanged;
+            SizeChanged -= _parent.OnSizeChanged;
+            
+            GlobalPosition = Position;
+        }
+
+        if (value is null)
+        {
+            _parent = null;
+            _parentOffset = Coord.Zero;
+            return;
+        }
+
+        _parent = value;
+        
+        _parent.PositionChanged += OnPositionChanged;
+        SizeChanged += _parent.OnSizeChanged;
+    }
+
+    private void SetPosition(Coord value)
+    {
+        if (value != Position)
+        {
+            PositionChanged?.Invoke(this, new PositionChangedEventArgs(value - Position));
+        }
+
+        if (_parent is null)
+        {
+            GlobalPosition = value;
+            return;
+        }
+
+        _parentOffset = value;
+        GlobalPosition = _parent.Position + _parentOffset;
+    }
 
     private void OnPositionChanged(object? sender, PositionChangedEventArgs e)
     {
         PositionChanged?.Invoke(sender, e);
+    }
+
+    private void OnSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        SizeChanged?.Invoke(sender, e);
+
+        if (sender != this && ResizeMode != ResizeMode.Manual)
+        {
+            Resize();
+        }
     }
 }
 
@@ -139,17 +192,21 @@ public enum ZIndexUpdateMode
     Manual
 }
 
+public enum ResizeMode
+{
+    Grow,
+    Stretch,
+    Manual
+}
+
 public class PositionChangedEventArgs : EventArgs
 {
-    public PositionChangedEventArgs(Coord oldPosition, Coord newPosition)
+    public PositionChangedEventArgs(Coord delta)
     {
-        OldPosition = oldPosition;
-        NewPosition = newPosition;
+        Delta = delta;
     }
 
-    public Coord OldPosition { get; }
-    public Coord NewPosition { get; }
-    public Coord Delta => NewPosition - OldPosition;
+    public Coord Delta { get; }
 }
 
 public class SizeChangedEventArgs : EventArgs

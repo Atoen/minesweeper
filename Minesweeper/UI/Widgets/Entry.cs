@@ -1,7 +1,7 @@
 ﻿using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI.Events;
 
-namespace Minesweeper.UI;
+namespace Minesweeper.UI.Widgets;
 
 public class Entry : Widget
 {
@@ -69,7 +69,7 @@ public class Entry : Widget
         if (string.IsNullOrWhiteSpace(Text.Text)) Text.Text = "0";
     }
 
-    public override void OnMouseLeftDown(MouseEventArgs e)
+    protected override void OnMouseLeftDown(MouseEventArgs e)
     {
         _inEntryMode = !_inEntryMode;
         Text.Mode = _inEntryMode ? EntryTextMode : TextMode.Default;
@@ -79,7 +79,7 @@ public class Entry : Widget
         base.OnMouseLeftDown(e);
     }
 
-    public override void OnLostFocus(MouseEventArgs e)
+    protected override void OnLostFocus(MouseEventArgs e)
     {
         ExitEntryMode();
         

@@ -28,47 +28,119 @@ public abstract class Control : VisualComponent
     public event MouseEventHandler? MouseRightDown;
     public event MouseEventHandler? MouseMove;
 
-    public virtual void OnMouseEnter(MouseEventArgs e)
+    public void SendMouseEvent(EventType eventType, MouseEventArgs e)
+    {
+        switch (eventType)
+        {
+            case EventType.MouseMove:
+                OnMouseMove(e);
+                break;
+            case EventType.MouseEnter:
+                OnMouseEnter(e);
+                break;
+            
+            case EventType.MouseExit:
+                OnMouseExit(e);
+                break;
+            
+            case EventType.MouseLeftDown:
+                OnMouseLeftDown(e);
+                break;
+            
+            case EventType.MouseLeftUp:
+                OnMouseLeftUp();
+                break;
+            
+            case EventType.MouseRightDown:
+                OnMouseRightDown(e);
+                break;
+            
+            case EventType.MouseRightUp:
+                OnMouseRightUp();
+                break;
+            
+            case EventType.GotFocus:
+                OnGotFocus(e);
+                break;
+            
+            case EventType.LostFocus:
+                OnLostFocus(e);
+                break;
+
+            case EventType.KeyDown:
+                break;
+
+            case EventType.KeyUp:
+                break;
+            
+            default:
+                throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
+        }
+        
+        if (e.Handled) return;
+
+        e.Source = this;
+        (Parent as Control)?.SendMouseEvent(eventType, e);
+    }
+
+    protected virtual void OnMouseEnter(MouseEventArgs e)
     {
         IsMouseOver = true;
 
         MouseEnter?.Invoke(this, e);
     }
 
-    public virtual void OnMouseExit(MouseEventArgs e)
+    protected virtual void OnMouseExit(MouseEventArgs e)
     {
         IsMouseOver = false;
         MouseLeave?.Invoke(this, e);
     }
 
-    public virtual void OnMouseMove(MouseEventArgs e)
+    protected virtual void OnMouseMove(MouseEventArgs e)
     {
         MouseMove?.Invoke(this, e);
     }
 
-    public virtual void OnMouseLeftDown(MouseEventArgs e)
+    protected virtual void OnMouseLeftDown(MouseEventArgs e)
     {
         MouseLeftDown?.Invoke(this, e);
         MouseDown?.Invoke(this, e);
     }
 
-    public virtual void OnMouseLeftUp() { }
+    protected virtual void OnMouseLeftUp() { }
 
-    public virtual void OnMouseRightDown(MouseEventArgs e)
+    protected virtual void OnMouseRightDown(MouseEventArgs e)
     {
         MouseRightDown?.Invoke(this, e);
         MouseDown?.Invoke(this, e);
     }
 
-    public virtual void OnMouseRightUp() { }
+    protected virtual void OnMouseRightUp() { }
 
-    public virtual void OnGotFocus(MouseEventArgs e)
+    protected virtual void OnGotFocus(MouseEventArgs e)
     {
         IsFocused = true;
     }
 
-    public virtual void OnLostFocus(MouseEventArgs e)
+    protected virtual void OnLostFocus(MouseEventArgs e)
     {
         IsFocused = false;
     }
+}
+
+public enum EventType
+{
+    MouseMove,
+    MouseEnter,
+    MouseExit,
+    MouseLeftDown,
+    MouseLeftUp,
+    MouseRightDown,
+    MouseRightUp,
+
+    GotFocus,
+    LostFocus,
+    
+    KeyDown,
+    KeyUp
 }

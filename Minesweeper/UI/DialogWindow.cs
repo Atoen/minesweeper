@@ -15,7 +15,7 @@ public class DialogWindow : Control
         DefaultColor = Color.Red;
     }
 
-    public override void OnMouseLeftDown(MouseEventArgs e)
+    protected override void OnMouseLeftDown(MouseEventArgs e)
     {
         Display.RemoveFromRenderList(this);
         

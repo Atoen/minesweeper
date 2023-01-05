@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI;
 using Minesweeper.UI.Events;
 using Minesweeper.Utils;
@@ -103,13 +102,13 @@ public static class Input
             if (control is {IsMouseOver: true, Enabled: true})
             {
                 args = CreateMouseArgs(MouseState, control);
-                control.OnMouseExit(args);
+                control.SendMouseEvent(EventType.MouseExit, args);
             }
 
             if (control is {IsFocusable: true, IsFocused: true} && button.HasValue(MouseButton.Left))
             {
                 args ??= CreateMouseArgs(MouseState, control);
-                control.OnLostFocus(args);
+                control.SendMouseEvent(EventType.LostFocus, args);
             }
         }
 
@@ -140,22 +139,22 @@ public static class Input
         {
             if (MouseState.Buttons.HasValue(MouseButton.Left))
             {
-                hit.OnMouseLeftDown(args);
+                hit.SendMouseEvent(EventType.MouseLeftDown, args);
                 
-                if (hit.IsFocusable) hit.OnGotFocus(args);
+                if (hit.IsFocusable) hit.SendMouseEvent(EventType.GotFocus, args);
             }
 
             if (MouseState.Buttons.HasValue(MouseButton.Right))
             {
-                hit.OnMouseRightDown(args);
+                hit.SendMouseEvent(EventType.MouseRightDown, args);
             }
         }
 
         _lastMouseButton = mouseRecord.ButtonState;
 
-        if (!hit.IsMouseOver) hit.OnMouseEnter(args);
+        if (!hit.IsMouseOver) hit.SendMouseEvent(EventType.MouseEnter, args);
 
-        hit.OnMouseMove(args);
+        hit.SendMouseEvent(EventType.MouseMove, args);
     }
     
     private static MouseEventArgs CreateMouseArgs(MouseState state, Control source) => new(source)
@@ -262,7 +261,7 @@ public struct KeyboardState
     }
 }
 
-public class MouseState
+internal class MouseState
 {
     public Coord Position;
     public MouseButton Buttons;
@@ -279,7 +278,7 @@ public class MouseState
 }
 
 [Flags]
-public enum MouseButton
+internal enum MouseButton
 {
     None = 0,
     Left = 1,
@@ -288,7 +287,7 @@ public enum MouseButton
 }
 
 [Flags]
-public enum MouseEventFlags
+internal enum MouseEventFlags
 {
     Moved = 1,
     DoubleClicked = 1 << 1,
@@ -296,7 +295,7 @@ public enum MouseEventFlags
     HorizontalWheeled = 1 << 3
 }
 
-public enum MouseWheelState : ulong
+internal enum MouseWheelState : ulong
 {
     Down = 0xff880000,
     AnsiDown = 0xff800000,

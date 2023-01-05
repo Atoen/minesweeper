@@ -26,20 +26,15 @@ public abstract class ContentControl : Control, IContent
         if (value is null)
         {
             _content = null;
+            
+            if (ResizeMode == ResizeMode.Stretch) Resize();
             return;
         }
 
         _content = value;
         _content.Parent = this;
-
-        if (_content.AutoResize) _content.Resize();
-        if (AutoResize) Resize();
-    }
-
-    public override void Render()
-    {
-        base.Render();
-        Content?.Render();
+        
+        if (_content.ResizeMode != ResizeMode.Manual) _content.Resize();
     }
 
     public override void Clear()
@@ -50,16 +45,17 @@ public abstract class ContentControl : Control, IContent
     
     public override void Resize()
     {
-        var minSize = InnerPadding * 2;
-        if (Content is not null)
+        if (_content == null) return;
+
+        var minSize = _content.PaddedSize + InnerPadding * 2;
+        _content.Position = InnerPadding + _content.OuterPadding;
+
+        Size = ResizeMode switch
         {
-            minSize += Content.PaddedSize;
-            Content.Position = InnerPadding;
-        }
-    
-        Size = Size.ExpandTo(minSize);
-        
-        if (Parent is {AutoResize: true}) Parent.Resize();
+            ResizeMode.Grow => Size.ExpandTo(minSize),
+            ResizeMode.Stretch => minSize,
+            _ => Size
+        };
     }
 }
 

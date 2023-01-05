@@ -1,7 +1,7 @@
 ﻿using Minesweeper.ConsoleDisplay;
 using Minesweeper.Utils;
 
-namespace Minesweeper.UI;
+namespace Minesweeper.UI.Widgets;
 
 public class Grid : Control, IContainer
 {
@@ -18,7 +18,7 @@ public class Grid : Control, IContainer
     public readonly GridElementCollection<Column> Columns = new();
     public readonly GridElementCollection<Row> Rows = new();
 
-    public ResizeMode ResizeMode { get; set; } = ResizeMode.Both;
+    public GridResizeMode GridResizeMode { get; set; } = GridResizeMode.Both;
     
     public VerticalAlignment VerticalAlignment { get; set; } = VerticalAlignment.Middle;
     public HorizontalAlignment HorizontalAlignment { get; set; } = HorizontalAlignment.Middle;
@@ -40,7 +40,7 @@ public class Grid : Control, IContainer
         
         if (!Children.Contains(control)) Children.Add(control);
 
-        if (control.AutoResize) control.Resize();
+        if (control.ResizeMode != ResizeMode.Manual) control.Resize();
 
         var pos = new Coord
         {
@@ -196,7 +196,7 @@ public enum VerticalAlignment
     Middle
 }
 
-public enum ResizeMode
+public enum GridResizeMode
 {
     None,
     Vertical,

@@ -1,6 +1,6 @@
 ﻿using Minesweeper.ConsoleDisplay;
 
-namespace Minesweeper.UI;
+namespace Minesweeper.UI.Widgets;
 
 public class Label : ContentControl
 {
@@ -18,6 +18,8 @@ public class Label : ContentControl
         get => _text;
         set
         {
+            Display.RemoveFromRenderList(_text);
+            
             _text = value;
             _text.Parent = this;
         }
@@ -44,9 +46,14 @@ public class Label : ContentControl
     public override void Resize()
     {
         var minSize = InnerPadding * 2 + _text.Size;
-        
-        Size = Size.ExpandTo(minSize);
-        
+
+        Size = ResizeMode switch
+        {
+            ResizeMode.Grow => Size.ExpandTo(minSize),
+            ResizeMode.Stretch => minSize,
+            _ => Size
+        };
+
         base.Resize();
     }
 }

@@ -9,8 +9,9 @@ public abstract class VisualComponent : Component, IRenderable
         Display.AddToRenderList(this);
 
         PositionChanged += OnPositionChanged;
+        SizeChanged += OnSizeChanged;
     }
-    
+
     public Color DefaultColor { get; set; } = Color.Aqua;
     public Color HighlightedColor { get; set; } = Color.Blue;
     public Color PressedColor { get; set; } = Color.White;
@@ -42,7 +43,12 @@ public abstract class VisualComponent : Component, IRenderable
     {
         Display.ClearRect(Position - e.Delta, Size);
     }
-    
+
+    private void OnSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        Display.ClearRect(Position, e.OldSize);
+    }
+
     public virtual void Render()
     {
         Display.DrawRect(Position, Size, Color);

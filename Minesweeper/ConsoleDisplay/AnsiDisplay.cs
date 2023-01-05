@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Minesweeper.Game;
 using Minesweeper.UI;
+using Minesweeper.UI.Widgets;
 
 namespace Minesweeper.ConsoleDisplay;
 

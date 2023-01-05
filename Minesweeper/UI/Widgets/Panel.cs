@@ -1,6 +1,6 @@
 ﻿using Minesweeper.Utils;
 
-namespace Minesweeper.UI;
+namespace Minesweeper.UI.Widgets;
 
 public class Panel : Control, IContainer
 {

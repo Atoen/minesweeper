@@ -1,4 +1,6 @@
-﻿namespace Minesweeper.UI.Old;
+﻿using Minesweeper.UI.Widgets;
+
+namespace Minesweeper.UI.Old;
 
 public class FrameOld
 {
@@ -36,7 +38,7 @@ public class FrameOld
 
         var multiCell = rowSpan != 1 || columnSpan != 1;
 
-        if (widget.ResizeMode != ResizeMode.None && !multiCell)
+        if (widget.GridResizeMode != GridResizeMode.None && !multiCell)
         {
             FillWidget(widget, _grid[row, column].Size);
         }
@@ -127,26 +129,26 @@ public class FrameOld
 
     private void FillWidget(Widget widget, Coord cellSize)
     {
-        switch (widget.ResizeMode)
-        {
-            case ResizeMode.Vertical:
-                widget.Height = Math.Max(widget.Height, cellSize.Y);
-                break;
-            
-            case ResizeMode.Horizontal:
-                widget.Width = Math.Max(widget.Width, cellSize.X);
-                break;
-            
-            case ResizeMode.Both:
-                widget.Size = widget.Size.ExpandTo(cellSize);
-                break;
-            
-            case ResizeMode.None:
-                break;
-            
-            default:
-                throw new ArgumentOutOfRangeException(nameof(widget), widget.ResizeMode, null);
-        }
+        // switch (widget.GridResizeMode)
+        // {
+        //     case ResizeMode.Vertical:
+        //         widget.Height = Math.Max(widget.Height, cellSize.Y);
+        //         break;
+        //     
+        //     case ResizeMode.Horizontal:
+        //         widget.Width = Math.Max(widget.Width, cellSize.X);
+        //         break;
+        //     
+        //     case ResizeMode.Both:
+        //         widget.Size = widget.Size.ExpandTo(cellSize);
+        //         break;
+        //     
+        //     case ResizeMode.None:
+        //         break;
+        //     
+        //     default:
+        //         throw new ArgumentOutOfRangeException(nameof(widget), widget.GridResizeMode, null);
+        // }
     }
 
     private void CheckIfNeedToRedraw()

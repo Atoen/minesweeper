@@ -1,10 +1,10 @@
 ﻿using Minesweeper.ConsoleDisplay;
 
-namespace Minesweeper.UI;
+namespace Minesweeper.UI.Widgets;
 
-public abstract class Widget : Control, IRenderable
+public abstract class Widget : Control
 {
-    public ResizeMode ResizeMode { get; init; } = ResizeMode.None;
+    public GridResizeMode GridResizeMode { get; init; } = GridResizeMode.None;
 
     // public abstract Widget Grid(int row, int column, int rowSpan = 1, int columnSpan = 1,
     //     GridAlignment alignment = GridAlignment.Center);

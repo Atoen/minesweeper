@@ -1,4 +1,4 @@
 ﻿// Global using directives
 
-global using System.Drawing;
+global using Color = System.Drawing.Color;
 global using System.Diagnostics;

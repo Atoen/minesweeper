@@ -88,12 +88,12 @@ public static class Game
         // new Canvas(frame, _grid).Grid(2, 0, columnSpan: 3);
     }
 
-    private static void InputOnMouseClick(MouseState state)
-    {
-        if (!_gameIsRunning) return;
-        
-        _grid.ClickTile(state.Position - _grid.Offset, state.Buttons);
-    }
+    // private static void InputOnMouseClick(MouseState state)
+    // {
+    //     if (!_gameIsRunning) return;
+    //     
+    //     _grid.ClickTile(state.Position - _grid.Offset, state.Buttons);
+    // }
 
     private static void OnBombClicked()
     {

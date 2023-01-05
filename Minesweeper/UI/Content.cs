@@ -1,6 +1,4 @@
-﻿using Minesweeper.ConsoleDisplay;
-
-namespace Minesweeper.UI;
+﻿namespace Minesweeper.UI;
 
 public abstract class Content : IRenderable
 {

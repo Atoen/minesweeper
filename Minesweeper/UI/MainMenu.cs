@@ -1,6 +1,6 @@
-﻿using Minesweeper.ConsoleDisplay;
-using Minesweeper.Game;
-using Minesweeper.UI.Events;
+﻿using Minesweeper.Game;
+using Minesweeper.UI.Widgets;
+using Grid = Minesweeper.UI.Widgets.Grid;
 
 namespace Minesweeper.UI;
 
@@ -44,13 +44,18 @@ public static class MainMenu
             grid.Position = pos;
         };
         
+        var label2 = new Label
+        {
+            DefaultColor = Color.Red,
+            Text = new Text("Inner label")
+        };
+
         label.MouseRightDown += delegate
         {
             label.Content = null;
         };
 
         label.Content = button;
-        var label2 = new Label();
         label.Content = label2;
         
         grid.SetColumnAndRow(label, 0, 0);

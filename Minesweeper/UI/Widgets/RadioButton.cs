@@ -1,7 +1,7 @@
 ﻿using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI.Events;
 
-namespace Minesweeper.UI;
+namespace Minesweeper.UI.Widgets;
 
 public class RadioButton : Button
 {
@@ -27,7 +27,7 @@ public class RadioButton : Button
         if (!IsSelected && Enabled) State = State.Default;
     }
 
-    public override void OnMouseLeftDown(MouseEventArgs e)
+    protected override void OnMouseLeftDown(MouseEventArgs e)
     {
         _variable.Val = _value;
         
