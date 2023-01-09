@@ -3,6 +3,7 @@ using System.Text;
 using Minesweeper.Game;
 using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
+using Serilog;
 
 namespace Minesweeper.ConsoleDisplay;
 
@@ -26,14 +27,14 @@ public static class Display
         Console.Clear();
         Console.CursorVisible = false;
         Console.OutputEncoding = Encoding.UTF8;
-        
+
         Width = Console.WindowWidth;
         Height = Console.WindowHeight;
 
         Mode = mode;
 
         if (Mode == DisplayMode.Auto) GetDisplayMode();
-
+        
         _renderer = Mode == DisplayMode.Native
             ? new NativeDisplay(Width, Height)
             : new AnsiDisplay(Width, Height);
@@ -158,15 +159,27 @@ public static class Display
         static extern IntPtr GetStdHandle(int nStdHandle);
 
         [DllImport("kernel32.dll")]
-        static extern bool GetConsoleMode(IntPtr hConsoleInput, ref uint lpMode);
+        static extern bool GetConsoleMode(IntPtr hConsoleInput, out uint mode);
+        
+        [DllImport("kernel32.dll")]
+        static extern bool SetConsoleMode(IntPtr handle, uint mode);
+
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            Mode = DisplayMode.Native;
+            return;
+        }
 
         var handle = GetStdHandle(-11);
-        var mode = 0u;
 
-        GetConsoleMode(handle, ref mode);
+        if (handle == (IntPtr) (-1L) || !GetConsoleMode(handle, out var mode))
+        {
+            Mode = DisplayMode.Native;
+            return;
+        }
 
-        const int virtualTerminalProcessing = 0x4;
-        Mode = (mode & virtualTerminalProcessing) == 0 ? DisplayMode.Native : DisplayMode.Ansi;
+        SetConsoleMode(handle, mode | 4U);
+        Mode = DisplayMode.Ansi;
     }
 }
 

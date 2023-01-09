@@ -1,4 +1,6 @@
-﻿using Minesweeper.ConsoleDisplay;
+﻿using System.Runtime.CompilerServices;
+using Minesweeper.ConsoleDisplay;
+using Minesweeper.Utils;
 
 namespace Minesweeper.UI;
 
@@ -38,29 +40,32 @@ public abstract class VisualComponent : Component, IRenderable
             };
         }
     }
-
-    private void OnPositionChanged(object? sender, PositionChangedEventArgs e)
-    {
-        Display.ClearRect(Position - e.Delta, Size);
-    }
-
-    private void OnSizeChanged(object? sender, SizeChangedEventArgs e)
-    {
-        Display.ClearRect(Position, e.OldSize);
-    }
-
+    
+    [MethodCall(MethodCallMode.Scheduled)]
     public virtual void Render()
     {
-        Display.DrawRect(Position, Size, Color);
+        Display.DrawRect(GlobalPosition, Size, Color);
     }
-
+    
+    [MethodCall(MethodCallMode.OnEvent)]
     public virtual void Clear()
     {
-        Display.ClearRect(Position, Size);
+        Display.ClearRect(GlobalPosition, Size);
     }
 
+    [MethodCall(MethodCallMode.Manual)]
     public virtual void Remove()
     {
         Display.RemoveFromRenderList(this);
+    }
+
+    private void OnPositionChanged(object sender, PositionChangedEventArgs e)
+    {
+        Display.ClearRect(GlobalPosition - e.Delta, Size);
+    }
+    
+    private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        Display.ClearRect(GlobalPosition, e.OldSize);
     }
 }

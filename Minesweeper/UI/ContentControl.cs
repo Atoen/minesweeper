@@ -22,19 +22,30 @@ public abstract class ContentControl : Control, IContent
             _content.Parent = null;
             _content.Remove();
         }
-        
-        if (value is null)
+
+        _content = value;
+
+        if (_content == null)
         {
-            _content = null;
-            
             if (ResizeMode == ResizeMode.Stretch) Resize();
             return;
         }
 
-        _content = value;
         _content.Parent = this;
-        
+
         if (_content.ResizeMode != ResizeMode.Manual) _content.Resize();
+        if (ResizeMode == ResizeMode.Stretch) Resize();
+    }
+
+    public override void Remove()
+    {
+        if (_content != null)
+        {
+            _content.Parent = null;
+            _content.Remove();
+        }
+        
+        base.Remove();
     }
 
     public override void Clear()
@@ -48,7 +59,6 @@ public abstract class ContentControl : Control, IContent
         if (_content == null) return;
 
         var minSize = _content.PaddedSize + InnerPadding * 2;
-        _content.Position = InnerPadding + _content.OuterPadding;
 
         Size = ResizeMode switch
         {
@@ -56,6 +66,8 @@ public abstract class ContentControl : Control, IContent
             ResizeMode.Stretch => minSize,
             _ => Size
         };
+
+        _content.Center = Center;
     }
 }
 

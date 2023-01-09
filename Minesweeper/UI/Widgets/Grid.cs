@@ -47,7 +47,7 @@ public class Grid : Control, IContainer
             X = Columns.GetOffset(column),
             Y = Rows.GetOffset(row)
         };
-
+        
         control.Position = pos;
     }
 

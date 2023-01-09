@@ -102,13 +102,13 @@ public static class Input
             if (control is {IsMouseOver: true, Enabled: true})
             {
                 args = CreateMouseArgs(MouseState, control);
-                control.SendMouseEvent(EventType.MouseExit, args);
+                control.SendMouseEvent(MouseEventType.MouseExit, args);
             }
 
             if (control is {IsFocusable: true, IsFocused: true} && button.HasValue(MouseButton.Left))
             {
                 args ??= CreateMouseArgs(MouseState, control);
-                control.SendMouseEvent(EventType.LostFocus, args);
+                control.SendMouseEvent(MouseEventType.LostFocus, args);
             }
         }
 
@@ -139,28 +139,28 @@ public static class Input
         {
             if (MouseState.Buttons.HasValue(MouseButton.Left))
             {
-                hit.SendMouseEvent(EventType.MouseLeftDown, args);
+                hit.SendMouseEvent(MouseEventType.MouseLeftDown, args);
                 
-                if (hit.IsFocusable) hit.SendMouseEvent(EventType.GotFocus, args);
+                if (hit.IsFocusable) hit.SendMouseEvent(MouseEventType.GotFocus, args);
             }
 
             if (MouseState.Buttons.HasValue(MouseButton.Right))
             {
-                hit.SendMouseEvent(EventType.MouseRightDown, args);
+                hit.SendMouseEvent(MouseEventType.MouseRightDown, args);
             }
         }
 
         _lastMouseButton = mouseRecord.ButtonState;
 
-        if (!hit.IsMouseOver) hit.SendMouseEvent(EventType.MouseEnter, args);
+        if (!hit.IsMouseOver) hit.SendMouseEvent(MouseEventType.MouseEnter, args);
 
-        hit.SendMouseEvent(EventType.MouseMove, args);
+        hit.SendMouseEvent(MouseEventType.MouseMove, args);
     }
     
     private static MouseEventArgs CreateMouseArgs(MouseState state, Control source) => new(source)
     {
         CursorPosition = state.Position,
-        RelativeCursorPosition = state.Position - source.Position,
+        RelativeCursorPosition = state.Position - source.GlobalPosition,
 
         LeftButton = state.Buttons.HasValue(MouseButton.Left)
             ? MouseButtonState.Pressed

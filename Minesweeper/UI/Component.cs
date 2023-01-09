@@ -2,9 +2,6 @@
 
 public abstract class Component
 {
-    public event EventHandler<PositionChangedEventArgs>? PositionChanged;
-    public event EventHandler<SizeChangedEventArgs>? SizeChanged; 
-    
     public State State { get; protected set; } = State.Default;
     public bool Enabled { get; protected set; } = true;
     
@@ -27,35 +24,85 @@ public abstract class Component
         get => _parent;
         set => SetParent(value);
     }
+    
+    public delegate void PositionChangeEventHandler(object sender, PositionChangedEventArgs e);
+    public delegate void SizeChangeEventHandler(object sender, SizeChangedEventArgs e);
+    
+    public event PositionChangeEventHandler? PositionChanged;
+    public event SizeChangeEventHandler? SizeChanged;
 
-    private Coord _parentOffset;
-
-    public Coord GlobalPosition;
-
+    private Coord _localPosition;
+    private Coord _globalPosition;
+    
     public Coord Position
     {
-        get => _parent == null ? GlobalPosition : _parent.Position + _parentOffset;
-        set => SetPosition(value);
+        get => _localPosition;
+        set => SetPositionInternal(value, true);
     }
-    
+
+    public Coord GlobalPosition
+    {
+        get => _parent == null ? _localPosition : _parent.GlobalPosition + _localPosition;
+        set => SetPositionInternal(value, false);
+    }
+
+    private void SetPositionInternal(Coord value, bool isLocal)
+    {
+        var positionBefore = isLocal ? _localPosition : _globalPosition;
+
+        if (_parent == null)
+        {
+            _globalPosition = value;
+            _localPosition = value;
+        }
+        else
+        {
+            if (isLocal)
+            {
+                _localPosition = value;
+                _globalPosition = _localPosition + _parent.GlobalPosition;
+            }
+            else
+            {
+                _globalPosition = value;
+                _localPosition = value - _parent.GlobalPosition;
+            }
+        }
+
+        if (value != positionBefore)
+        {
+            PositionChanged?.Invoke(this, new PositionChangedEventArgs(value - positionBefore));
+        }
+    }
+
     public Coord Center
     {
-        get => Position + Size / 2;
-        set => Position = value - Size / 2;
+        get => GlobalPosition + Size / 2;
+        set
+        {
+            GlobalPosition = value - Size / 2;
+
+            if (_parent != null)
+            {
+                Position = GlobalPosition - _parent.GlobalPosition;
+            }
+        }
     }
-    
+
     private Coord _size;
+
     public Coord Size
     {
         get => _size;
         set
         {
-            if (value != _size)
-            {
-                SizeChanged?.Invoke(this, new SizeChangedEventArgs(_size, value));
-            }
-
+            var sizeBefore = _size;
             _size = value;
+
+            if (value != sizeBefore)
+            {
+                SizeChanged?.Invoke(this, new SizeChangedEventArgs(sizeBefore, value));
+            }
         }
     }
 
@@ -64,12 +111,13 @@ public abstract class Component
         get => _size.X;
         set
         {
-            if (value != _size.X)
-            {
-                SizeChanged?.Invoke(this, new SizeChangedEventArgs(_size, _size with {X = value}));
-            }
-            
+            var widthBefore = _size.X;
             _size.X = value;
+            
+            if (value != widthBefore)
+            {
+                SizeChanged?.Invoke(this, new SizeChangedEventArgs(_size with {X = widthBefore}, _size));
+            }
         }
     }
 
@@ -78,12 +126,13 @@ public abstract class Component
         get => _size.Y;
         set
         {
-            if (value != _size.Y)
-            {
-                SizeChanged?.Invoke(this, new SizeChangedEventArgs(_size, _size with {Y = value}));
-            }
-            
+            var heightBefore = _size.Y;
             _size.Y = value;
+            
+            if (value != heightBefore)
+            {
+                SizeChanged?.Invoke(this, new SizeChangedEventArgs(_size with {Y = heightBefore}, _size));
+            }
         }
     }
 
@@ -101,8 +150,13 @@ public abstract class Component
     
     public bool ContainsPoint(Coord pos)
     {
-        return pos.X >= Position.X && pos.X < Position.X + Width &&
-               pos.Y >= Position.Y && pos.Y < Position.Y + Height;
+        if (GlobalPosition != _globalPosition)
+        {
+            
+        }
+        
+        return pos.X >= _globalPosition.X && pos.X < _globalPosition.X + Width &&
+               pos.Y >= _globalPosition.Y && pos.Y < _globalPosition.Y + Height;
     }
     
     private int GetZIndex()
@@ -113,6 +167,7 @@ public abstract class Component
         {
             ZIndexUpdateMode.SameAsParent => _parent.ZIndex,
             ZIndexUpdateMode.OneHigherThanParent => _parent.ZIndex + 1,
+            ZIndexUpdateMode.TwoHigherThatParent => _parent.ZIndex + 2,
             _ => _zIndex
         };
     }
@@ -128,46 +183,28 @@ public abstract class Component
         {
             _parent.PositionChanged -= OnPositionChanged;
             SizeChanged -= _parent.OnSizeChanged;
-            
-            GlobalPosition = Position;
         }
 
-        if (value is null)
+        if (value == null)
         {
             _parent = null;
-            _parentOffset = Coord.Zero;
+            Position = GlobalPosition;
             return;
         }
 
         _parent = value;
-        
+        _localPosition = _globalPosition - _parent._globalPosition;
+
         _parent.PositionChanged += OnPositionChanged;
         SizeChanged += _parent.OnSizeChanged;
     }
 
-    private void SetPosition(Coord value)
-    {
-        if (value != Position)
-        {
-            PositionChanged?.Invoke(this, new PositionChangedEventArgs(value - Position));
-        }
-
-        if (_parent is null)
-        {
-            GlobalPosition = value;
-            return;
-        }
-
-        _parentOffset = value;
-        GlobalPosition = _parent.Position + _parentOffset;
-    }
-
-    private void OnPositionChanged(object? sender, PositionChangedEventArgs e)
+    private void OnPositionChanged(object sender, PositionChangedEventArgs e)
     {
         PositionChanged?.Invoke(sender, e);
     }
 
-    private void OnSizeChanged(object? sender, SizeChangedEventArgs e)
+    private void OnSizeChanged(object sender, SizeChangedEventArgs e)
     {
         SizeChanged?.Invoke(sender, e);
 
@@ -189,6 +226,7 @@ public enum ZIndexUpdateMode
 {
     SameAsParent,
     OneHigherThanParent,
+    TwoHigherThatParent,
     Manual
 }
 

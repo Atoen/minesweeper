@@ -8,7 +8,7 @@ using Minesweeper.UI.Widgets;
 namespace Minesweeper.ConsoleDisplay;
 
 public sealed class AnsiDisplay : IRenderer
-{
+{ 
     public bool Modified { get; set; }
 
     private readonly Coord _displaySize;
@@ -178,7 +178,7 @@ public sealed class AnsiDisplay : IRenderer
 
         var symbolsBuilder = new StringBuilder();
 
-        _stringBuilder.Append("\x1b[1;1f");
+        _stringBuilder.Append($"\x1b[1;1f");
 
         for (var y = 0; y < _displaySize.Y; y++)
         for (var x = 0; x < _displaySize.X; x++)
@@ -227,8 +227,8 @@ public sealed class AnsiDisplay : IRenderer
             // Setting the start pos of the collected pixel symbols when collecting the first one
             if (symbolsBuilder.Length == 0)
             {
-                streakStartPos.Y = y;
                 streakStartPos.X = x;
+                streakStartPos.Y = y;
             }
 
             // Collecting the pixels with same colors together

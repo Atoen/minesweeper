@@ -4,15 +4,11 @@ namespace Minesweeper;
 
 public record struct Coord(int X, int Y)
 {
-    public static readonly Coord Zero = new(0, 0);
-
-    public static readonly Coord Up = new(0, -1);
-    
-    public static readonly Coord Down = new(0, 1);
-    
-    public static readonly Coord Left = new(-1, 0);
-    
-    public static readonly Coord Right = new(1, 0);
+    public static Coord Zero => new(0, 0);
+    public static Coord Up => new(0, -1);
+    public static Coord Down => new(0, 1);
+    public static Coord Left => new(-1, 0);
+    public static Coord Right => new(1, 0);
 
     [Pure]
     public Coord ExpandTo(Coord other) => new(Math.Max(X, other.X), Math.Max(Y, other.Y));

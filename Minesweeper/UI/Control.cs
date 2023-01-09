@@ -1,4 +1,5 @@
 ﻿using Minesweeper.UI.Events;
+using Serilog;
 
 namespace Minesweeper.UI;
 
@@ -28,65 +29,59 @@ public abstract class Control : VisualComponent
     public event MouseEventHandler? MouseRightDown;
     public event MouseEventHandler? MouseMove;
 
-    public void SendMouseEvent(EventType eventType, MouseEventArgs e)
+    public void SendMouseEvent(MouseEventType mouseEventType, MouseEventArgs e)
     {
-        switch (eventType)
+        switch (mouseEventType)
         {
-            case EventType.MouseMove:
+            case MouseEventType.MouseMove:
                 OnMouseMove(e);
                 break;
-            case EventType.MouseEnter:
+            
+            case MouseEventType.MouseEnter:
                 OnMouseEnter(e);
                 break;
             
-            case EventType.MouseExit:
+            case MouseEventType.MouseExit:
                 OnMouseExit(e);
                 break;
             
-            case EventType.MouseLeftDown:
+            case MouseEventType.MouseLeftDown:
                 OnMouseLeftDown(e);
                 break;
             
-            case EventType.MouseLeftUp:
+            case MouseEventType.MouseLeftUp:
                 OnMouseLeftUp();
                 break;
             
-            case EventType.MouseRightDown:
+            case MouseEventType.MouseRightDown:
                 OnMouseRightDown(e);
                 break;
             
-            case EventType.MouseRightUp:
+            case MouseEventType.MouseRightUp:
                 OnMouseRightUp();
                 break;
             
-            case EventType.GotFocus:
+            case MouseEventType.GotFocus:
                 OnGotFocus(e);
                 break;
             
-            case EventType.LostFocus:
+            case MouseEventType.LostFocus:
                 OnLostFocus(e);
                 break;
 
-            case EventType.KeyDown:
-                break;
-
-            case EventType.KeyUp:
-                break;
-            
             default:
-                throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
+                throw new ArgumentOutOfRangeException(nameof(mouseEventType), mouseEventType, null);
         }
         
         if (e.Handled) return;
 
         e.Source = this;
-        (Parent as Control)?.SendMouseEvent(eventType, e);
+        (Parent as Control)?.SendMouseEvent(mouseEventType, e);
     }
 
     protected virtual void OnMouseEnter(MouseEventArgs e)
     {
         IsMouseOver = true;
-
         MouseEnter?.Invoke(this, e);
     }
 
@@ -128,7 +123,7 @@ public abstract class Control : VisualComponent
     }
 }
 
-public enum EventType
+public enum MouseEventType
 {
     MouseMove,
     MouseEnter,
@@ -140,7 +135,4 @@ public enum EventType
 
     GotFocus,
     LostFocus,
-    
-    KeyDown,
-    KeyUp
 }

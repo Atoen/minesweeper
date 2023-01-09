@@ -1,6 +1,8 @@
 ﻿using Minesweeper;
 using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI;
+using Serilog;
+using Serilog.Events;
 
 Console.CancelKeyPress += delegate
 {
@@ -9,7 +11,8 @@ Console.CancelKeyPress += delegate
     process.Refresh();
     var peakPhysical = process.PeakWorkingSet64;
     var peakPaged = process.PeakPagedMemorySize64;
-
+    
+    Log.CloseAndFlush();
     Input.Stop();
     Display.Stop();
     

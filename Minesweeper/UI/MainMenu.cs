@@ -1,4 +1,5 @@
 ﻿using Minesweeper.Game;
+using Minesweeper.UI.Events;
 using Minesweeper.UI.Widgets;
 using Grid = Minesweeper.UI.Widgets.Grid;
 
@@ -36,30 +37,43 @@ public static class MainMenu
             DefaultColor = Color.Orchid
         };
 
-        label.MouseLeftDown += delegate
-        {
-            var pos = grid.Position;
-            pos.X++;
-
-            grid.Position = pos;
-        };
-        
         var label2 = new Label
         {
             DefaultColor = Color.Red,
             Text = new Text("Inner label")
         };
+        
+        // var label3 = new Label
+        // {
+        //     DefaultColor = Color.Green,
+        //     Text = new Text("Innerer")
+        // };
+        
+        label.MouseLeftDown += delegate(object sender, MouseEventArgs args)
+        {
+            Trace.WriteLine($"clicked {(args.OriginalSource as Label).Text.String}");
+            
+            label.Position += (2, 0);
 
+            args.Handled = true;
+        };
+        
         label.MouseRightDown += delegate
         {
             label.Content = null;
         };
 
-        label.Content = button;
+        // label2.Content = label3;
+
+        // label.Content = button;
         label.Content = label2;
         
-        grid.SetColumnAndRow(label, 0, 0);
-
+        
+        grid.MouseLeftDown += delegate
+        {
+            // label.Parent = grid;
+            grid.SetColumnAndRow(label, 0, 0);
+        };
     }
     
     //     var frame = new Frame(Presets.Count + 4, 4)

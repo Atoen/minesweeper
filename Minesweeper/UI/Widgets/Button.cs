@@ -25,6 +25,8 @@ public class Button : ContentControl
 
     public override void Render()
     {
+        if (Parent == null) return;
+        
         base.Render();
         _text.Render();
     }
