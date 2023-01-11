@@ -58,7 +58,7 @@ public class Text : VisualComponent
     }
 
     public int Length => _text.Length;
-
+    
     public override void Render()
     {
         var background = Background == Color.Transparent ? Parent.Color : Background;
@@ -78,4 +78,6 @@ public class Text : VisualComponent
         
         Display.ClearRect(startPos, Size);
     }
+
+    public override string ToString() => _text;
 }

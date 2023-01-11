@@ -18,19 +18,13 @@ public class Label : ContentControl
         get => _text;
         set
         {
-            Display.RemoveFromRenderList(_text);
+            _text.Remove();
             
             _text = value;
             _text.Parent = this;
         }
     }
 
-    public override void Render()
-    {
-        base.Render();
-        _text.Render();
-    }
-    
     public override void Remove()
     {
         Display.RemoveFromRenderList(_text);
@@ -46,12 +40,12 @@ public class Label : ContentControl
 
     public override void Resize()
     {
-        var minSize = InnerPadding * 2 + _text.Size;
+        MinSize = InnerPadding * 2 + _text.Size;
 
         Size = ResizeMode switch
         {
-            ResizeMode.Grow => Size.ExpandTo(minSize),
-            ResizeMode.Stretch => minSize,
+            ResizeMode.Grow => Size.ExpandTo(MinSize),
+            ResizeMode.Stretch => MinSize,
             _ => Size
         };
 

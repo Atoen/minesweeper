@@ -1,4 +1,2 @@
-﻿Bubbling (maybe tunneling) events
-Widgets inside other widgets
+﻿Widget resizing on setting parent
 Panel + Grid finish
-Global and local position fix

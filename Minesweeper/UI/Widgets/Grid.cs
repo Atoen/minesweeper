@@ -1,4 +1,5 @@
-﻿using Minesweeper.ConsoleDisplay;
+﻿using System.Linq;
+using Minesweeper.ConsoleDisplay;
 using Minesweeper.Utils;
 
 namespace Minesweeper.UI.Widgets;
@@ -30,31 +31,43 @@ public class Grid : Control, IContainer
     {
         if (column >= Columns.Count || column < 0)
         {
-            throw new InvalidOperationException($"Invalid row index. Actual value: {column}");
+            throw new InvalidOperationException($"Invalid row index. Value: {column}");
         }
         
         if (row >= Rows.Count || row < 0)
         {
-            throw new InvalidOperationException($"Invalid row index. Actual value: {row}");
+            throw new InvalidOperationException($"Invalid row index. Value: {row}");
         }
         
         if (!Children.Contains(control)) Children.Add(control);
-
-        if (control.ResizeMode != ResizeMode.Manual) control.Resize();
 
         var pos = new Coord
         {
             X = Columns.GetOffset(column),
             Y = Rows.GetOffset(row)
         };
-        
-        control.Position = pos;
+
+        AdjustCellSize(control.PaddedSize, column, row);
+
+        control.Position = pos + control.OuterPadding;
     }
 
-    private void ChildrenOnElementChanged(object? sender, CollectionChangedEventArgs<Control> e)
+    private void AdjustCellSize(Coord size, int column, int row)
     {
-        e.Element.Parent = e.ChangeType == ChangeType.Add ? this : null;
+        if (Columns[column].Size < size.X)
+        {
+            Columns[column].Size = size.X;
+            Width = Columns.Size + InnerPadding.X * 2;
+        }
+
+        if (Rows[row].Size >= size.Y) return;
+        
+        Rows[row].Size = size.Y;
+        Height = Rows.Size + InnerPadding.Y * 2;
     }
+
+    private void ChildrenOnElementChanged(object? sender, CollectionChangedEventArgs<Control> e) => 
+        e.Element.Parent = e.ChangeType == ChangeType.Add ? this : null;
 
     private void ColumnsOnCollectionChanged(object? sender, EventArgs e) =>
         SetEvenSizes(Columns, Width - InnerPadding.X * 2);
@@ -88,7 +101,7 @@ public class Grid : Control, IContainer
 
     private void RenderLines()
     {
-        var pos = Position + InnerPadding;
+        var pos = GlobalPosition + InnerPadding;
         
         for (var i = 0; i < Columns.Count - 1; i++)
         {
@@ -96,7 +109,7 @@ public class Grid : Control, IContainer
             Display.DrawRect(pos, new Coord(1, Height - InnerPadding.Y * 2), GridLinesColor);
         }
 
-        pos = Position + InnerPadding;
+        pos = GlobalPosition + InnerPadding;
 
         for (var i = 0; i < Rows.Count - 1; i++)
         {

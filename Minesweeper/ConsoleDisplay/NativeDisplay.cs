@@ -1,7 +1,7 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.IO;
+using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Minesweeper.Game;
-using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
 
 namespace Minesweeper.ConsoleDisplay;

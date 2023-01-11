@@ -2,7 +2,6 @@
 using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI;
 using Serilog;
-using Serilog.Events;
 
 Console.CancelKeyPress += delegate
 {

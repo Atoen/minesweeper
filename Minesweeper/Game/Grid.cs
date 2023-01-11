@@ -1,5 +1,5 @@
-﻿using Minesweeper.ConsoleDisplay;
-using Minesweeper.UI;
+﻿using System.Linq;
+using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI.Widgets;
 
 namespace Minesweeper.Game;

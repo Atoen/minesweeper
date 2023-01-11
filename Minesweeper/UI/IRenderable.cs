@@ -6,5 +6,5 @@ public interface IRenderable
 
     void Clear();
     
-    public int ZIndex { get; }
+    int ZIndex { get; }
 }

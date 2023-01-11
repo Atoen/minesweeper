@@ -18,23 +18,20 @@ public static class MainMenu
     {
         var grid = new Grid
         {
-            Width = 10,
-            Height = 8,
+            Width = 20,
+            Height = 14,
             Position = new Coord(5, 5),
             ShowGridLines = true
         };
         
         grid.Columns.Add(new Column());
+        grid.Columns.Add(new Column());
+        grid.Rows.Add(new Row());
         grid.Rows.Add(new Row());
 
         var label = new Label
         {
             DefaultColor = Color.Orange
-        };
-
-        var button = new Button
-        {
-            DefaultColor = Color.Orchid
         };
 
         var label2 = new Label
@@ -43,36 +40,33 @@ public static class MainMenu
             Text = new Text("Inner label")
         };
         
-        // var label3 = new Label
-        // {
-        //     DefaultColor = Color.Green,
-        //     Text = new Text("Innerer")
-        // };
-        
-        label.MouseLeftDown += delegate(object sender, MouseEventArgs args)
+        var label3 = new Label
         {
-            Trace.WriteLine($"clicked {(args.OriginalSource as Label).Text.String}");
-            
-            label.Position += (2, 0);
+            DefaultColor = Color.Green,
+            Text = new Text("Innerer")
+        };
+        
+        label.MouseLeftDown += delegate(object _, MouseEventArgs args)
+        {
+            args.OriginalSource.Position += (2, 0);
 
             args.Handled = true;
         };
         
-        label.MouseRightDown += delegate
+        label.MouseRightDown += delegate(object _, MouseEventArgs args)
         {
-            label.Content = null;
+            if (args.OriginalSource is ContentControl control)
+            {
+                control.Content = null;
+            }
         };
 
-        // label2.Content = label3;
-
-        // label.Content = button;
         label.Content = label2;
-        
-        
+        label2.Content = label3;
+
         grid.MouseLeftDown += delegate
         {
-            // label.Parent = grid;
-            grid.SetColumnAndRow(label, 0, 0);
+            grid.SetColumnAndRow(label, 1, 1);
         };
     }
     

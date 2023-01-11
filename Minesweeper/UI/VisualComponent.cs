@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Minesweeper.ConsoleDisplay;
+﻿using Minesweeper.ConsoleDisplay;
 using Minesweeper.Utils;
 
 namespace Minesweeper.UI;
@@ -25,6 +24,8 @@ public abstract class VisualComponent : Component, IRenderable
     public int PaddedHeight => Height + OuterPadding.Y * 2;
 
     public Coord PaddedSize => Size + OuterPadding * 2;
+
+    protected Coord MinSize;
     
     public Color Color
     {
@@ -57,6 +58,10 @@ public abstract class VisualComponent : Component, IRenderable
     public virtual void Remove()
     {
         Display.RemoveFromRenderList(this);
+    }
+    
+    public virtual void Resize()
+    {
     }
 
     private void OnPositionChanged(object sender, PositionChangedEventArgs e)

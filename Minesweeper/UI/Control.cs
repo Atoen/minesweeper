@@ -1,17 +1,13 @@
 ﻿using Minesweeper.UI.Events;
-using Serilog;
 
 namespace Minesweeper.UI;
 
 public abstract class Control : VisualComponent
 {
-    protected Control()
-    {
-        Input.Register(this);
-    }
+    protected Control() => Input.Register(this);
 
-    public bool IsMouseOver { get; protected set; }
-    public bool IsFocused { get; protected set; }
+    public bool IsMouseOver { get; private set; }
+    public bool IsFocused { get; private set; }
 
     public bool IsFocusable { get; set; } = true;
     

@@ -18,14 +18,13 @@ public class ObservableList<T> : List<T>
     {
         var result = base.Remove(item);
 
-        if (result)
-        {
-            var args = new CollectionChangedEventArgs<T>(ChangeType.Remove, item);
-            ElementChanged?.Invoke(this, args);
-            CollectionChanged?.Invoke(this, EventArgs.Empty);
-        }
+        if (!result) return false;
+        
+        var args = new CollectionChangedEventArgs<T>(ChangeType.Remove, item);
+        ElementChanged?.Invoke(this, args);
+        CollectionChanged?.Invoke(this, EventArgs.Empty);
 
-        return result;
+        return true;
     }
 
     public new void AddRange(IEnumerable<T> collection)
@@ -40,8 +39,7 @@ public class ObservableList<T> : List<T>
 
         foreach (var item in newItems)
         {
-            var args = new CollectionChangedEventArgs<T>(ChangeType.Add, item);
-            ElementChanged?.Invoke(this, args);
+            ElementChanged?.Invoke(this, new CollectionChangedEventArgs<T>(ChangeType.Add, item));
         }
     }
 
@@ -58,8 +56,7 @@ public class ObservableList<T> : List<T>
 
         foreach (var item in items)
         {
-            var args = new CollectionChangedEventArgs<T>(ChangeType.Remove, item);
-            ElementChanged?.Invoke(this, args);
+            ElementChanged?.Invoke(this, new CollectionChangedEventArgs<T>(ChangeType.Remove, item));
         }
     }
 

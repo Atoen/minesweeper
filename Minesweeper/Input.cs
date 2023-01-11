@@ -232,7 +232,7 @@ public static class Input
     [DllImport("kernel32.dll")]
     private static extern bool SetConsoleMode(IntPtr hConsoleInput, uint dwMode);
 
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+    [DllImport("kernel32.dll")]
     private static extern bool ReadConsoleInput(IntPtr hConsoleInput, [Out] InputRecord[] lpBuffer, uint nLength,
         ref uint lpNumberOfEventsRead);
 

@@ -136,10 +136,6 @@ public abstract class Component
         }
     }
 
-    public virtual void Resize()
-    {
-    }
-
     public void SetEnabled(bool enabled)
     {
         if (!Enabled && enabled) State = State.Default;
@@ -150,13 +146,8 @@ public abstract class Component
     
     public bool ContainsPoint(Coord pos)
     {
-        if (GlobalPosition != _globalPosition)
-        {
-            
-        }
-        
-        return pos.X >= _globalPosition.X && pos.X < _globalPosition.X + Width &&
-               pos.Y >= _globalPosition.Y && pos.Y < _globalPosition.Y + Height;
+        return pos.X >= GlobalPosition.X && pos.X < GlobalPosition.X + Width &&
+               pos.Y >= GlobalPosition.Y && pos.Y < GlobalPosition.Y + Height;
     }
     
     private int GetZIndex()
@@ -176,7 +167,7 @@ public abstract class Component
     {
         if (value == this)
         {
-            throw new InvalidOperationException("Component cannot be its own parent.");
+            throw new InvalidOperationException($"Component {value} cannot be its own parent.");
         }
 
         if (value != _parent && _parent != null)
@@ -187,13 +178,14 @@ public abstract class Component
 
         if (value == null)
         {
-            _parent = null;
             Position = GlobalPosition;
+            _parent = null;
+            
             return;
         }
 
         _parent = value;
-        _localPosition = _globalPosition - _parent._globalPosition;
+        _localPosition = _globalPosition - _parent.GlobalPosition;
 
         _parent.PositionChanged += OnPositionChanged;
         SizeChanged += _parent.OnSizeChanged;
@@ -210,7 +202,7 @@ public abstract class Component
 
         if (sender != this && ResizeMode != ResizeMode.Manual)
         {
-            Resize();
+            (this as VisualComponent)?.Resize();
         }
     }
 }
@@ -239,10 +231,7 @@ public enum ResizeMode
 
 public class PositionChangedEventArgs : EventArgs
 {
-    public PositionChangedEventArgs(Coord delta)
-    {
-        Delta = delta;
-    }
+    public PositionChangedEventArgs(Coord delta) => Delta = delta;
 
     public Coord Delta { get; }
 }

@@ -23,18 +23,18 @@ public class Button : ContentControl
     
     public Action? OnClick { get; init; }
 
-    public override void Render()
-    {
-        if (Parent == null) return;
-        
-        base.Render();
-        _text.Render();
-    }
-
     public override void Resize()
     {
-        var minSize = InnerPadding * 2 + _text.Size;
-        Size = Size.ExpandTo(minSize);
+        MinSize = InnerPadding * 2 + _text.Size;
+
+        Size = ResizeMode switch
+        {
+            ResizeMode.Grow => Size.ExpandTo(MinSize),
+            ResizeMode.Stretch => MinSize,
+            _ => Size
+        };
+
+        base.Resize();
     }
 
     public override void Remove()

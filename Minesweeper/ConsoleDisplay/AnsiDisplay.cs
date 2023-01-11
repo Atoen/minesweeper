@@ -1,9 +1,8 @@
-﻿using System.Collections.ObjectModel;
-using System.Runtime.CompilerServices;
-using System.Text;
+﻿using System.Text;
 using Minesweeper.Game;
-using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
+using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 
 namespace Minesweeper.ConsoleDisplay;
 
