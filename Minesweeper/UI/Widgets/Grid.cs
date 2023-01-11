@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Minesweeper.ConsoleDisplay;
+﻿using Minesweeper.ConsoleDisplay;
 using Minesweeper.Utils;
 
 namespace Minesweeper.UI.Widgets;
@@ -41,15 +40,15 @@ public class Grid : Control, IContainer
         
         if (!Children.Contains(control)) Children.Add(control);
 
+        AdjustCellSize(control.PaddedSize, column, row);
+        
         var pos = new Coord
         {
-            X = Columns.GetOffset(column),
-            Y = Rows.GetOffset(row)
+            X = Columns.GetOffset(column) + InnerPadding.X,
+            Y = Rows.GetOffset(row) + InnerPadding.Y
         };
 
-        AdjustCellSize(control.PaddedSize, column, row);
-
-        control.Position = pos + control.OuterPadding;
+        control.Position = pos;
     }
 
     private void AdjustCellSize(Coord size, int column, int row)
@@ -105,16 +104,16 @@ public class Grid : Control, IContainer
         
         for (var i = 0; i < Columns.Count - 1; i++)
         {
-            pos.X = Columns.GetOffset(i) + Position.X + Columns[i].Size + Columns.Padding / 2;
-            Display.DrawRect(pos, new Coord(1, Height - InnerPadding.Y * 2), GridLinesColor);
+            pos.X = Columns.GetOffset(i) + Position.X + Columns[i].Size + (Columns.Padding + 1) / 2;
+            Display.DrawRect(pos, new Coord(Columns.Padding, Height - InnerPadding.Y * 2), GridLinesColor);
         }
 
         pos = GlobalPosition + InnerPadding;
 
         for (var i = 0; i < Rows.Count - 1; i++)
         {
-            pos.Y = Rows.GetOffset(i) + Position.Y + Rows[i].Size + Rows.Padding / 2;
-            Display.DrawRect(pos, new Coord(Width - InnerPadding.X * 2, 1), GridLinesColor);
+            pos.Y = Rows.GetOffset(i) + Position.Y + Rows[i].Size + (Rows.Padding + 1) / 2;
+            Display.DrawRect(pos, new Coord(Width - InnerPadding.X * 2, Rows.Padding), GridLinesColor);
         }
     }
     
@@ -139,60 +138,6 @@ public class Grid : Control, IContainer
             child.Remove();
         }
     }
-}
-
-public sealed class GridElementCollection<T> : ObservableList<T> where T : class, IGridLayoutElement
-{
-    private int _padding = 1;
-
-    public int Padding
-    {
-        get => _padding;
-        set
-        {
-            _padding = value;
-            OnCollectionChanged();
-        }
-    }
-
-    public int PaddingCount => Count > 0 ? Count - 1 : 0;
-    public int TotalPadding => PaddingCount * Padding;
-    public int Size => this.Sum(e => e.Size) + TotalPadding;
-
-    public int GetOffset(int index)
-    {
-        if (index >= Count || index < 0) throw new IndexOutOfRangeException();
-
-        var offset = 0;
-        for (var i = 0; i < index; i++)
-        {
-            offset += this[i].Size + Padding;
-        }
-
-        return offset;
-    }
-}
-
-public sealed class Column : IGridLayoutElement
-{
-    public int Size { get; set; }
-}
-
-public sealed class Row : IGridLayoutElement
-{
-    public int Size { get; set; }
-}
-
-public interface IGridLayoutElement
-{
-    public int Size { get; set; }
-}
-
-public enum GridUnitType
-{
-    Auto,
-    Pixel,
-    Weighted
 }
 
 public enum HorizontalAlignment

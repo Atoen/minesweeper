@@ -29,6 +29,8 @@ public static class MainMenu
         grid.Rows.Add(new Row());
         grid.Rows.Add(new Row());
 
+        grid.Columns.Padding = 2;
+
         var label = new Label
         {
             DefaultColor = Color.Orange
@@ -48,7 +50,7 @@ public static class MainMenu
         
         label.MouseLeftDown += delegate(object _, MouseEventArgs args)
         {
-            args.OriginalSource.Position += (2, 0);
+            args.OriginalSource.Position += (1, 1);
 
             args.Handled = true;
         };
@@ -66,7 +68,7 @@ public static class MainMenu
 
         grid.MouseLeftDown += delegate
         {
-            grid.SetColumnAndRow(label, 1, 1);
+            grid.SetColumnAndRow(label, 0, 0);
         };
     }
     

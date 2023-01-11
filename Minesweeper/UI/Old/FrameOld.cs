@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Minesweeper.UI.Widgets;
+﻿using Minesweeper.UI.Widgets;
 
 namespace Minesweeper.UI.Old;
 
