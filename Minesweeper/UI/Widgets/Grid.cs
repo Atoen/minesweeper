@@ -18,7 +18,7 @@ public class Grid : Control, IContainer
     public readonly GridElementCollection<Column> Columns = new();
     public readonly GridElementCollection<Row> Rows = new();
 
-    public GridResizeMode GridResizeMode { get; set; } = GridResizeMode.Both;
+    public GridResizeDirection GridResizeDirection { get; set; } = GridResizeDirection.Both;
     
     public VerticalAlignment VerticalAlignment { get; set; } = VerticalAlignment.Middle;
     public HorizontalAlignment HorizontalAlignment { get; set; } = HorizontalAlignment.Middle;
@@ -40,6 +40,11 @@ public class Grid : Control, IContainer
         
         if (!Children.Contains(control)) Children.Add(control);
 
+        if (control is not ContentControl contentControl || contentControl.Content == null)
+        {
+            control.Resize();
+        }
+        
         AdjustCellSize(control.PaddedSize, column, row);
         
         var pos = new Coord
@@ -53,13 +58,15 @@ public class Grid : Control, IContainer
 
     private void AdjustCellSize(Coord size, int column, int row)
     {
-        if (Columns[column].Size < size.X)
+        if (Columns[column].Size < size.X &&
+            GridResizeDirection is GridResizeDirection.Horizontal or GridResizeDirection.Both)
         {
             Columns[column].Size = size.X;
             Width = Columns.Size + InnerPadding.X * 2;
         }
 
-        if (Rows[row].Size >= size.Y) return;
+        if (Rows[row].Size >= size.Y &&
+            GridResizeDirection is not (GridResizeDirection.Vertical or GridResizeDirection.Both)) return;
         
         Rows[row].Size = size.Y;
         Height = Rows.Size + InnerPadding.Y * 2;
@@ -68,7 +75,7 @@ public class Grid : Control, IContainer
     private void ChildrenOnElementChanged(object? sender, CollectionChangedEventArgs<Control> e) => 
         e.Element.Parent = e.ChangeType == ChangeType.Add ? this : null;
 
-    private void ColumnsOnCollectionChanged(object? sender, EventArgs e) =>
+    private void ColumnsOnCollectionChanged(object? sender, EventArgs e) => 
         SetEvenSizes(Columns, Width - InnerPadding.X * 2);
 
     private void RowsOnCollectionChanged(object? sender, EventArgs e) =>
@@ -154,7 +161,7 @@ public enum VerticalAlignment
     Middle
 }
 
-public enum GridResizeMode
+public enum GridResizeDirection
 {
     None,
     Vertical,

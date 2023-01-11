@@ -38,7 +38,7 @@ public class FrameOld
 
         var multiCell = rowSpan != 1 || columnSpan != 1;
 
-        if (widget.GridResizeMode != GridResizeMode.None && !multiCell)
+        if (widget.GridResizeDirection != GridResizeDirection.None && !multiCell)
         {
             FillWidget(widget, _grid[row, column].Size);
         }

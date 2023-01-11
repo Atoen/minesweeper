@@ -37,16 +37,19 @@ public sealed class GridElementCollection<T> : ObservableList<T> where T : class
 public sealed class Column : IGridLayoutElement
 {
     public int Size { get; set; }
+    public GridUnitType UnitType { get; set; } = GridUnitType.Pixel;
 }
 
 public sealed class Row : IGridLayoutElement
 {
     public int Size { get; set; }
+    public GridUnitType UnitType { get; set; } = GridUnitType.Pixel;
 }
 
 public interface IGridLayoutElement
 {
     public int Size { get; set; }
+    public GridUnitType UnitType { get; set; }
 }
 
 public enum GridUnitType
