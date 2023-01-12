@@ -4,28 +4,18 @@ namespace Minesweeper.UI.Widgets;
 
 public class Canvas : Widget
 {
-    private readonly AnsiDisplay.Pixel[,] _buffer;
+    private readonly Pixel[,] _buffer;
 
     private readonly IDrawable _drawable;
 
     public Canvas(IDrawable drawable)
     {
         _drawable = drawable;
-        _buffer = new AnsiDisplay.Pixel[drawable.Width, drawable.Height];
+        _buffer = new Pixel[drawable.Width, drawable.Height];
         
         _drawable.SetBuffer(_buffer);
         _drawable.Draw();
     }
-
-    // public override Canvas Grid(int row, int column, int rowSpan = 1, int columnSpan = 1, GridAlignment alignment = GridAlignment.Center)
-    // {
-    //     return base.Grid<Canvas>(row, column, rowSpan, columnSpan, alignment);
-    // }
-    //
-    // public override Canvas Place(int posX, int posY)
-    // {
-    //     return base.Grid<Canvas>(posX, posY);
-    // }
 
     public override void Render()
     {
@@ -57,5 +47,5 @@ public interface IDrawable
 
     void Draw();
 
-    void SetBuffer(AnsiDisplay.Pixel[,] buffer);
+    void SetBuffer(Pixel[,] buffer);
 }

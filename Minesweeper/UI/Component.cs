@@ -135,6 +135,10 @@ public abstract class Component
             }
         }
     }
+    
+    public virtual void Resize()
+    {
+    }
 
     public void SetEnabled(bool enabled)
     {
@@ -202,7 +206,7 @@ public abstract class Component
 
         if (sender != this && ResizeMode != ResizeMode.Manual)
         {
-            (this as VisualComponent)?.Resize();
+            Resize();
         }
     }
 }

@@ -59,7 +59,6 @@ void ParseArgs(string arg)
 
 if (args.Length > 0) ParseArgs(args[0]);
 
-
 Display.Init(displayMode);
 
 Input.Init();

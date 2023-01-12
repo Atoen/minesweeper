@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Minesweeper.Game;
+using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
 
 namespace Minesweeper.ConsoleDisplay;
@@ -46,7 +47,7 @@ public sealed class NativeDisplay : IRenderer
 
         var bufferIndex = posY * _displaySize.X + posX;
         
-        var color = (short) ((int) fg.ConsoleColor() | (int) bg.ConsoleColor() << 4);
+        var color = Colors.CombineToShort(fg, bg);
 
         lock(_threadLock)
         {
@@ -55,9 +56,26 @@ public sealed class NativeDisplay : IRenderer
         }
     }
 
-    public void Draw(int posX, int posY, TileDisplay tile)
+    public void DrawRect(Coord pos, Coord size, Color color, char symbol = ' ')
     {
-        Draw(posX, posY, tile.Symbol, tile.Foreground, tile.Background);
+        if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
+        
+        var endX = Math.Min(size.X, _displaySize.X - pos.X);
+        var endY = Math.Min(size.Y, _displaySize.Y - pos.Y);
+
+        var consoleColor = (short) (color.ConsoleColorIndex() << 4);
+
+        lock (_threadLock)
+        {
+            for (var x = 0; x < endX; x++)
+            for (var y = 0; y < endY; y++)
+            {
+                var bufferIndex = (pos.Y + y) * _displaySize.X + pos.X + x;
+
+                _currentBuffer[bufferIndex].Symbol = symbol;
+                _currentBuffer[bufferIndex].Color = consoleColor;
+            }
+        }
     }
 
     public void Print(int posX, int posY, string text, Color fg, Color bg, Alignment alignment, TextMode _)
@@ -78,7 +96,7 @@ public sealed class NativeDisplay : IRenderer
         
         if (endX >= _displaySize.X) endX = _displaySize.X - 1;
 
-        var color = (short) ((int) fg.ConsoleColor() | (int) bg.ConsoleColor() << 4);
+        var color = Colors.CombineToShort(fg, bg);
         
         var bufferIndex = posY * _displaySize.X + startX;
 
@@ -92,7 +110,7 @@ public sealed class NativeDisplay : IRenderer
         }
     }
 
-    public void DrawBuffer(Coord pos, Coord size, AnsiDisplay.Pixel[,] buffer)
+    public void DrawBuffer(Coord pos, Coord size, Pixel[,] buffer)
     {
         if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
 
@@ -109,13 +127,23 @@ public sealed class NativeDisplay : IRenderer
                 
                 _currentBuffer[index].Symbol = pixel.Symbol;
 
-                var color = (short) ((int) buffer[x, y].Fg.ConsoleColor() | (int) buffer[x, y].Bg.ConsoleColor() << 4);
+                var color = Colors.CombineToShort(buffer[x, y].Fg, buffer[x, y].Bg);
                 _currentBuffer[index].Color = color;
             }
         }
     }
 
-    
+    public void DrawBorder(Coord pos, Coord size, Color color, BorderStyle style)
+    {
+        if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
+
+        var endX = Math.Min(size.X, _displaySize.X - pos.X);
+        var endY = Math.Min(size.Y, _displaySize.Y - pos.Y);
+        
+        var consoleColor = (short) (color.ConsoleColorIndex() << 4);
+    }
+
+
     public void ClearAt(int posX, int posY)
     {
         if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
@@ -124,10 +152,29 @@ public sealed class NativeDisplay : IRenderer
 
         lock (_threadLock)
         {
-            _currentBuffer[bufferIndex] = CharInfo.Cleared;
+            _currentBuffer[bufferIndex] = CharInfo.Empty;
         }
     }
-    
+
+    public void ClearRect(Coord pos, Coord size)
+    {
+        if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
+        
+        var endX = Math.Min(size.X, _displaySize.X - pos.X);
+        var endY = Math.Min(size.Y, _displaySize.Y - pos.Y);
+
+        lock (_threadLock)
+        {
+            for (var x = 0; x < endX; x++)
+            for (var y = 0; y < endY; y++)
+            {
+                var bufferIndex = (pos.Y + y) * _displaySize.X + pos.X + x;
+
+                _currentBuffer[bufferIndex] = CharInfo.Empty;
+            }
+        }
+    }
+
     public void Draw()
     {
         lock (_threadLock)
@@ -185,8 +232,7 @@ public sealed class NativeDisplay : IRenderer
     private struct CharInfo
     {
         public static readonly CharInfo Empty = new() {Symbol = '\0', Color = 0};
-        public static readonly CharInfo Cleared = new() {Symbol = (char) ' ', Color = 0};
-        
+
         [FieldOffset(0)] public char Symbol;
         [FieldOffset(2)] public short Color;
     }

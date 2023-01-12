@@ -1,8 +1,8 @@
 ﻿using System.Text;
-using Minesweeper.Game;
 using Minesweeper.UI.Widgets;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+using Minesweeper.UI;
 
 namespace Minesweeper.ConsoleDisplay;
 
@@ -39,9 +39,23 @@ public sealed class AnsiDisplay : IRenderer
         }
     }
 
-    public void Draw(int posX, int posY, TileDisplay tile)
+    public void DrawRect(Coord pos, Coord size, Color color, char symbol = ' ')
     {
-        Draw(posX, posY, tile.Utf8Symbol, tile.Foreground, tile.Background);
+        if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
+        
+        var endX = Math.Min(size.X, _displaySize.X - pos.X);
+        var endY = Math.Min(size.Y, _displaySize.Y - pos.Y);
+
+        lock (_threadLock)
+        {
+            for (var x = 0; x < endX; x++)
+            for (var y = 0; y < endY; y++)
+            {
+                _currentPixels[pos.X + x, pos.Y + y].Symbol = symbol;
+                _currentPixels[pos.X + x, pos.Y + y].Fg = Color.Black;
+                _currentPixels[pos.X + x, pos.Y + y].Bg = color;
+            }
+        }
     }
 
     public void Print(int posX, int posY, string text, Color fg, Color bg, Alignment alignment, TextMode mode)
@@ -79,25 +93,92 @@ public sealed class AnsiDisplay : IRenderer
         if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
 
         var endX = Math.Min(size.X, _displaySize.X - pos.X);
-        var endY = Math.Min(size.Y, _displaySize.Y - size.Y);
+        var endY = Math.Min(size.Y, _displaySize.Y - pos.Y);
             
         lock (_threadLock)
         {
             for (var x = 0; x < endX; x++)
             for (var y = 0; y < endY; y++)
             {
-                _currentPixels[x + pos.X, y + pos.Y] = buffer[x, y];
+                _currentPixels[pos.X + x, pos.Y + y] = buffer[x, y];
             }
+        }
+    }
+
+    public void DrawBorder(Coord pos, Coord size, Color color, BorderStyle style)
+    {
+        if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
+
+        var endX = Math.Min(size.X, _displaySize.X - pos.X);
+        var endY = Math.Min(size.Y, _displaySize.Y - pos.Y);
+
+        lock (_threadLock)
+        {
+            for (var x = 1; x < endX - 1; x++)
+            {
+                _currentPixels[pos.X + x, pos.Y].Symbol = Border.Symbols[style][BorderFragment.Horizontal];
+                _currentPixels[pos.X + x, pos.Y].Fg = color;
+                
+                _currentPixels[pos.X + x, pos.Y + endY - 1].Symbol = Border.Symbols[style][BorderFragment.Horizontal];
+                _currentPixels[pos.X + x, pos.Y + endY - 1].Fg = color;
+
+            }
+            
+            for (var y = 1; y < endY - 1; y++)
+            {
+                _currentPixels[pos.X, pos.Y + y].Symbol = Border.Symbols[style][BorderFragment.Vertical];
+                _currentPixels[pos.X, pos.Y + y].Fg = color;
+                
+                _currentPixels[pos.X + endX - 1, pos.Y + y].Symbol = Border.Symbols[style][BorderFragment.Vertical];
+                _currentPixels[pos.X + endX - 1, pos.Y + y].Fg = color;
+            }
+
+            _currentPixels[pos.X, pos.Y].Symbol = Border.Symbols[style][BorderFragment.UpperLeft];
+            _currentPixels[pos.X, pos.Y].Fg = color;
+
+            var fitsHorizontally = endX >= size.X;
+            var fitsVertically = endY >= size.Y;
+            
+            if (fitsHorizontally)
+            {
+                _currentPixels[pos.X + endX - 1, pos.Y].Symbol = Border.Symbols[style][BorderFragment.UpperRight];
+                _currentPixels[pos.X + endX - 1, pos.Y].Fg = color;
+            }
+            
+            if (fitsVertically)
+            {
+                _currentPixels[pos.X, pos.Y + endY - 1].Symbol = Border.Symbols[style][BorderFragment.LowerLeft];
+                _currentPixels[pos.X, pos.Y + endY - 1].Fg = color;
+            }
+
+            if (!fitsHorizontally || !fitsVertically) return;
+            
+            _currentPixels[pos.X + endX - 1, pos.Y + endY - 1].Symbol = Border.Symbols[style][BorderFragment.LowerRight];
+            _currentPixels[pos.X + endX - 1, pos.Y + endY - 1].Fg = color;
         }
     }
 
     public void ClearAt(int posX, int posY)
     {
-        
         if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
+        
+        lock (_threadLock) _currentPixels[posX, posY] = Pixel.Cleared;
+    }
+
+    public void ClearRect(Coord pos, Coord size)
+    {
+        if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
+        
+        var endX = Math.Min(size.X, _displaySize.X - pos.X);
+        var endY = Math.Min(size.Y, _displaySize.Y - pos.Y);
+
         lock (_threadLock)
         {
-            _currentPixels[posX, posY] = Pixel.Cleared;
+            for (var x = 0; x < endX; x++)
+            for (var y = 0; y < endY; y++)
+            {
+                _currentPixels[pos.X + x, pos.Y + y] = Pixel.Cleared;
+            }
         }
     }
 
@@ -261,64 +342,5 @@ public sealed class AnsiDisplay : IRenderer
         Console.Title = _stringBuilder.Length.ToString();
 
         return _stringBuilder.ToString();
-    }
-
-    public struct Pixel : IEquatable<Pixel>
-    {
-        private Pixel(char symbol, TextMode mode, Color fg, Color bg)
-        {
-            Symbol = symbol;
-            Mode = mode;
-            Fg = fg;
-            Bg = bg;
-        }
-        
-        private const char ClearedSymbol = ' ';
-
-        public static readonly Pixel Empty = new('\0', TextMode.Default, Color.Empty, Color.Empty);
-        public static readonly Pixel Cleared = new(ClearedSymbol, TextMode.Default, Color.Empty, Color.Empty);
-
-        public TextMode Mode;
-        public char Symbol;
-
-
-        public Color Fg = Color.Empty;
-        public Color Bg = Color.Empty;
-
-        public override string ToString()
-        {
-            return $"\x1b[38;2;{Fg.R};{Fg.G};{Fg.B}m\x1b[48;2;{Bg.R};{Bg.G};{Bg.B}m{Symbol}";
-        }
-
-        public bool IsEmpty => Symbol == '\0' && Fg == Color.Empty && Bg == Color.Empty;
-        public bool IsCleared => Symbol == ClearedSymbol && Fg == Color.Empty && Bg == Color.Empty;
-
-        public static implicit operator Pixel(TileDisplay tileDisplay) =>
-            new(tileDisplay.Symbol, TextMode.Default, tileDisplay.Foreground, tileDisplay.Background);
-
-        public static bool operator ==(Pixel a, Pixel b)
-        {
-            return a.Fg == b.Fg && a.Bg == b.Bg && a.Symbol == b.Symbol && a.Mode == b.Mode;
-        }
-
-        public static bool operator !=(Pixel a, Pixel b)
-        {
-            return !(a == b);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Symbol, Fg, Bg);
-        }
-
-        public bool Equals(Pixel other)
-        {
-            return Mode == other.Mode && Symbol == other.Symbol && Fg.Equals(other.Fg) && Bg.Equals(other.Bg);
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is Pixel other && Equals(other);
-        }
     }
 }

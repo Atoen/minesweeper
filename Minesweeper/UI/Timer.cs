@@ -1,4 +1,7 @@
-﻿namespace Minesweeper.UI;
+﻿using System.Threading;
+using System.Threading.Tasks;
+
+namespace Minesweeper.UI;
 
 public class Timer
 {

@@ -40,13 +40,32 @@ public static class Colors
     public static void AppendToBuilderBg(this Color color, StringBuilder builder) => 
         builder.Append($"\x1b[48;2;{color.R};{color.G};{color.B}m");
 
-    public static ConsoleColor ConsoleColor(this Color color)
+    public static short CombineToShort(Color foreground, Color background)
+    {
+        var foregroundIndex = ConsoleColorIndex(foreground);
+        var backgroundIndex = ConsoleColorIndex(background);
+
+        return (short) (foregroundIndex | (short) (backgroundIndex << 4));
+    }
+
+    public static short ConsoleColorIndex(this Color color)
     {
         var index = color.R > 128 | color.G > 128 | color.B > 128 ? 8 : 0; // Bright bit
         index |= color.R > 64 ? 4 : 0; // Red bit
         index |= color.G > 64 ? 2 : 0; // Green bit
         index |= color.B > 64 ? 1 : 0; // Blue bit
-        return (ConsoleColor) index;
+
+        return (short) index;
+    }
+
+    public static ConsoleColor ConsoleColorFg(this Color color)
+    {
+        return (ConsoleColor) ConsoleColorIndex(color);
+    }
+    
+    public static ConsoleColor ConsoleColorBg(this Color color)
+    {
+        return (ConsoleColor) (ConsoleColorIndex(color) << 4);
     }
 
 }

@@ -71,9 +71,9 @@ public class Text : VisualComponent
     {
         var startPos = Alignment switch
         {
-            Alignment.Left => Position,
-            Alignment.Right => new Coord(Position.X - Length, Position.Y),
-            _ => new Coord(Position.X - Length / 2, Position.Y)
+            Alignment.Left => GlobalPosition,
+            Alignment.Right => new Coord(GlobalPosition.X - Length, GlobalPosition.Y),
+            _ => new Coord(GlobalPosition.X - Length / 2, GlobalPosition.Y)
         };
         
         Display.ClearRect(startPos, Size);

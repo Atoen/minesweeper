@@ -18,7 +18,7 @@ public sealed class Grid : IDrawable
     private bool _revealed;
     private int _bombs;
 
-    private AnsiDisplay.Pixel[,] _buffer = null!;
+    private Pixel[,] _buffer = null!;
 
     public Grid(DifficultyPreset preset)
     {
@@ -52,7 +52,7 @@ public sealed class Grid : IDrawable
         _revealed = false;
     }
 
-    public void SetBuffer(AnsiDisplay.Pixel[,] buffer)
+    public void SetBuffer(Pixel[,] buffer)
     {
         _buffer = buffer;
     }
