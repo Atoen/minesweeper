@@ -12,7 +12,7 @@ public class Entry : Widget
     public Color TextBackground { get; set; } = Color.Gray;
     public int MaxTextLenght { get; set; }
 
-    public TextEntryMode InputMode { get; init; } = TextEntryMode.All;
+    public EntryMode InputMode { get; init; } = EntryMode.All;
 
     private bool _inEntryMode;
 
@@ -20,7 +20,7 @@ public class Entry : Widget
     {
         if (_inEntryMode && Enabled) Text.Cycle();
 
-        Display.DrawRect(Position, Size, Color);
+        Display.DrawRect(Position, Size, CurrentColor);
         
         var textStart = Center + TextOffset + Coord.Left * (MaxTextLenght / 2);
 
@@ -64,7 +64,7 @@ public class Entry : Widget
         Text.Animating = false;
         Text.Mode = TextMode.Default;
 
-        if (InputMode != TextEntryMode.Digits) return;
+        if (InputMode != EntryMode.Digits) return;
         
         if (string.IsNullOrWhiteSpace(Text.Text)) Text.Text = "0";
     }
@@ -97,15 +97,15 @@ public class Entry : Widget
     {
         return InputMode switch
         {
-            TextEntryMode.Alphanumeric => char.IsLetterOrDigit(symbol),
-            TextEntryMode.Letters => char.IsLetter(symbol),
-            TextEntryMode.Digits => char.IsDigit(symbol),
+            EntryMode.Alphanumeric => char.IsLetterOrDigit(symbol),
+            EntryMode.Letters => char.IsLetter(symbol),
+            EntryMode.Digits => char.IsDigit(symbol),
             _ => !char.IsControl(symbol)
         };
     }
 }
 
-public enum TextEntryMode
+public enum EntryMode
 {
     All,
     Alphanumeric,

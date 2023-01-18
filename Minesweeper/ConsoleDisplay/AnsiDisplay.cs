@@ -15,8 +15,8 @@ public sealed class AnsiDisplay : IRenderer
 
     private readonly Pixel[,] _currentPixels;
     private readonly Pixel[,] _lastPixels;
-
-    private readonly object _threadLock = new();
+    
+    private static readonly ReaderWriterLockSlim LockSlim = new();
 
     public AnsiDisplay(int width, int height)
     {
@@ -31,30 +31,23 @@ public sealed class AnsiDisplay : IRenderer
     {
         if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
 
-        lock (_threadLock)
-        {
-            _currentPixels[posX, posY].Symbol = symbol;
-            _currentPixels[posX, posY].Fg = fg;
-            _currentPixels[posX, posY].Bg = bg;
-        }
+        _currentPixels[posX, posY].Symbol = symbol;
+        _currentPixels[posX, posY].Fg = fg;
+        _currentPixels[posX, posY].Bg = bg;
     }
 
     public void DrawRect(Coord pos, Coord size, Color color, char symbol = ' ')
     {
-        if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
+        var (shouldDraw, start, end) = CalculateDrawArea(pos, size);
         
-        var endX = Math.Min(size.X, _displaySize.X - pos.X);
-        var endY = Math.Min(size.Y, _displaySize.Y - pos.Y);
+        if (!shouldDraw) return;
 
-        lock (_threadLock)
+        for (var x = start.X; x < end.X; x++)
+        for (var y = start.Y; y < end.Y; y++)
         {
-            for (var x = 0; x < endX; x++)
-            for (var y = 0; y < endY; y++)
-            {
-                _currentPixels[pos.X + x, pos.Y + y].Symbol = symbol;
-                _currentPixels[pos.X + x, pos.Y + y].Fg = Color.Black;
-                _currentPixels[pos.X + x, pos.Y + y].Bg = color;
-            }
+            _currentPixels[x, y].Symbol = symbol;
+            _currentPixels[x, y].Fg = Color.Black;
+            _currentPixels[x, y].Bg = color;
         }
     }
 
@@ -75,129 +68,137 @@ public sealed class AnsiDisplay : IRenderer
         var endX = startX + text.Length;
         
         if (endX >= _displaySize.X) endX = _displaySize.X - 1;
-        
-        lock (_threadLock)
+
+        for (int x = startX - posX, i = 0; x < endX - posX; x++, i++)
         {
-            for (int x = startX - posX, i = 0; x < endX - posX; x++, i++)
-            {
-                _currentPixels[posX + x, posY].Symbol = text[i];
-                _currentPixels[posX + x, posY].Mode = mode;
-                _currentPixels[posX + x, posY].Fg = fg;
-                _currentPixels[posX + x, posY].Bg = bg;
-            }
+            _currentPixels[posX + x, posY].Symbol = text[i];
+            _currentPixels[posX + x, posY].Mode = mode;
+            _currentPixels[posX + x, posY].Fg = fg;
+            _currentPixels[posX + x, posY].Bg = bg;
         }
     }
 
     public void DrawBuffer(Coord pos, Coord size, Pixel[,] buffer)
     {
-        if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
+        var (shouldDraw, start, end) = CalculateDrawArea(pos, size);
+        
+        if (!shouldDraw) return;
 
-        var endX = Math.Min(size.X, _displaySize.X - pos.X);
-        var endY = Math.Min(size.Y, _displaySize.Y - pos.Y);
-            
-        lock (_threadLock)
+        for (var x = start.X; x < end.X; x++)
+        for (var y = start.Y; y < end.Y; y++)
         {
-            for (var x = 0; x < endX; x++)
-            for (var y = 0; y < endY; y++)
-            {
-                _currentPixels[pos.X + x, pos.Y + y] = buffer[x, y];
-            }
+            _currentPixels[x, y] = buffer[x, y];
         }
     }
 
     public void DrawBorder(Coord pos, Coord size, Color color, BorderStyle style)
     {
-        if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
-
-        var endX = Math.Min(size.X, _displaySize.X - pos.X);
-        var endY = Math.Min(size.Y, _displaySize.Y - pos.Y);
-
-        lock (_threadLock)
+        var (shouldDraw, start, end) = CalculateDrawArea(pos, size);
+        
+        if (!shouldDraw) return;
+        
+        
+        for (var x = start.X + 1; x < end.X - 1; x++)
         {
-            for (var x = 1; x < endX - 1; x++)
-            {
-                _currentPixels[pos.X + x, pos.Y].Symbol = Border.Symbols[style][BorderFragment.Horizontal];
-                _currentPixels[pos.X + x, pos.Y].Fg = color;
-                
-                _currentPixels[pos.X + x, pos.Y + endY - 1].Symbol = Border.Symbols[style][BorderFragment.Horizontal];
-                _currentPixels[pos.X + x, pos.Y + endY - 1].Fg = color;
+            _currentPixels[x, start.Y].Symbol = Border.Symbols[style][BorderFragment.Horizontal];
+            _currentPixels[x, start.Y].Fg = color;
 
-            }
-            
-            for (var y = 1; y < endY - 1; y++)
-            {
-                _currentPixels[pos.X, pos.Y + y].Symbol = Border.Symbols[style][BorderFragment.Vertical];
-                _currentPixels[pos.X, pos.Y + y].Fg = color;
-                
-                _currentPixels[pos.X + endX - 1, pos.Y + y].Symbol = Border.Symbols[style][BorderFragment.Vertical];
-                _currentPixels[pos.X + endX - 1, pos.Y + y].Fg = color;
-            }
-
-            _currentPixels[pos.X, pos.Y].Symbol = Border.Symbols[style][BorderFragment.UpperLeft];
-            _currentPixels[pos.X, pos.Y].Fg = color;
-
-            var fitsHorizontally = endX >= size.X;
-            var fitsVertically = endY >= size.Y;
-            
-            if (fitsHorizontally)
-            {
-                _currentPixels[pos.X + endX - 1, pos.Y].Symbol = Border.Symbols[style][BorderFragment.UpperRight];
-                _currentPixels[pos.X + endX - 1, pos.Y].Fg = color;
-            }
-            
-            if (fitsVertically)
-            {
-                _currentPixels[pos.X, pos.Y + endY - 1].Symbol = Border.Symbols[style][BorderFragment.LowerLeft];
-                _currentPixels[pos.X, pos.Y + endY - 1].Fg = color;
-            }
-
-            if (!fitsHorizontally || !fitsVertically) return;
-            
-            _currentPixels[pos.X + endX - 1, pos.Y + endY - 1].Symbol = Border.Symbols[style][BorderFragment.LowerRight];
-            _currentPixels[pos.X + endX - 1, pos.Y + endY - 1].Fg = color;
+            _currentPixels[x, end.Y - 1].Symbol = Border.Symbols[style][BorderFragment.Horizontal];
+            _currentPixels[x, end.Y - 1].Fg = color;
         }
+
+        for (var y = start.Y + 1; y < end.Y - 1; y++)
+        {
+            _currentPixels[start.X, y].Symbol = Border.Symbols[style][BorderFragment.Vertical];
+            _currentPixels[start.X, y].Fg = color;
+            
+            _currentPixels[end.X - 1, y].Symbol = Border.Symbols[style][BorderFragment.Vertical];
+            _currentPixels[end.X - 1, y].Fg = color;
+        }
+
+        _currentPixels[start.X, start.Y].Symbol = Border.Symbols[style][BorderFragment.UpperLeft];
+        _currentPixels[start.X, start.Y].Fg = color;
+
+        var fitsHorizontally = end.X > start.X;
+        var fitsVertically = end.Y > start.Y;
+        
+        if (fitsHorizontally)
+        {
+            _currentPixels[end.X - 1, start.Y].Symbol = Border.Symbols[style][BorderFragment.UpperRight];
+            _currentPixels[end.X - 1, start.Y].Fg = color;
+        }
+        
+        if (fitsVertically)
+        {
+            _currentPixels[start.X, end.Y - 1].Symbol = Border.Symbols[style][BorderFragment.LowerLeft];
+            _currentPixels[start.X, end.Y - 1].Fg = color;
+        }
+
+        if (!fitsHorizontally || !fitsVertically) return;
+        
+        _currentPixels[end.X - 1, end.Y - 1].Symbol = Border.Symbols[style][BorderFragment.LowerRight];
+        _currentPixels[end.X - 1, end.Y - 1].Fg = color;
     }
 
     public void ClearAt(int posX, int posY)
     {
         if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
         
-        lock (_threadLock) _currentPixels[posX, posY] = Pixel.Cleared;
+        _currentPixels[posX, posY] = Pixel.Cleared;
     }
 
     public void ClearRect(Coord pos, Coord size)
     {
-        if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
+        var (shouldDraw, start, end) = CalculateDrawArea(pos, size);
         
-        var endX = Math.Min(size.X, _displaySize.X - pos.X);
-        var endY = Math.Min(size.Y, _displaySize.Y - pos.Y);
+        if (!shouldDraw) return;
 
-        lock (_threadLock)
+        for (var x = start.X; x < end.X; x++)
+        for (var y = start.Y; y < end.Y; y++)
         {
-            for (var x = 0; x < endX; x++)
-            for (var y = 0; y < endY; y++)
-            {
-                _currentPixels[pos.X + x, pos.Y + y] = Pixel.Cleared;
-            }
+            _currentPixels[x, y] = Pixel.Cleared;
         }
     }
 
     public void Draw()
     {
-        lock (_threadLock)
-        {
-            CopyToBuffer();
+        var sw = Stopwatch.StartNew();
+    
+        CopyToBuffer();
 
-            if (!Modified) return;
+        if (!Modified) return;
 
-            Console.Write(GenerateDisplayString());
-            _stringBuilder.Clear();
-            
-            Modified = false;
-        }
+        Console.Write(GenerateDisplayString());
+        _stringBuilder.Clear();
+        
+        Modified = false;
+
+        sw.Stop();
+
+        Trace.WriteLine(sw.ElapsedTicks.ToString());
     }
 
     public void ResetStyle() => Console.Write("\x1b[0m");
+
+    private (bool isNonZero, Coord start, Coord end) CalculateDrawArea(Coord position, Coord size)
+    {
+        if (position.X >= _displaySize.X || position.Y >= _displaySize.Y)
+            return new ValueTuple<bool, Coord, Coord>(false, Coord.Zero, Coord.Zero);
+
+        var start = new Coord
+        {
+            X = Math.Max(position.X, 0),
+            Y = Math.Max(position.Y, 0),
+        };
+        
+        var end = new Coord
+        {
+            X = Math.Min(position.X + size.X, _displaySize.X),
+            Y = Math.Min(position.Y + size.Y, _displaySize.Y),
+        };
+
+        return new ValueTuple<bool, Coord, Coord>(true, start, end);
+    }
 
     private void CopyToBuffer()
     {
@@ -320,7 +321,7 @@ public sealed class AnsiDisplay : IRenderer
             if (pixel.IsCleared) _currentPixels[x, y] = Pixel.Empty;
         }
 
-        // If all of the pixels are the same, they are printed all at once
+        // If the screen buffer ends while symbolsBuilder still has unprinted content
         if (symbolsBuilder.Length > 0)
         {
             var lastPixel = _currentPixels[_displaySize.X - 1, _displaySize.Y - 1];

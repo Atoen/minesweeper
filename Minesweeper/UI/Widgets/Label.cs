@@ -4,14 +4,8 @@ namespace Minesweeper.UI.Widgets;
 
 public class Label : ContentControl
 {
-    public Label()
-    {
-        _text = new Text(nameof(Label))
-        {
-            Parent = this
-        };
-    }
-    
+    public Label() => _text = new Text(nameof(Label)) {Parent = this};
+
     private Text _text;
     public Text Text
     {
@@ -28,7 +22,6 @@ public class Label : ContentControl
     public override void Remove()
     {
         Display.RemoveFromRenderList(_text);
-        
         base.Remove();
     }
 

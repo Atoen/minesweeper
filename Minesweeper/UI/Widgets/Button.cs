@@ -5,23 +5,23 @@ namespace Minesweeper.UI.Widgets;
 
 public class Button : ContentControl
 {
-    public Button()
-    {
-        _text = new Text(nameof(Button)) {Parent = this};
-    }
-    
+    public Button() => _text = new Text(nameof(Button)) {Parent = this};
+
     private Text _text;
     public Text Text
     {
         get => _text;
         set
         {
+            _text.Parent = null!;
+            _text.Remove();
+
             _text = value;
             _text.Parent = this;
         }
     }
     
-    public Action? OnClick { get; init; }
+    public Action? OnClick { get; set; }
 
     public override void Resize()
     {

@@ -61,7 +61,7 @@ public class Text : VisualComponent
     
     public override void Render()
     {
-        var background = Background == Color.Transparent ? Parent.Color : Background;
+        var background = Background == Color.Transparent ? Parent.CurrentColor : Background;
         var position = Parent.Center;
         
         Display.Print(position.X, position.Y, _text, Foreground, background, Alignment, TextMode);

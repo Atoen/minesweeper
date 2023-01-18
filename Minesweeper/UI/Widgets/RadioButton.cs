@@ -5,27 +5,22 @@ namespace Minesweeper.UI.Widgets;
 
 public class RadioButton : Button
 {
-    public bool IsSelected => _variable.Val == _value;
-
-    public TextMode SelectedTextMode { get; set; } = TextMode.Underline | TextMode.Overline;
-    
-    private readonly Variable _variable;
-    private readonly int _value;
-
     public RadioButton(Variable variable, int value)
     {
+        Text = new Text(nameof(RadioButton)) {Parent = this};
+        
         _variable = variable;
         _value = value;
-        
-        _variable.ValueChanged += OnVariableChange;
 
         if (IsSelected) State = State.Highlighted;
     }
 
-    private void OnVariableChange(object? sender, EventArgs eventArgs)
-    {
-        if (!IsSelected && Enabled) State = State.Default;
-    }
+    public bool IsSelected => _variable.Val == _value;
+
+    public TextMode SelectedTextMode { get; set; } = TextMode.DoubleUnderline;
+    
+    private readonly Variable _variable;
+    private readonly int _value;
 
     protected override void OnMouseLeftDown(MouseEventArgs e)
     {
@@ -36,7 +31,7 @@ public class RadioButton : Button
 
     public override void Render()
     {
-        // AnimatedText.Mode = IsSelected ? SelectedTextMode : TextMode.Default;
+        Text.TextMode = IsSelected ? SelectedTextMode : TextMode.Default;
 
         if (IsSelected && State == State.Default) State = State.Highlighted;
         else if (!IsSelected && !IsMouseOver) State = State.Default;
@@ -47,19 +42,7 @@ public class RadioButton : Button
 
 public sealed class Variable
 {
-    private int _val;
-
-    public int Val
-    {
-        get => _val;
-        set
-        {
-            if (_val != value) ValueChanged?.Invoke(this, EventArgs.Empty);
-            _val = value;
-        }
-    }
-
     public Variable(int val = 0) => Val = val;
-
-    public event EventHandler? ValueChanged;
+    public int Val { get; set; }
+    
 }

@@ -1,12 +1,11 @@
 ﻿using System.Runtime.InteropServices;
-using System.Threading;
 using Minesweeper.UI;
 using Minesweeper.UI.Events;
 using Minesweeper.Utils;
 
 namespace Minesweeper;
 
-public static class Input
+public static partial class Input
 {
     internal static event Action<KeyboardState>? KeyEvent;
     internal static event Action<WindowState>? WindowEvent;
@@ -17,9 +16,10 @@ public static class Input
     private static readonly MouseState MouseState = new();
     private static KeyboardState _keyboardState;
     
+    private static readonly List<Control> Controls = new();
     private static readonly object LockObject = new();
 
-    internal static void Init()
+    public static void Init()
     {
         if (_running) return;
         _running = true;
@@ -38,6 +38,16 @@ public static class Input
         {
             Name = "Inupt Thread"
         }.Start();
+    }
+    
+    public static void Register(Control control)
+    {
+        lock (LockObject) Controls.Add(control);
+    }
+
+    public static void Unregister(Control control)
+    {
+        lock (LockObject) Controls.Remove(control);
     }
 
     private static void HandleInput()
@@ -70,23 +80,6 @@ public static class Input
         }
     }
 
-    private static readonly List<Control> Controls = new();
-    public static void Register(Control control)
-    {
-        lock (LockObject)
-        {
-            Controls.Add(control);
-        }
-    }
-
-    public static void Unregister(Control control)
-    {
-        lock (LockObject)
-        {
-            Controls.Remove(control);
-        }
-    }
-
     private static void HandleMouse(MouseEventRecord mouseRecord)
     {
         MouseState.Assign(ref mouseRecord);
@@ -95,23 +88,6 @@ public static class Input
         Control? hit = null;
 
         var pos = MouseState.Position;
-
-        void Miss(Control control, MouseButton button)
-        {
-            MouseEventArgs? args = null;
-
-            if (control is {IsMouseOver: true, Enabled: true})
-            {
-                args = CreateMouseArgs(MouseState, control);
-                control.SendMouseEvent(MouseEventType.MouseExit, args);
-            }
-
-            if (control is {IsFocusable: true, IsFocused: true} && button.HasValue(MouseButton.Left))
-            {
-                args ??= CreateMouseArgs(MouseState, control);
-                control.SendMouseEvent(MouseEventType.LostFocus, args);
-            }
-        }
 
         lock (LockObject)
         {
@@ -135,27 +111,49 @@ public static class Input
         if (hit is null || !hit.Enabled) return;
 
         var args = CreateMouseArgs(MouseState, hit);
+        
+        SendMouseEvents(hit, args);
 
+        _lastMouseButton = mouseRecord.ButtonState;
+    }
+    
+    private static void Miss(Control control, MouseButton button)
+    {
+        MouseEventArgs? args = null;
+
+        if (control is {IsMouseOver: true, Enabled: true})
+        {
+            args = CreateMouseArgs(MouseState, control);
+            control.SendMouseEvent(MouseEventType.MouseExit, args);
+        }
+
+        if (control is {IsFocusable: true, IsFocused: true} && button.HasValue(MouseButton.Left))
+        {
+            args ??= CreateMouseArgs(MouseState, control);
+            control.SendMouseEvent(MouseEventType.LostFocus, args);
+        }
+    }
+
+    private static void SendMouseEvents(Control control, MouseEventArgs args)
+    {
         if (_lastMouseButton == 0)
         {
             if (MouseState.Buttons.HasValue(MouseButton.Left))
             {
-                hit.SendMouseEvent(MouseEventType.MouseLeftDown, args);
+                control.SendMouseEvent(MouseEventType.MouseLeftDown, args);
                 
-                if (hit.IsFocusable) hit.SendMouseEvent(MouseEventType.GotFocus, args);
+                if (control.IsFocusable) control.SendMouseEvent(MouseEventType.GotFocus, args);
             }
 
             if (MouseState.Buttons.HasValue(MouseButton.Right))
             {
-                hit.SendMouseEvent(MouseEventType.MouseRightDown, args);
+                control.SendMouseEvent(MouseEventType.MouseRightDown, args);
             }
         }
+        
+        if (!control.IsMouseOver) control.SendMouseEvent(MouseEventType.MouseEnter, args);
 
-        _lastMouseButton = mouseRecord.ButtonState;
-
-        if (!hit.IsMouseOver) hit.SendMouseEvent(MouseEventType.MouseEnter, args);
-
-        hit.SendMouseEvent(MouseEventType.MouseMove, args);
+        control.SendMouseEvent(MouseEventType.MouseMove, args);
     }
     
     private static MouseEventArgs CreateMouseArgs(MouseState state, Control source) => new(source)
@@ -224,20 +222,21 @@ public static class Input
         public SCoord Size;
     }
 
-    [DllImport("kernel32.dll")]
-    private static extern IntPtr GetStdHandle(uint nStdHandle);
+    [LibraryImport("kernel32.dll")]
+    private static partial nint GetStdHandle(uint nStdHandle);
+
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial void GetConsoleMode(nint hConsoleInput, ref uint lpMode);
+
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial void SetConsoleMode(nint hConsoleInput, uint dwMode);
 
     [DllImport("kernel32.dll")]
-    private static extern bool GetConsoleMode(IntPtr hConsoleInput, ref uint lpMode);
-
-    [DllImport("kernel32.dll")]
-    private static extern bool SetConsoleMode(IntPtr hConsoleInput, uint dwMode);
-
-    [DllImport("kernel32.dll")]
-    private static extern bool ReadConsoleInput(IntPtr hConsoleInput, [Out] InputRecord[] lpBuffer, uint nLength,
+    private static extern bool ReadConsoleInput(nint hConsoleInput, [Out] InputRecord[] lpBuffer, uint nLength,
         ref uint lpNumberOfEventsRead);
 
-    #endregion
     
     [StructLayout(LayoutKind.Sequential)]
     public struct SCoord
@@ -246,6 +245,8 @@ public static class Input
         public short Y;
         public override string ToString() => $"({X} {Y})";
     }
+    
+    #endregion
 }
 
 public struct KeyboardState

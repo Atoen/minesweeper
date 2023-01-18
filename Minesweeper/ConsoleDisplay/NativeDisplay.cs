@@ -135,12 +135,6 @@ public sealed class NativeDisplay : IRenderer
 
     public void DrawBorder(Coord pos, Coord size, Color color, BorderStyle style)
     {
-        if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
-
-        var endX = Math.Min(size.X, _displaySize.X - pos.X);
-        var endY = Math.Min(size.Y, _displaySize.Y - pos.Y);
-        
-        var consoleColor = (short) (color.ConsoleColorIndex() << 4);
     }
 
 

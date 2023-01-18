@@ -6,6 +6,11 @@ public static class Colors
 {
     public static IEnumerable<Color> Gradient(Color start, Color end, int steps)
     {
+        if (steps < 2)
+        {
+            throw new ArgumentException("Cannot create gradient from less than 2 colors", nameof(steps));
+        }
+        
         var stepA = (end.A - start.A) / (steps - 1);
         var stepR = (end.R - start.R) / (steps - 1);
         var stepG = (end.G - start.G) / (steps - 1);
@@ -22,6 +27,11 @@ public static class Colors
 
     public static Color Brighter(this Color color, int brighteningPercent = 20)
     {
+        if (brighteningPercent < -100)
+        {
+            throw new ArgumentOutOfRangeException(nameof(brighteningPercent), "Value cannot be lower that -100");
+        }
+        
         var factor = 100 + brighteningPercent;
 
         var a = Math.Min(color.A * factor / 100, 255);

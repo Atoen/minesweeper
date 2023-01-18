@@ -1,4 +1,5 @@
-﻿using Minesweeper.UI.Events;
+﻿using Minesweeper.ConsoleDisplay;
+using Minesweeper.UI.Events;
 
 namespace Minesweeper.UI;
 
@@ -7,10 +8,26 @@ public abstract class Control : VisualComponent
     protected Control() => Input.Register(this);
 
     public bool IsMouseOver { get; private set; }
-    public bool IsFocused { get; private set; }
-
-    public bool IsFocusable { get; set; } = true;
     
+    public bool IsFocused { get; private set; }
+    public bool IsFocusable { get; set; } = true;
+    public bool ShowFocusedBorder { get; set; } = true;
+    public BorderStyle FocusBorderStyle { get; set; } = BorderStyle.Dotted;
+    public Color FocusBorderColor { get; set; } = Color.Black;
+    
+    public int TabIndex { get; set; }
+
+    public override void Render()
+    {
+        base.Render();
+        
+        // Focus border should not override normal border
+        if (IsFocused && ShowFocusedBorder && !ShowBorder)
+        {
+            Display.DrawBorder(GlobalPosition, Size, FocusBorderColor, FocusBorderStyle);
+        }
+    }
+
     public override void Remove()
     {
         Input.Unregister(this);
@@ -58,11 +75,11 @@ public abstract class Control : VisualComponent
                 break;
             
             case MouseEventType.GotFocus:
-                OnGotFocus(e);
+                if (e.OriginalSource == this) OnGotFocus(e);
                 break;
             
             case MouseEventType.LostFocus:
-                OnLostFocus(e);
+                if (e.OriginalSource == this) OnLostFocus(e);
                 break;
 
             default:

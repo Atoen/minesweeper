@@ -17,6 +17,17 @@ public abstract class VisualComponent : Component, IRenderable
     public Color HighlightedColor { get; set; } = Color.Blue;
     public Color PressedColor { get; set; } = Color.White;
     
+    public Color Color
+    {
+        get => DefaultColor;
+        set
+        {
+            DefaultColor = value;
+            HighlightedColor = value.Brighter();
+            PressedColor = value.Brighter(50);
+        }
+    }
+    
     public Coord InnerPadding = new(1, 1);
     public Coord OuterPadding = Coord.Zero;
     
@@ -30,8 +41,8 @@ public abstract class VisualComponent : Component, IRenderable
     public Coord PaddedSize => Size + OuterPadding * 2;
 
     protected Coord MinSize;
-    
-    public Color Color
+
+    public Color CurrentColor
     {
         get
         {
@@ -49,7 +60,7 @@ public abstract class VisualComponent : Component, IRenderable
     [MethodCall(MethodCallMode.Scheduled)]
     public virtual void Render()
     {
-        Display.DrawRect(GlobalPosition, Size, Color);
+        Display.DrawRect(GlobalPosition, Size, CurrentColor);
 
         if (ShowBorder)
         {

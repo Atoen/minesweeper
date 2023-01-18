@@ -1,12 +1,11 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
 using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
 
 namespace Minesweeper.ConsoleDisplay;
 
-public static class Display
+public static partial class Display
 {
     public static int Width { get; private set; }
     public static int Height { get; private set; }
@@ -19,7 +18,7 @@ public static class Display
 
     private static IRenderer _renderer = null!;
 
-    private static readonly object LockObject = new();
+    private static readonly ReaderWriterLockSlim LockSlim = new();
 
     public static void Init(DisplayMode mode = DisplayMode.Auto)
     {
@@ -44,83 +43,50 @@ public static class Display
         }.Start();
     }
 
-    public static void Stop()
-    {
-        _refreshing = false;
-    }
+    public static void Stop() => _refreshing = false;
 
     public static void AddToRenderList(IRenderable renderable)
     {
-        lock (LockObject)
-        {
-            Renderables.Add(renderable);
+        LockSlim.EnterWriteLock();
+        
+        Renderables.Add(renderable);
 
-            // Placing foreground and top renderables later so they don't get covered by background
-            Renderables.Sort((r1, r2) => r1.ZIndex.CompareTo(r2.ZIndex));
-        }
+        // Placing foreground and top renderables later so they don't get covered by background
+        Renderables.Sort((r1, r2) => r1.ZIndex.CompareTo(r2.ZIndex));
+        
+        LockSlim.ExitWriteLock();
     }
 
     public static void RemoveFromRenderList(IRenderable renderable)
     {
-        lock (LockObject)
-        {
-            Renderables.Remove(renderable);
-            RemovedRenderables.Add(renderable);
-        }
+        LockSlim.EnterWriteLock();
+        
+        Renderables.Remove(renderable);
+        RemovedRenderables.Add(renderable);
+
+        LockSlim.ExitWriteLock();
     }
 
-    public static void Draw(int posX, int posY, char symbol, Color foreground, Color background)
-    {
+    public static void Draw(int posX, int posY, char symbol, Color foreground, Color background) => 
         _renderer.Draw(posX, posY, symbol, foreground, background);
-    }
 
-    public static void ClearAt(Coord pos)
-    {
-        _renderer.ClearAt(pos.X, pos.Y);
-    }
+    public static void ClearAt(Coord pos) => _renderer.ClearAt(pos.X, pos.Y);
 
-    public static void ClearAt(int posX, int posY)
-    {
-        _renderer.ClearAt(posX, posY);
-    }
+    public static void ClearAt(int posX, int posY) => _renderer.ClearAt(posX, posY);
 
-    public static void ResetStyle()
-    {
-        _renderer.ResetStyle();
-    }
+    public static void ResetStyle() => _renderer.ResetStyle();
 
     public static void Print(int posX, int posY, string text, Color foreground, Color background,
-        Alignment alignment = Alignment.Center, TextMode mode = TextMode.Default)
-    {
+        Alignment alignment = Alignment.Center, TextMode mode = TextMode.Default) =>
         _renderer.Print(posX, posY, text, foreground, background, alignment, mode);
-    }
 
-    public static void DrawRect(Coord pos, Coord size, Color color, char symbol = ' ')
-    {
+    public static void DrawRect(Coord pos, Coord size, Color color, char symbol = ' ') => 
         _renderer.DrawRect(pos, size, color, symbol);
 
-        // for (var x = 0; x < size.X; x++)
-        // for (var y = 0; y < size.Y; y++)
-        // {
-        //     _renderer.Draw(pos.X + x, pos.Y + y, symbol, color, color);
-        // }
-    }
+    public static void ClearRect(Coord pos, Coord size) => _renderer.ClearRect(pos, size);
 
-    public static void ClearRect(Coord pos, Coord size)
-    {
-        _renderer.ClearRect(pos, size);
-
-        // for (var x = 0; x < size.X; x++)
-        // for (var y = 0; y < size.Y; y++)
-        // {
-        //     _renderer.ClearAt(pos.X + x, pos.Y + y);
-        // }
-    }
-
-    public static void DrawBorder(Coord pos, Coord size, Color color, BorderStyle style)
-    {
+    public static void DrawBorder(Coord pos, Coord size, Color color, BorderStyle style) => 
         _renderer.DrawBorder(pos, size, color, style);
-    }
 
     public static void DrawBuffer(Coord pos, Pixel[,] buffer)
     {
@@ -153,29 +119,21 @@ public static class Display
 
     private static void Draw()
     {
-        lock (LockObject)
-        {
-            foreach (var removed in RemovedRenderables) removed.Clear();
+        // LockSlim.EnterUpgradeableReadLock();
+        
+        foreach (var removed in RemovedRenderables) removed.Clear();
 
-            RemovedRenderables.Clear();
+        RemovedRenderables.Clear();
 
-            foreach (var renderable in Renderables) renderable.Render();
+        foreach (var renderable in Renderables) renderable.Render();
 
-            _renderer.Draw();
-        }
+        _renderer.Draw();
+
+        // LockSlim.ExitUpgradeableReadLock();
     }
 
     private static void GetDisplayMode()
     {
-        [DllImport("kernel32.dll")]
-        static extern nint GetStdHandle(int nStdHandle);
-
-        [DllImport("kernel32.dll")]
-        static extern bool GetConsoleMode(nint hConsoleInput, out uint mode);
-
-        [DllImport("kernel32.dll")]
-        static extern bool SetConsoleMode(nint handle, uint mode);
-
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             Mode = DisplayMode.Native;
@@ -193,6 +151,17 @@ public static class Display
         SetConsoleMode(handle, mode | 4U);
         Mode = DisplayMode.Ansi;
     }
+    
+    [LibraryImport("kernel32.dll")]
+    private static partial nint GetStdHandle(int nStdHandle);
+
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool GetConsoleMode(nint hConsoleInput, out uint mode);
+
+    [LibraryImport("kernel32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial void SetConsoleMode(nint handle, uint mode);
 }
 
 public enum DisplayMode

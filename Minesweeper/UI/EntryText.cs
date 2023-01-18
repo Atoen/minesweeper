@@ -82,7 +82,7 @@ public class EntryText : Content, IAnimatedText
     {
         if (Animating) Cycle();
         
-        Display.Print(Position.X, Position.Y, Text, Foreground, Background ?? Parent.Color);
+        Display.Print(Position.X, Position.Y, Text, Foreground, Background ?? Parent.CurrentColor);
     }
 
     public override void Clear()

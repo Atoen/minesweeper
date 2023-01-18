@@ -39,25 +39,16 @@ public struct Pixel : IEquatable<Pixel>
         return a.Fg == b.Fg && a.Bg == b.Bg && a.Symbol == b.Symbol && a.Mode == b.Mode;
     }
 
-    public static bool operator !=(Pixel a, Pixel b)
-    {
-        return !(a == b);
-    }
+    public static bool operator !=(Pixel a, Pixel b) => !(a == b);
 
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(Symbol, Fg, Bg);
-    }
+    public override int GetHashCode() => HashCode.Combine(Symbol, Fg, Bg);
 
     public bool Equals(Pixel other)
     {
         return Mode == other.Mode && Symbol == other.Symbol && Fg.Equals(other.Fg) && Bg.Equals(other.Bg);
     }
 
-    public override bool Equals(object? obj)
-    {
-        return obj is Pixel other && Equals(other);
-    }
+    public override bool Equals(object? obj) => obj is Pixel other && Equals(other);
 }
 
 [Flags]
@@ -71,3 +62,5 @@ public enum TextMode
     DoubleUnderline = 1 << 4,
     Overline = 1 << 5
 }
+
+

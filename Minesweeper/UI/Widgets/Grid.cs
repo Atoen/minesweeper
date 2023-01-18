@@ -52,8 +52,13 @@ public class Grid : Control, IContainer
             X = Columns.GetOffset(column) + InnerPadding.X,
             Y = Rows.GetOffset(row) + InnerPadding.Y
         };
+        
+        CalculatePosition(control, pos + control.OuterPadding);
+    }
 
-        control.Position = pos;
+    private void CalculatePosition(Control control, Coord baseOffset)
+    {
+        control.Position = baseOffset;
     }
 
     private void AdjustCellSize(Coord size, int column, int row)

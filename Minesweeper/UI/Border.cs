@@ -10,12 +10,12 @@ public static class Border
             {
                 BorderStyle.Single, new Dictionary<BorderFragment, char>
                 {
-                    {BorderFragment.Vertical, '┃'},
-                    {BorderFragment.Horizontal, '━'},
-                    {BorderFragment.UpperLeft, '┏'},
-                    {BorderFragment.UpperRight, '┓'},
-                    {BorderFragment.LowerLeft, '┗'},
-                    {BorderFragment.LowerRight, '┛'}
+                    {BorderFragment.Vertical, '│'},
+                    {BorderFragment.Horizontal, '─'},
+                    {BorderFragment.UpperLeft, '┌'},
+                    {BorderFragment.UpperRight, '┐'},
+                    {BorderFragment.LowerLeft, '└'},
+                    {BorderFragment.LowerRight, '┘'}
                 }
             },
 
@@ -58,12 +58,12 @@ public static class Border
             {
                 BorderStyle.Dotted, new Dictionary<BorderFragment, char>
                 {
-                    {BorderFragment.Vertical, '|'},
-                    {BorderFragment.Horizontal, '╶'},
-                    {BorderFragment.UpperLeft, '╷'},
-                    {BorderFragment.UpperRight, '╷'},
-                    {BorderFragment.LowerLeft, '╵'},
-                    {BorderFragment.LowerRight, '╵'}
+                    {BorderFragment.Vertical, '╎'},
+                    {BorderFragment.Horizontal, '-'},
+                    {BorderFragment.UpperLeft, '·'},
+                    {BorderFragment.UpperRight, '·'},
+                    {BorderFragment.LowerLeft, '·'},
+                    {BorderFragment.LowerRight, '·'}
                 }
             }
         });
