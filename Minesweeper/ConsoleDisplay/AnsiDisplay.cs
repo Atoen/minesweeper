@@ -36,21 +36,33 @@ public sealed class AnsiDisplay : IRenderer
         _currentPixels[posX, posY].Bg = bg;
     }
 
-    public void DrawRect(Coord pos, Coord size, Color color, char symbol = ' ')
+    public void DrawRect(Coord start, Coord end, Color color, char symbol = ' ')
     {
-        var (shouldDraw, start, end) = CalculateDrawArea(pos, size);
-        
-        if (!shouldDraw) return;
-
         for (var x = start.X; x < end.X; x++)
         for (var y = start.Y; y < end.Y; y++)
         {
             _currentPixels[x, y].Symbol = symbol;
-            _currentPixels[x, y].Fg = Color.Black;
+            _currentPixels[x, y].Fg = Color.Empty;
             _currentPixels[x, y].Bg = color;
         }
     }
 
+    public void DrawLine(Coord pos, Coord direction, int length, Color fg, Color bg, char symbol)
+    {
+        var distance = 0;
+
+        while (distance < length)
+        {
+            _currentPixels[pos.X, pos.Y].Symbol = symbol;
+            _currentPixels[pos.X, pos.Y].Fg = fg;
+            _currentPixels[pos.X, pos.Y].Bg = bg;
+
+            pos += direction;
+            distance++;
+        }
+    }
+    
+    
     public void Print(int posX, int posY, string text, Color fg, Color bg, Alignment alignment, TextMode mode)
     {
         if (posY < 0 || posY >= _displaySize.Y) return;
@@ -61,29 +73,31 @@ public sealed class AnsiDisplay : IRenderer
             Alignment.Right => posX - text.Length,
             _ => posX - text.Length / 2
         };
-        
-        if (startX < 0) startX = 0;
-        if (startX >= _displaySize.X) startX = _displaySize.X - 1;
-    
-        var endX = startX + text.Length;
-        
-        if (endX >= _displaySize.X) endX = _displaySize.X - 1;
 
-        for (int x = startX - posX, i = 0; x < endX - posX; x++, i++)
+        if (startX >= _displaySize.X) return;
+        
+        var endX = startX + text.Length;
+        if (endX >= _displaySize.X) endX = _displaySize.X - 1;
+        
+        var firstLetterOffset = 0;
+        
+        if (startX < 0)
         {
-            _currentPixels[posX + x, posY].Symbol = text[i];
-            _currentPixels[posX + x, posY].Mode = mode;
-            _currentPixels[posX + x, posY].Fg = fg;
-            _currentPixels[posX + x, posY].Bg = bg;
+            firstLetterOffset = -startX;
+            startX = 0;
+        }
+
+        for (int x = startX, i = firstLetterOffset; x < endX; x++, i++)
+        {
+            _currentPixels[x, posY].Symbol = text[i];
+            _currentPixels[x, posY].Mode = mode;
+            _currentPixels[x, posY].Fg = fg;
+            _currentPixels[x, posY].Bg = bg;
         }
     }
 
-    public void DrawBuffer(Coord pos, Coord size, Pixel[,] buffer)
+    public void DrawBuffer(Coord start, Coord end, Pixel[,] buffer)
     {
-        var (shouldDraw, start, end) = CalculateDrawArea(pos, size);
-        
-        if (!shouldDraw) return;
-
         for (var x = start.X; x < end.X; x++)
         for (var y = start.Y; y < end.Y; y++)
         {
@@ -91,13 +105,8 @@ public sealed class AnsiDisplay : IRenderer
         }
     }
 
-    public void DrawBorder(Coord pos, Coord size, Color color, BorderStyle style)
+    public void DrawBorder(Coord start, Coord end, Color color, BorderStyle style)
     {
-        var (shouldDraw, start, end) = CalculateDrawArea(pos, size);
-        
-        if (!shouldDraw) return;
-        
-        
         for (var x = start.X + 1; x < end.X - 1; x++)
         {
             _currentPixels[x, start.Y].Symbol = Border.Symbols[style][BorderFragment.Horizontal];
@@ -147,12 +156,8 @@ public sealed class AnsiDisplay : IRenderer
         _currentPixels[posX, posY] = Pixel.Cleared;
     }
 
-    public void ClearRect(Coord pos, Coord size)
+    public void ClearRect(Coord start, Coord end)
     {
-        var (shouldDraw, start, end) = CalculateDrawArea(pos, size);
-        
-        if (!shouldDraw) return;
-
         for (var x = start.X; x < end.X; x++)
         for (var y = start.Y; y < end.Y; y++)
         {
@@ -162,8 +167,6 @@ public sealed class AnsiDisplay : IRenderer
 
     public void Draw()
     {
-        var sw = Stopwatch.StartNew();
-    
         CopyToBuffer();
 
         if (!Modified) return;
@@ -172,33 +175,9 @@ public sealed class AnsiDisplay : IRenderer
         _stringBuilder.Clear();
         
         Modified = false;
-
-        sw.Stop();
-
-        Trace.WriteLine(sw.ElapsedTicks.ToString());
     }
 
     public void ResetStyle() => Console.Write("\x1b[0m");
-
-    private (bool isNonZero, Coord start, Coord end) CalculateDrawArea(Coord position, Coord size)
-    {
-        if (position.X >= _displaySize.X || position.Y >= _displaySize.Y)
-            return new ValueTuple<bool, Coord, Coord>(false, Coord.Zero, Coord.Zero);
-
-        var start = new Coord
-        {
-            X = Math.Max(position.X, 0),
-            Y = Math.Max(position.Y, 0),
-        };
-        
-        var end = new Coord
-        {
-            X = Math.Min(position.X + size.X, _displaySize.X),
-            Y = Math.Min(position.Y + size.Y, _displaySize.Y),
-        };
-
-        return new ValueTuple<bool, Coord, Coord>(true, start, end);
-    }
 
     private void CopyToBuffer()
     {

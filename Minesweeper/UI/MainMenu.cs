@@ -13,9 +13,10 @@ public static class MainMenu
         {
             Size = (10, 10),
             
-            DefaultColor = Color.Gray,
-            GridLinesColor = Color.DarkGray.Brighter(10),
-            ShowGridLines = true
+            Color = Color.Gray,
+            
+            ShowGridLines = true,
+            GridLineStyle = GridLineStyle.SingleBold
         };
         
         grid.Columns.Add(new Column());
@@ -38,10 +39,17 @@ public static class MainMenu
             
             InnerPadding = (2, 1)
         };
-        
+
+        var isDragging = false;
         label.MouseRightDown += delegate
         {
             label.ShowBorder = !label.ShowBorder;
+            isDragging = !isDragging;
+        };
+        
+        label.MouseMove += delegate(object _, MouseEventArgs args)
+        {
+            if (isDragging) label.Center = args.CursorPosition;
         };
         
         var button = new Button
@@ -49,7 +57,8 @@ public static class MainMenu
             Text = new Text("PLAY"),
             Color = Color.Aquamarine,
             
-            InnerPadding = (2, 1)
+            InnerPadding = (2, 1),
+            OnClick = () => grid.Remove()
         };
 
         var variable = new Variable();

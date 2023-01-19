@@ -78,6 +78,10 @@ public sealed class NativeDisplay : IRenderer
         }
     }
 
+    public void DrawLine(Coord pos, Coord direction, int length, Color fg, Color bg, char symbol)
+    {
+    }
+
     public void Print(int posX, int posY, string text, Color fg, Color bg, Alignment alignment, TextMode _)
     {
         if (posY < 0 || posY >= _displaySize.Y) return;

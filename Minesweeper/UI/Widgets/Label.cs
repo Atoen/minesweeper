@@ -12,6 +12,7 @@ public class Label : ContentControl
         get => _text;
         set
         {
+            _text.Parent = null!;
             _text.Remove();
             
             _text = value;

@@ -10,7 +10,7 @@ public class Entry : Widget
     public TextMode EntryTextMode { get; set; } = TextMode.Italic;
 
     public Color TextBackground { get; set; } = Color.Gray;
-    public int MaxTextLenght { get; set; }
+    public int MaxTextLength { get; set; }
 
     public EntryMode InputMode { get; init; } = EntryMode.All;
 
@@ -22,12 +22,12 @@ public class Entry : Widget
 
         Display.DrawRect(Position, Size, CurrentColor);
         
-        var textStart = Center + TextOffset + Coord.Left * (MaxTextLenght / 2);
+        var textStart = Center + TextOffset + Coord.Left * (MaxTextLength / 2);
 
-        Display.DrawRect(textStart, (MaxTextLenght + 1, 1), TextBackground);
+        Display.DrawRect(textStart, (MaxTextLength + 1, 1), TextBackground);
 
         Display.Print(
-            Center.X + TextOffset.X - MaxTextLenght / 2,
+            Center.X + TextOffset.X - MaxTextLength / 2,
             Center.Y + TextOffset.Y, Text.Text, Text.Foreground,
             Text.Background ?? TextBackground, Alignment.Left,
             Text.Mode);
@@ -45,7 +45,7 @@ public class Entry : Widget
 
         var symbol = obj.Char;
 
-        if (CheckIfAllowed(symbol) && Text.Length < MaxTextLenght)
+        if (CheckIfAllowed(symbol) && Text.Length < MaxTextLength)
         {
             Text.Append(symbol);
         }
@@ -88,7 +88,7 @@ public class Entry : Widget
 
     // protected override void Resize()
     // {
-    //     var minSize = new Coord(MaxTextLenght + 1 + 2 * InnerPadding.X, 1 + 2 * InnerPadding.Y);
+    //     var minSize = new Coord(MaxTextLength + 1 + 2 * InnerPadding.X, 1 + 2 * InnerPadding.Y);
     //
     //     Size = Size.ExpandTo(minSize);
     // }

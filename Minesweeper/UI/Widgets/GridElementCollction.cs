@@ -4,20 +4,7 @@ namespace Minesweeper.UI.Widgets;
 
 public sealed class GridElementCollection<T> : ObservableList<T> where T : class, IGridLayoutElement
 {
-    private int _padding = 1;
-
-    public int Padding
-    {
-        get => _padding;
-        set
-        {
-            _padding = value;
-            OnCollectionChanged();
-        }
-    }
-
-    public int PaddingCount => Count > 0 ? Count - 1 : 0;
-    public int TotalPadding => PaddingCount * Padding;
+    public int TotalPadding => Count > 0 ? Count - 1 : 0;
     public int Size => this.Sum(e => e.Size) + TotalPadding;
 
     public int GetOffset(int index)
@@ -27,7 +14,7 @@ public sealed class GridElementCollection<T> : ObservableList<T> where T : class
         var offset = 0;
         for (var i = 0; i < index; i++)
         {
-            offset += this[i].Size + Padding;
+            offset += this[i].Size + 1;
         }
 
         return offset;

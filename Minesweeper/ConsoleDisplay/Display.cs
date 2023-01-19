@@ -80,24 +80,51 @@ public static partial class Display
         Alignment alignment = Alignment.Center, TextMode mode = TextMode.Default) =>
         _renderer.Print(posX, posY, text, foreground, background, alignment, mode);
 
-    public static void DrawRect(Coord pos, Coord size, Color color, char symbol = ' ') => 
-        _renderer.DrawRect(pos, size, color, symbol);
+    public static void DrawRect(Coord pos, Coord size, Color color, char symbol = ' ')
+    {
+        if (CalculateDrawArea(pos, size, out var start, out var end))
+        {
+            _renderer.DrawRect(start, end, color, symbol);
+        }
+    }
 
-    public static void ClearRect(Coord pos, Coord size) => _renderer.ClearRect(pos, size);
+    public static void DrawLine(Coord pos, Coord direction, int length, Color foreground, Color background, char symbol)
+    {
+        if (CalculateDrawArea(pos, pos + direction * length, out var start, out var end))
+        {
+            _renderer.DrawLine(start, direction, length, foreground, background, symbol);
+        }
+    }
 
-    public static void DrawBorder(Coord pos, Coord size, Color color, BorderStyle style) => 
-        _renderer.DrawBorder(pos, size, color, style);
+    public static void ClearRect(Coord pos, Coord size)
+    {
+        if (CalculateDrawArea(pos, size, out var start, out var end))
+        {
+            _renderer.ClearRect(start, end);
+        }
+    }
+
+    public static void DrawBorder(Coord pos, Coord size, Color color, BorderStyle style)
+    {
+        if (CalculateDrawArea(pos, size, out var start, out var end))
+        {
+            _renderer.DrawBorder(start, end, color, style);
+        }
+    }
 
     public static void DrawBuffer(Coord pos, Pixel[,] buffer)
     {
-        var size = new Coord(buffer.GetLength(0), buffer.GetLength(1));
-
-        _renderer.DrawBuffer(pos, size, buffer);
+        var size = new Coord {X = buffer.GetLength(0), Y = buffer.GetLength(1)};
+        
+        if (CalculateDrawArea(pos, size, out var start, out var end))
+        {
+            _renderer.DrawBuffer(start, end, buffer);
+        }
     }
 
     private static void Start()
     {
-        const int tickLenght = 1000 / 20;
+        const int tickLength = 1000 / 20;
         var stopwatch = new Stopwatch();
 
         _refreshing = true;
@@ -109,17 +136,32 @@ public static partial class Display
             Draw();
 
             stopwatch.Stop();
-            var sleepTime = tickLenght - (int) stopwatch.ElapsedMilliseconds;
-
+            var sleepTime = tickLength - (int) stopwatch.ElapsedMilliseconds;
+            
             stopwatch.Reset();
 
             if (sleepTime > 0) Thread.Sleep(sleepTime);
         }
     }
+    private static bool CalculateDrawArea(Coord position, Coord size, out Coord start, out Coord end)
+    {
+        start = new Coord();
+        end = new Coord();
+        
+        if (position.X >= Width || position.Y >= Height) return false;
+        
+        start.X = Math.Max(position.X, 0);
+        start.Y = Math.Max(position.Y, 0);
+        
+        end.X = Math.Min(position.X + size.X, Width);
+        end.Y = Math.Min(position.Y + size.Y, Height);
+
+        return start.X != end.X && start.Y != end.Y;
+    }
 
     private static void Draw()
     {
-        // LockSlim.EnterUpgradeableReadLock();
+        LockSlim.EnterWriteLock();
         
         foreach (var removed in RemovedRenderables) removed.Clear();
 
@@ -127,9 +169,9 @@ public static partial class Display
 
         foreach (var renderable in Renderables) renderable.Render();
 
+        LockSlim.ExitWriteLock();
+        
         _renderer.Draw();
-
-        // LockSlim.ExitUpgradeableReadLock();
     }
 
     private static void GetDisplayMode()

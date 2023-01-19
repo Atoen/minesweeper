@@ -3,15 +3,19 @@ using Minesweeper.Utils;
 
 namespace Minesweeper.UI.Widgets;
 
-public class Grid : Control, IContainer
+public class Grid : Control
 {
     public Grid()
     {
+        IsFocusable = false;
+        
         Children.ElementChanged += ChildrenOnElementChanged;
         
         Columns.CollectionChanged += ColumnsOnCollectionChanged;
         Rows.CollectionChanged += RowsOnCollectionChanged;
     }
+
+    private record ChildEntry(Control Control, Coord GridPos, Coord GridSpan);
     
     public ObservableList<Control> Children { get; } = new();
 
@@ -25,6 +29,7 @@ public class Grid : Control, IContainer
     
     public bool ShowGridLines { get; set; }
     public Color GridLinesColor { get; set; } = Color.White;
+    public GridLineStyle GridLineStyle { get; set; } = GridLineStyle.Single;
 
     public void SetColumnAndRow(Control control, int column, int row)
     {
@@ -112,20 +117,44 @@ public class Grid : Control, IContainer
 
     private void RenderLines()
     {
-        var pos = GlobalPosition + InnerPadding;
-        
+        Span<Coord> crosses = stackalloc Coord[(Columns.Count - 1) * (Rows.Count - 1)];
+
+        var pos  = GlobalPosition + InnerPadding;
+
         for (var i = 0; i < Columns.Count - 1; i++)
         {
-            pos.X = Columns.GetOffset(i) + Position.X + Columns[i].Size + (Columns.Padding + 1) / 2;
-            Display.DrawRect(pos, new Coord(Columns.Padding, Height - InnerPadding.Y * 2), GridLinesColor);
+            pos.X = Columns.GetOffset(i) + Position.X + Columns[i].Size + 1;
+
+            Display.DrawLine(pos, Coord.Down, Height - InnerPadding.Y * 2, GridLinesColor, CurrentColor,
+                GridLines.Symbols[GridLineStyle][GridLineFragment.Vertical]);
+
+            for (var c = i; c < crosses.Length; c += Columns.Count - 1)
+            {
+                crosses[c].X = pos.X;
+            }
         }
 
         pos = GlobalPosition + InnerPadding;
 
         for (var i = 0; i < Rows.Count - 1; i++)
         {
-            pos.Y = Rows.GetOffset(i) + Position.Y + Rows[i].Size + (Rows.Padding + 1) / 2;
-            Display.DrawRect(pos, new Coord(Width - InnerPadding.X * 2, Rows.Padding), GridLinesColor);
+            pos.Y = Rows.GetOffset(i) + Position.Y + Rows[i].Size + 1;
+            
+            Display.DrawLine(pos, Coord.Right, Width - InnerPadding.X * 2, GridLinesColor, CurrentColor,
+                GridLines.Symbols[GridLineStyle][GridLineFragment.Horizontal]);
+
+            for (var c = 0; c < Columns.Count - 1; c++)
+            {
+                var index = c + i * (Columns.Count - 1);
+
+                crosses[index].Y = pos.Y;
+            }
+        }
+
+        foreach (var crossPosition in crosses)
+        {
+            Display.Draw(crossPosition.X, crossPosition.Y, GridLines.Symbols[GridLineStyle][GridLineFragment.Cross],
+                GridLinesColor, CurrentColor);
         }
     }
     

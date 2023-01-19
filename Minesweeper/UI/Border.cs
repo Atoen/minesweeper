@@ -18,6 +18,18 @@ public static class Border
                     {BorderFragment.LowerRight, '┘'}
                 }
             },
+            
+            {
+                BorderStyle.SingleBold, new Dictionary<BorderFragment, char>
+                {
+                    {BorderFragment.Vertical, '┃'},
+                    {BorderFragment.Horizontal, '━'},
+                    {BorderFragment.UpperLeft, '┏'},
+                    {BorderFragment.UpperRight, '┓'},
+                    {BorderFragment.LowerLeft, '┗'},
+                    {BorderFragment.LowerRight, '┛'}
+                }
+            },
 
             {
                 BorderStyle.Double, new Dictionary<BorderFragment, char>
@@ -72,6 +84,7 @@ public static class Border
 public enum BorderStyle
 {
     Single,
+    SingleBold,
     Double,
     Rounded,
     Dashed,

@@ -127,7 +127,7 @@ public static partial class Input
             control.SendMouseEvent(MouseEventType.MouseExit, args);
         }
 
-        if (control is {IsFocusable: true, IsFocused: true} && button.HasValue(MouseButton.Left))
+        if (control is {IsFocusable: true, IsFocused: true} && (button & MouseButton.Left) != 0)
         {
             args ??= CreateMouseArgs(MouseState, control);
             control.SendMouseEvent(MouseEventType.LostFocus, args);
@@ -138,14 +138,14 @@ public static partial class Input
     {
         if (_lastMouseButton == 0)
         {
-            if (MouseState.Buttons.HasValue(MouseButton.Left))
+            if ((MouseState.Buttons & MouseButton.Left) != 0)
             {
                 control.SendMouseEvent(MouseEventType.MouseLeftDown, args);
                 
                 if (control.IsFocusable) control.SendMouseEvent(MouseEventType.GotFocus, args);
             }
 
-            if (MouseState.Buttons.HasValue(MouseButton.Right))
+            if ((MouseState.Buttons & MouseButton.Right) != 0)
             {
                 control.SendMouseEvent(MouseEventType.MouseRightDown, args);
             }
@@ -161,15 +161,15 @@ public static partial class Input
         CursorPosition = state.Position,
         RelativeCursorPosition = state.Position - source.GlobalPosition,
 
-        LeftButton = state.Buttons.HasValue(MouseButton.Left)
+        LeftButton = (state.Buttons & MouseButton.Left) != 0
             ? MouseButtonState.Pressed
             : MouseButtonState.Released,
 
-        RightButton = state.Buttons.HasValue(MouseButton.Right)
+        RightButton = (state.Buttons & MouseButton.Right) != 0
             ? MouseButtonState.Pressed
             : MouseButtonState.Released,
 
-        MiddleButton = state.Buttons.HasValue(MouseButton.Middle)
+        MiddleButton = (state.Buttons & MouseButton.Middle) != 0
             ? MouseButtonState.Pressed
             : MouseButtonState.Released
     };
@@ -280,7 +280,7 @@ internal class MouseState
 }
 
 [Flags]
-internal enum MouseButton
+internal enum MouseButton : byte
 {
     None = 0,
     Left = 1,
@@ -289,7 +289,7 @@ internal enum MouseButton
 }
 
 [Flags]
-internal enum MouseEventFlags
+internal enum MouseEventFlags : byte
 {
     Moved = 1,
     DoubleClicked = 1 << 1,
