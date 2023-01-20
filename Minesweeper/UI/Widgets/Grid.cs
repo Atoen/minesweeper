@@ -14,8 +14,6 @@ public class Grid : Control
         Columns.CollectionChanged += ColumnsOnCollectionChanged;
         Rows.CollectionChanged += RowsOnCollectionChanged;
     }
-
-    private record ChildEntry(Control Control, Coord GridPos, Coord GridSpan);
     
     public ObservableList<Control> Children { get; } = new();
 
@@ -30,6 +28,9 @@ public class Grid : Control
     public bool ShowGridLines { get; set; }
     public Color GridLinesColor { get; set; } = Color.White;
     public GridLineStyle GridLineStyle { get; set; } = GridLineStyle.Single;
+    
+    private record ControlEntry(Control Control, Coord GridPos, Coord GridSpan);
+    private readonly List<ControlEntry> _entries = new();
 
     public void SetColumnAndRow(Control control, int column, int row)
     {
@@ -42,8 +43,21 @@ public class Grid : Control
         {
             throw new InvalidOperationException($"Invalid row index. Value: {row}");
         }
-        
-        if (!Children.Contains(control)) Children.Add(control);
+
+        var entry = new ControlEntry(control, new Coord(column, row), new Coord(1, 1));
+
+        if (!Children.Contains(control))
+        {
+            Children.Add(control);
+            
+            _entries.Add(entry);
+        }
+        else
+        {
+            var index = _entries.FindIndex(e => e.Control == control);
+
+            _entries[index] = entry;
+        }
 
         if (control is not ContentControl contentControl || contentControl.Content == null)
         {
@@ -58,12 +72,26 @@ public class Grid : Control
             Y = Rows.GetOffset(row) + InnerPadding.Y
         };
         
-        CalculatePosition(control, pos + control.OuterPadding);
+        CalculatePosition(entry, pos + control.OuterPadding);
     }
 
-    private void CalculatePosition(Control control, Coord baseOffset)
+    private void CalculatePosition(ControlEntry entry, Coord baseOffset)
     {
-        control.Position = baseOffset;
+        baseOffset.X += HorizontalAlignment switch
+        {
+            HorizontalAlignment.Middle => Columns[entry.GridPos.X].Size / 2 - entry.Control.Width / 2,
+            HorizontalAlignment.Right => Columns[entry.GridPos.X].Size - entry.Control.Width,
+            _ => 0
+        };
+
+        baseOffset.Y += VerticalAlignment switch
+        {
+            VerticalAlignment.Middle => Rows[entry.GridPos.Y].Size / 2 - entry.Control.Height / 2,
+            VerticalAlignment.Bottom => Rows[entry.GridPos.Y].Size - entry.Control.Height,
+            _ => 0
+        };
+        
+        entry.Control.Position = baseOffset;
     }
 
     private void AdjustCellSize(Coord size, int column, int row)
@@ -75,7 +103,7 @@ public class Grid : Control
             Width = Columns.Size + InnerPadding.X * 2;
         }
 
-        if (Rows[row].Size >= size.Y &&
+        if (Rows[row].Size >= size.Y ||
             GridResizeDirection is not (GridResizeDirection.Vertical or GridResizeDirection.Both)) return;
         
         Rows[row].Size = size.Y;

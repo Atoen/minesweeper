@@ -39,17 +39,15 @@ public static class MainMenu
             
             InnerPadding = (2, 1)
         };
-
-        var isDragging = false;
+        
         label.MouseRightDown += delegate
         {
             label.ShowBorder = !label.ShowBorder;
-            isDragging = !isDragging;
         };
         
         label.MouseMove += delegate(object _, MouseEventArgs args)
         {
-            if (isDragging) label.Center = args.CursorPosition;
+            if (args.LeftButton == MouseButtonState.Pressed) label.Center = args.CursorPosition;
         };
         
         var button = new Button

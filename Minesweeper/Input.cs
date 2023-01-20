@@ -1,7 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Minesweeper.UI;
 using Minesweeper.UI.Events;
-using Minesweeper.Utils;
 
 namespace Minesweeper;
 
@@ -226,11 +225,9 @@ public static partial class Input
     private static partial nint GetStdHandle(uint nStdHandle);
 
     [LibraryImport("kernel32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
     private static partial void GetConsoleMode(nint hConsoleInput, ref uint lpMode);
 
     [LibraryImport("kernel32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
     private static partial void SetConsoleMode(nint hConsoleInput, uint dwMode);
 
     [DllImport("kernel32.dll")]
