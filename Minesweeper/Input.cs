@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI;
 using Minesweeper.UI.Events;
 
@@ -83,6 +84,8 @@ public static partial class Input
     {
         MouseState.Assign(ref mouseRecord);
 
+        // if (MouseState.Position.Y > Display.Height - 1) MouseState.Position.Y = Display.Height - 1;
+        
         var zIndex = int.MinValue;
         Control? hit = null;
 

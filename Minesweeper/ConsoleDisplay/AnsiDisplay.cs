@@ -319,7 +319,7 @@ public sealed class AnsiDisplay : IRenderer
         // Resetting the console style after full draw
         _stringBuilder.Append("\x1b[0m");
 
-        Console.Title = _stringBuilder.Length.ToString();
+        // Console.Title = _stringBuilder.Length.ToString();
 
         return _stringBuilder.ToString();
     }

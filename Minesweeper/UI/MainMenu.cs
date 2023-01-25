@@ -47,7 +47,7 @@ public static class MainMenu
         
         label.MouseMove += delegate(object _, MouseEventArgs args)
         {
-            if (args.LeftButton == MouseButtonState.Pressed) label.Center = args.CursorPosition;
+            if (args.LeftButton == MouseButtonState.Pressed) args.OriginalSource.Center = args.CursorPosition;
         };
         
         var button = new Button

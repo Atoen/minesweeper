@@ -80,12 +80,12 @@ public abstract class VisualComponent : Component, IRenderable
         Display.RemoveFromRenderList(this);
     }
 
-    private void OnPositionChanged(object sender, PositionChangedEventArgs e)
+    protected virtual void OnPositionChanged(object sender, PositionChangedEventArgs e)
     {
         Display.ClearRect(GlobalPosition - e.Delta, Size);
     }
     
-    private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+    protected virtual void OnSizeChanged(object sender, SizeChangedEventArgs e)
     {
         Display.ClearRect(GlobalPosition, e.OldSize);
     }

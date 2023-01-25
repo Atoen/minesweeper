@@ -90,9 +90,9 @@ public static partial class Display
 
     public static void DrawLine(Coord pos, Coord direction, int length, Color foreground, Color background, char symbol)
     {
-        if (CalculateDrawArea(pos, pos + direction * length, out var start, out var end))
+        if (CalculateLineLenght(pos, direction, length, out var start, out var calculatedLenght))
         {
-            _renderer.DrawLine(start, direction, length, foreground, background, symbol);
+            _renderer.DrawLine(start, direction, calculatedLenght, foreground, background, symbol);
         }
     }
 
@@ -148,15 +148,49 @@ public static partial class Display
         start = new Coord();
         end = new Coord();
         
-        if (position.X >= Width || position.Y >= Height) return false;
+        if (position.X >= Width || position.Y >= Height || size == Coord.Zero) return false;
         
         start.X = Math.Max(position.X, 0);
         start.Y = Math.Max(position.Y, 0);
         
-        end.X = Math.Min(position.X + size.X, Width);
-        end.Y = Math.Min(position.Y + size.Y, Height);
+        end.X = Math.Min(Math.Max(position.X + size.X, 0), Width);
+        end.Y = Math.Min(Math.Max(position.Y + size.Y, 0), Height);
 
         return start.X != end.X && start.Y != end.Y;
+    }
+
+    private static bool CalculateLineLenght(Coord position, Coord direction, int length,
+        out Coord start, out int calculatedLenght)
+    {
+        start = new Coord();
+        var end = new Coord();
+        
+        calculatedLenght = 0;
+
+        if (length == 0 || direction == Coord.Zero) return false;
+
+        if (position.X < 0 && direction.X <= 0) return false;
+        if (position.X >= Width && direction.X >= 0) return false;
+        if (position.Y < 0 && direction.Y <= 0) return false;
+        if (position.Y >= Height && direction.Y >= 0) return false;
+        
+        start.X = Math.Max(Math.Min(position.X, Width), 0);
+        start.Y = Math.Max(Math.Min(position.Y, Height), 0);
+        
+        end.X = Math.Min(Math.Max(position.X + direction.X * length, 0), Width);
+        end.Y = Math.Min(Math.Max(position.Y + direction.Y * length, 0), Height);
+
+        var lengthX = Math.Abs(end.X - start.X);
+        var lengthY = Math.Abs(end.Y - start.Y);
+
+        calculatedLenght = direction switch
+        {
+            {X: not 0, Y: 0} => lengthX,
+            {X: 0, Y: not 0} => lengthY,
+            _ => Math.Min(lengthX, lengthY)
+        };
+
+        return calculatedLenght > 0;
     }
 
     private static void Draw()

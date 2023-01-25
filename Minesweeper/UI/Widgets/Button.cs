@@ -13,8 +13,8 @@ public class Button : ContentControl
         get => _text;
         set
         {
-            _text.Parent = null!;
             _text.Remove();
+            _text.Parent = null!;
 
             _text = value;
             _text.Parent = this;

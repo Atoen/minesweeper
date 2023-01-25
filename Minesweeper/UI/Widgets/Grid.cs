@@ -28,38 +28,36 @@ public class Grid : Control
     public bool ShowGridLines { get; set; }
     public Color GridLinesColor { get; set; } = Color.White;
     public GridLineStyle GridLineStyle { get; set; } = GridLineStyle.Single;
-    
-    private record ControlEntry(Control Control, Coord GridPos, Coord GridSpan);
-    private readonly List<ControlEntry> _entries = new();
 
-    public void SetColumnAndRow(Control control, int column, int row)
+    private readonly List<Entry> _entries = new();
+
+    public void SetColumnAndRow(Control control, int column, int row, bool addChild = true)
     {
         if (column >= Columns.Count || column < 0)
         {
             throw new InvalidOperationException($"Invalid row index. Value: {column}");
         }
-        
+
         if (row >= Rows.Count || row < 0)
         {
             throw new InvalidOperationException($"Invalid row index. Value: {row}");
         }
 
-        var entry = new ControlEntry(control, new Coord(column, row), new Coord(1, 1));
+        var entry = _entries.FirstOrDefault(e => e.RefTarget == control);
 
-        if (!Children.Contains(control))
+        if (entry == null)
         {
-            Children.Add(control);
+            if (addChild) Children.Add(control);
             
-            _entries.Add(entry);
+            _entries.Add(new Entry(control, column, row, 1, 1));
         }
         else
         {
-            var index = _entries.FindIndex(e => e.Control == control);
-
-            _entries[index] = entry;
+            entry.Column = column;
+            entry.Row = row;
         }
 
-        if (control is not ContentControl contentControl || contentControl.Content == null)
+        if (control is not ContentControl {Content: not null})
         {
             control.Resize();
         }
@@ -72,42 +70,96 @@ public class Grid : Control
             Y = Rows.GetOffset(row) + InnerPadding.Y
         };
         
-        CalculatePosition(entry, pos + control.OuterPadding);
+        CalculatePosition(control, pos + control.OuterPadding, column, row);
     }
 
-    private void CalculatePosition(ControlEntry entry, Coord baseOffset)
+    public void SetColumnSpanAndRowSpan(Control control, int columnSpan, int rowSpan)
+    {
+        if (columnSpan > Columns.Count)
+        {
+            throw new InvalidOperationException($"Invalid column span. Value: {columnSpan}");
+        }
+        
+        if (rowSpan > Rows.Count)
+        {
+            throw new InvalidOperationException($"Invalid row span. Value: {rowSpan}");
+        }
+
+        var entry = _entries.FirstOrDefault(e => e.Reference.Target == control);
+
+        if (entry == null)
+        {
+            _entries.Add(new Entry(control, 0, 0, columnSpan, rowSpan));
+        }
+        else
+        {
+            entry.ColumnSpan = columnSpan;
+            entry.RowSpawn = rowSpan;
+        }
+    }
+
+    private void CalculatePosition(Control control, Coord baseOffset, int column, int row)
     {
         baseOffset.X += HorizontalAlignment switch
         {
-            HorizontalAlignment.Middle => Columns[entry.GridPos.X].Size / 2 - entry.Control.Width / 2,
-            HorizontalAlignment.Right => Columns[entry.GridPos.X].Size - entry.Control.Width,
+            HorizontalAlignment.Middle => Columns[column].Size / 2 - control.Width / 2,
+            HorizontalAlignment.Right => Columns[column].Size - control.Width,
             _ => 0
         };
 
         baseOffset.Y += VerticalAlignment switch
         {
-            VerticalAlignment.Middle => Rows[entry.GridPos.Y].Size / 2 - entry.Control.Height / 2,
-            VerticalAlignment.Bottom => Rows[entry.GridPos.Y].Size - entry.Control.Height,
+            VerticalAlignment.Middle => Rows[row].Size / 2 - control.Height / 2,
+            VerticalAlignment.Bottom => Rows[row].Size - control.Height,
             _ => 0
         };
         
-        entry.Control.Position = baseOffset;
+        control.Position = baseOffset;
     }
 
     private void AdjustCellSize(Coord size, int column, int row)
     {
+        var shouldMoveContent = false;
+        
         if (Columns[column].Size < size.X &&
             GridResizeDirection is GridResizeDirection.Horizontal or GridResizeDirection.Both)
         {
             Columns[column].Size = size.X;
             Width = Columns.Size + InnerPadding.X * 2;
+
+            shouldMoveContent = true;
         }
 
-        if (Rows[row].Size >= size.Y ||
-            GridResizeDirection is not (GridResizeDirection.Vertical or GridResizeDirection.Both)) return;
+        if (Rows[row].Size < size.Y &&
+            GridResizeDirection is GridResizeDirection.Vertical or GridResizeDirection.Both)
+        {
+            Rows[row].Size = size.Y;
+            Height = Rows.Size + InnerPadding.Y * 2;
+
+            shouldMoveContent = true;
+        }
         
-        Rows[row].Size = size.Y;
-        Height = Rows.Size + InnerPadding.Y * 2;
+        if (shouldMoveContent) AdjustContentPosition();
+    }
+
+    private void AdjustContentPosition()
+    {
+        foreach (var entry in _entries)
+        {
+            if (entry.Reference.Target is not Control control) continue;
+
+            var baseOffset = new Coord
+            {
+                X = Columns.GetOffset(entry.Column),
+                Y = Rows.GetOffset(entry.Row)
+            };
+            
+            baseOffset += InnerPadding + control.OuterPadding;
+            
+            CalculatePosition(control, baseOffset, entry.Column, entry.Row);
+        }
+
+        _entries.RemoveAll(e => !e.Reference.IsAlive);
     }
 
     private void ChildrenOnElementChanged(object? sender, CollectionChangedEventArgs<Control> e) => 
@@ -191,11 +243,6 @@ public class Grid : Control
         base.Render();
         
         if (ShowGridLines) RenderLines();
-
-        foreach (var child in Children)
-        {
-            child.Render();
-        }
     }
 
     public override void Remove()
@@ -204,8 +251,33 @@ public class Grid : Control
 
         foreach (var child in Children)
         {
+            child.Parent = null;
             child.Remove();
         }
+        
+        Children.Clear();
+    }
+
+    private class Entry
+    {
+        public Entry(Control control, int column, int row, int columnSpan, int rowSpawn)
+        {
+            Reference = new WeakReference(control);
+            Column = column;
+            Row = row;
+            ColumnSpan = columnSpan;
+            RowSpawn = rowSpawn;
+        }
+
+        public WeakReference Reference { get; }
+        public Control? RefTarget => Reference.Target as Control;
+        
+        public int Column { get; set; }
+        public int Row { get; set; }
+
+        public int ColumnSpan { get; set; }
+        public int RowSpawn { get; set; }
+
     }
 }
 
