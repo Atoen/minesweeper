@@ -56,7 +56,15 @@ public static class MainMenu
             Color = Color.Aquamarine,
             
             InnerPadding = (2, 1),
-            OnClick = () => grid.Remove()
+            
+            OnClick = () =>
+            {
+                grid.Remove();
+
+                Thread.Sleep(100);
+                
+                StartGame();
+            }
         };
 
         var variable = new Variable();
@@ -85,5 +93,10 @@ public static class MainMenu
         grid.SetColumnAndRow(mediumButton, 0, 2);
         grid.SetColumnAndRow(hardButton, 0, 3);
         grid.SetColumnAndRow(button, 1, 4);
+    }
+
+    private static void StartGame()
+    {
+        Game.Game.Start(40, 20, 100);
     }
 }

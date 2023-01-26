@@ -62,7 +62,6 @@ public sealed class AnsiDisplay : IRenderer
         }
     }
     
-    
     public void Print(int posX, int posY, string text, Color fg, Color bg, Alignment alignment, TextMode mode)
     {
         if (posY < 0 || posY >= _displaySize.Y) return;
@@ -101,7 +100,7 @@ public sealed class AnsiDisplay : IRenderer
         for (var x = start.X; x < end.X; x++)
         for (var y = start.Y; y < end.Y; y++)
         {
-            _currentPixels[x, y] = buffer[x, y];
+            _currentPixels[x, y] = buffer[x - start.X, y - start.Y];
         }
     }
 
@@ -222,8 +221,7 @@ public sealed class AnsiDisplay : IRenderer
             }
         }
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    
     private string GenerateDisplayString()
     {
         var lastFg = Color.Transparent;
@@ -319,7 +317,7 @@ public sealed class AnsiDisplay : IRenderer
         // Resetting the console style after full draw
         _stringBuilder.Append("\x1b[0m");
 
-        // Console.Title = _stringBuilder.Length.ToString();
+        Console.Title = _stringBuilder.Length.ToString();
 
         return _stringBuilder.ToString();
     }

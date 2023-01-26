@@ -24,7 +24,7 @@ public class Grid : Control
     
     public VerticalAlignment VerticalAlignment { get; set; } = VerticalAlignment.Middle;
     public HorizontalAlignment HorizontalAlignment { get; set; } = HorizontalAlignment.Middle;
-    
+
     public bool ShowGridLines { get; set; }
     public Color GridLinesColor { get; set; } = Color.White;
     public GridLineStyle GridLineStyle { get; set; } = GridLineStyle.Single;
@@ -95,6 +95,16 @@ public class Grid : Control
         {
             entry.ColumnSpan = columnSpan;
             entry.RowSpawn = rowSpan;
+
+            if (entry.Column + entry.ColumnSpan > Columns.Count)
+            {
+                throw new InvalidOperationException($"Invalid column span. Value: {columnSpan}");
+            }
+            
+            if (entry.Row + entry.RowSpawn > Rows.Count)
+            {
+                throw new InvalidOperationException($"Invalid column span. Value: {columnSpan}");
+            }
         }
     }
 

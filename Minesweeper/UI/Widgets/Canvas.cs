@@ -2,40 +2,79 @@
 
 namespace Minesweeper.UI.Widgets;
 
-public class Canvas : Widget
+public class Canvas : ContentControl
 {
-    private readonly Pixel[,] _buffer;
+    public Canvas() => IsFocusable = false;
 
-    private readonly IDrawable _drawable;
-
-    public Canvas(IDrawable drawable)
+    public required IDrawable Drawable
     {
-        _drawable = drawable;
-        _buffer = new Pixel[drawable.Width, drawable.Height];
-        
-        _drawable.SetBuffer(_buffer);
-        _drawable.Draw();
+        get => _drawable;
+        set
+        {
+            _buffer = new Pixel[value.Width, value.Height];
+            value.SetBuffer(_buffer);
+            
+            _drawable = value;
+        }
     }
+
+    private Pixel[,] _buffer = null!;
+    private IDrawable _drawable = null!;
 
     public override void Render()
     {
-        var drawStart = Position + (Size - new Coord(_drawable.Width, _drawable.Height)) / 2;
-        _drawable.Offset = drawStart;
-
-        Display.DrawBuffer(drawStart, _buffer);
+        base.Render();
+        
+        Display.DrawBuffer(GlobalPosition + InnerPadding, _buffer);
     }
 
-    public override void Clear()
+    public override void Resize()
     {
-        Display.ClearRect(Position, Size);
+        MinSize = InnerPadding * 2 + (Drawable.Width, Drawable.Height);
+        
+        Size = ResizeMode switch
+        {
+            ResizeMode.Grow => Size.ExpandTo(MinSize),
+            ResizeMode.Stretch => MinSize,
+            _ => Size
+        };
+        
+        base.Resize();
     }
 
-    // protected override void Resize()
-    // {
-    //     var minSize = new Coord(_drawable.Width, _drawable.Height);
+
+    // private readonly Pixel[,] _buffer;
     //
-    //     Size = Size.ExpandTo(minSize);
+    // private readonly IDrawable _drawable;
+    //
+    // public Canvas(IDrawable drawable)
+    // {
+    //     _drawable = drawable;
+    //     _buffer = new Pixel[drawable.Width, drawable.Height];
+    //     
+    //     _drawable.SetBuffer(_buffer);
+    //     _drawable.Draw();
     // }
+    //
+    // public override void Render()
+    // {
+    //     var drawStart = Position + (Size - new Coord(_drawable.Width, _drawable.Height)) / 2;
+    //     _drawable.Offset = drawStart;
+    //
+    //     Display.DrawBuffer(drawStart, _buffer);
+    // }
+    //
+    // public override void Clear()
+    // {
+    //     Display.ClearRect(Position, Size);
+    // }
+    //
+    // // protected override void Resize()
+    // // {
+    // //     var minSize = new Coord(_drawable.Width, _drawable.Height);
+    // //
+    // //     Size = Size.ExpandTo(minSize);
+    // // }
 }
 
 public interface IDrawable

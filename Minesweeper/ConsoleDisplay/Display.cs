@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
+using Minesweeper.Game;
 using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
 
@@ -10,7 +11,7 @@ public static partial class Display
     public static int Width { get; private set; }
     public static int Height { get; private set; }
     public static DisplayMode Mode { get; private set; }
-
+    
     private static bool _refreshing;
 
     private static readonly List<IRenderable> Renderables = new();
@@ -67,6 +68,8 @@ public static partial class Display
         LockSlim.ExitWriteLock();
     }
 
+    public static void SortRenderables() => Renderables.Sort((r1, r2) => r1.ZIndex.CompareTo(r2.ZIndex));
+
     public static void Draw(int posX, int posY, char symbol, Color foreground, Color background) => 
         _renderer.Draw(posX, posY, symbol, foreground, background);
 
@@ -80,46 +83,44 @@ public static partial class Display
         Alignment alignment = Alignment.Center, TextMode mode = TextMode.Default) =>
         _renderer.Print(posX, posY, text, foreground, background, alignment, mode);
 
+    public static void Draw(int posX, int posY, TileDisplay tileDisplay) =>
+        _renderer.Draw(posX, posY, tileDisplay.Symbol, tileDisplay.Foreground, tileDisplay.Background);
+
     public static void DrawRect(Coord pos, Coord size, Color color, char symbol = ' ')
     {
-        if (CalculateDrawArea(pos, size, out var start, out var end))
-        {
-            _renderer.DrawRect(start, end, color, symbol);
-        }
+        if (!CalculateDrawArea(pos, size, out var start, out var end)) return;
+        
+        _renderer.DrawRect(start, end, color, symbol);
     }
 
     public static void DrawLine(Coord pos, Coord direction, int length, Color foreground, Color background, char symbol)
     {
-        if (CalculateLineLenght(pos, direction, length, out var start, out var calculatedLenght))
-        {
-            _renderer.DrawLine(start, direction, calculatedLenght, foreground, background, symbol);
-        }
+        if (!CalculateLineLength(pos, direction, length, out var start, out var calculatedLenght)) return;
+        
+        _renderer.DrawLine(start, direction, calculatedLenght, foreground, background, symbol);
     }
 
     public static void ClearRect(Coord pos, Coord size)
     {
-        if (CalculateDrawArea(pos, size, out var start, out var end))
-        {
-            _renderer.ClearRect(start, end);
-        }
+        if (!CalculateDrawArea(pos, size, out var start, out var end)) return;
+        
+        _renderer.ClearRect(start, end);
     }
 
     public static void DrawBorder(Coord pos, Coord size, Color color, BorderStyle style)
     {
-        if (CalculateDrawArea(pos, size, out var start, out var end))
-        {
-            _renderer.DrawBorder(start, end, color, style);
-        }
+        if (!CalculateDrawArea(pos, size, out var start, out var end)) return;
+        
+        _renderer.DrawBorder(start, end, color, style);
     }
 
     public static void DrawBuffer(Coord pos, Pixel[,] buffer)
     {
         var size = new Coord {X = buffer.GetLength(0), Y = buffer.GetLength(1)};
+
+        if (!CalculateDrawArea(pos, size, out var start, out var end)) return;
         
-        if (CalculateDrawArea(pos, size, out var start, out var end))
-        {
-            _renderer.DrawBuffer(start, end, buffer);
-        }
+        _renderer.DrawBuffer(start, end, buffer);
     }
 
     private static void Start()
@@ -143,6 +144,7 @@ public static partial class Display
             if (sleepTime > 0) Thread.Sleep(sleepTime);
         }
     }
+    
     private static bool CalculateDrawArea(Coord position, Coord size, out Coord start, out Coord end)
     {
         start = new Coord();
@@ -159,27 +161,50 @@ public static partial class Display
         return start.X != end.X && start.Y != end.Y;
     }
 
-    private static bool CalculateLineLenght(Coord position, Coord direction, int length,
+    private static bool CalculateLineLength(Coord position, Coord direction, int originalLength,
         out Coord start, out int calculatedLenght)
     {
         start = new Coord();
-        var end = new Coord();
-        
         calculatedLenght = 0;
 
-        if (length == 0 || direction == Coord.Zero) return false;
+        if (originalLength == 0 || direction == Coord.Zero) return false;
 
         if (position.X < 0 && direction.X <= 0) return false;
         if (position.X >= Width && direction.X >= 0) return false;
         if (position.Y < 0 && direction.Y <= 0) return false;
         if (position.Y >= Height && direction.Y >= 0) return false;
         
-        start.X = Math.Max(Math.Min(position.X, Width), 0);
-        start.Y = Math.Max(Math.Min(position.Y, Height), 0);
-        
-        end.X = Math.Min(Math.Max(position.X + direction.X * length, 0), Width);
-        end.Y = Math.Min(Math.Max(position.Y + direction.Y * length, 0), Height);
+        start.X = Math.Max(Math.Min(position.X, Width - 1), 0);
+        start.Y = Math.Max(Math.Min(position.Y, Height - 1), 0);
 
+        var adjusted = false;
+
+        if (start.X != position.X)
+        {
+            var difference = position.X - start.X;
+            if (Math.Abs(difference) > originalLength) return false;
+            
+            start.Y += direction.Y * difference;
+            start.Y = Math.Max(Math.Min(start.Y, Height - 1), 0);
+
+            adjusted = true;
+        }
+        
+        if (start.Y != position.Y && !adjusted)
+        {
+            var difference = position.Y - start.Y;
+            if (Math.Abs(difference) > originalLength) return false;
+            
+            start.X += direction.X * difference;
+            start.X = Math.Max(Math.Min(start.X, Width - 1), 0);
+        }
+        
+        var end = new Coord
+        {
+            X = Math.Min(Math.Max(position.X + direction.X * originalLength, 0), Width - 1),
+            Y = Math.Min(Math.Max(position.Y + direction.Y * originalLength, 0), Height - 1)
+        };
+        
         var lengthX = Math.Abs(end.X - start.X);
         var lengthY = Math.Abs(end.Y - start.Y);
 

@@ -20,20 +20,6 @@ public class Label : ContentControl
         }
     }
 
-    public override void Render()
-    {
-        base.Render();
-        
-        Display.DrawLine(GlobalPosition, (-1, -1), 20, Color.Red, Color.Red, ' ');
-    }
-
-    protected override void OnPositionChanged(object sender, PositionChangedEventArgs e)
-    {
-        base.OnPositionChanged(sender, e);
-        
-        Display.DrawLine(GlobalPosition - e.Delta, (-1, -1), 20, Color.Empty, Color.Empty, ' ');
-    }
-
     public override void Remove()
     {
         Display.RemoveFromRenderList(_text);

@@ -1,7 +1,5 @@
-﻿using System.IO;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
-using Minesweeper.Game;
 using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
 
@@ -27,10 +25,10 @@ public sealed class NativeDisplay : IRenderer
         _fileHandle = CreateFile("CONOUT$",
             0x40000000,
             2,
-            IntPtr.Zero,
+            nint.Zero,
             FileMode.Open,
             0,
-            IntPtr.Zero);
+            nint.Zero);
         
         if (_fileHandle.IsInvalid) throw new IOException("Console buffer file is invalid");
         

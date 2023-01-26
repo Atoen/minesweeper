@@ -4,14 +4,14 @@ using Minesweeper.UI.Widgets;
 
 namespace Minesweeper.Game;
 
-public sealed class Grid : IDrawable
+public sealed class TilesGridOld : IDrawable
 {
     public int Width { get; }
     public int Height { get; }
     public Coord Offset { get; set; }
-    public event Action? BombClicked;
-    public event Action? ClearedField;
-    public event Action<int>? Flagged;
+    public event EventHandler? BombClicked;
+    public event EventHandler? ClearedField;
+    public event EventHandler<int>? Flagged;
 
     private readonly Tile[,] _tiles;
     
@@ -20,10 +20,8 @@ public sealed class Grid : IDrawable
 
     private Pixel[,] _buffer = null!;
 
-    public Grid(DifficultyPreset preset)
+    public TilesGridOld(int width, int height, int bombs)
     {
-        var (_, bombs, width, height) = preset;
-
         if (width < 3) width = 3;
         if (height < 3) height = 3;
 
@@ -52,10 +50,7 @@ public sealed class Grid : IDrawable
         _revealed = false;
     }
 
-    public void SetBuffer(Pixel[,] buffer)
-    {
-        _buffer = buffer;
-    }
+    public void SetBuffer(Pixel[,] buffer) => _buffer = buffer;
 
     private void GenerateBombs(Coord clickPos)
     {
@@ -219,7 +214,7 @@ public sealed class Grid : IDrawable
             _buffer[tile.Pos.X, tile.Pos.Y] = Tiles.Bomb;
         }
         
-        BombClicked?.Invoke();
+        BombClicked?.Invoke(this, EventArgs.Empty);
     }
     
     public void Draw()

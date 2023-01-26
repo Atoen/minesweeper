@@ -9,7 +9,7 @@ public abstract class Component
     public ZIndexUpdateMode ZIndexUpdateMode { get; set; } = ZIndexUpdateMode.OneHigherThanParent;
     
     private int _zIndex;
-    public int ZIndex
+    public virtual int ZIndex
     {
         get => GetZIndex();
         set
@@ -153,7 +153,7 @@ public abstract class Component
         return pos.X >= GlobalPosition.X && pos.X < GlobalPosition.X + Width &&
                pos.Y >= GlobalPosition.Y && pos.Y < GlobalPosition.Y + Height;
     }
-    
+
     private int GetZIndex()
     {
         if (ZIndexUpdateMode == ZIndexUpdateMode.Manual || _parent == null) return _zIndex;

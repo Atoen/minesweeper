@@ -56,7 +56,7 @@ public abstract class VisualComponent : Component, IRenderable
             };
         }
     }
-    
+
     [MethodCall(MethodCallMode.Scheduled)]
     public virtual void Render()
     {

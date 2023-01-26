@@ -4,8 +4,8 @@ public static class Tiles
 {
     public static readonly TileDisplay Default = new(Color.Gray, Color.Gray, ' ');
     public static readonly TileDisplay Empty = new(Color.DarkGray, Color.DarkGray, ' ');
-    public static readonly TileDisplay Flag = new(Color.Red, Color.Gray, '^','◀');
-    public static readonly TileDisplay Bomb = new(Color.Red, Color.DarkGray, '@', '⬤');
+    public static readonly TileDisplay Flag = new(Color.Red, Color.Gray, '^');
+    public static readonly TileDisplay Bomb = new(Color.Red, Color.DarkGray, '@');
 
     public static readonly TileDisplay One = new(Color.Blue, Color.DarkGray, '1');
     public static readonly TileDisplay Two = new(Color.Green, Color.DarkGray, '2');
@@ -41,14 +41,11 @@ public struct TileDisplay
     public readonly Color Foreground;
     public readonly Color Background;
     public readonly char Symbol;
-    public readonly char Utf8Symbol;
 
-    public TileDisplay(Color foreground, Color background, char symbol, char utf8Symbol = '\0')
+    public TileDisplay(Color foreground, Color background, char symbol)
     {
         Foreground = foreground;
         Background = background;
         Symbol = symbol;
-        
-        Utf8Symbol = utf8Symbol == '\0' ? symbol : utf8Symbol;
     }
 }

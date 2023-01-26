@@ -61,7 +61,7 @@ public abstract class Control : VisualComponent
             case MouseEventType.MouseLeftDown:
                 OnMouseLeftDown(e);
                 break;
-            
+
             case MouseEventType.MouseLeftUp:
                 OnMouseLeftUp();
                 break;
