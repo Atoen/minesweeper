@@ -34,9 +34,9 @@ public static partial class Display
 
         if (Mode == DisplayMode.Auto) GetDisplayMode();
 
-        _renderer = Mode == DisplayMode.Native
-            ? new NativeDisplay(Width, Height)
-            : new AnsiDisplay(Width, Height);
+        _renderer = Mode == DisplayMode.Ansi
+            ? new AnsiDisplay(Width, Height)
+            : new NativeDisplay(Width, Height);
 
         new Thread(Start)
         {
@@ -168,35 +168,39 @@ public static partial class Display
         calculatedLenght = 0;
 
         if (originalLength == 0 || direction == Coord.Zero) return false;
-
-        if (position.X < 0 && direction.X <= 0) return false;
-        if (position.X >= Width && direction.X >= 0) return false;
-        if (position.Y < 0 && direction.Y <= 0) return false;
-        if (position.Y >= Height && direction.Y >= 0) return false;
         
         start.X = Math.Max(Math.Min(position.X, Width - 1), 0);
         start.Y = Math.Max(Math.Min(position.Y, Height - 1), 0);
 
-        var adjusted = false;
-
-        if (start.X != position.X)
+        // Skipping unnecessary operations if line is not diagonal
+        if (direction is {X: not 0, Y: not 0})
         {
-            var difference = position.X - start.X;
-            if (Math.Abs(difference) > originalLength) return false;
+            if (position.X < 0 && direction.X <= 0) return false;
+            if (position.X >= Width && direction.X >= 0) return false;
+            if (position.Y < 0 && direction.Y <= 0) return false;
+            if (position.Y >= Height && direction.Y >= 0) return false;
             
-            start.Y += direction.Y * difference;
-            start.Y = Math.Max(Math.Min(start.Y, Height - 1), 0);
+            var adjusted = false;
 
-            adjusted = true;
-        }
-        
-        if (start.Y != position.Y && !adjusted)
-        {
-            var difference = position.Y - start.Y;
-            if (Math.Abs(difference) > originalLength) return false;
+            if (start.X != position.X)
+            {
+                var difference = position.X - start.X;
+                if (Math.Abs(difference) > originalLength) return false;
+                
+                start.Y += direction.Y * difference;
+                start.Y = Math.Max(Math.Min(start.Y, Height - 1), 0);
+
+                adjusted = true;
+            }
             
-            start.X += direction.X * difference;
-            start.X = Math.Max(Math.Min(start.X, Width - 1), 0);
+            if (start.Y != position.Y && !adjusted)
+            {
+                var difference = position.Y - start.Y;
+                if (Math.Abs(difference) > originalLength) return false;
+                
+                start.X += direction.X * difference;
+                start.X = Math.Max(Math.Min(start.X, Width - 1), 0);
+            }
         }
         
         var end = new Coord

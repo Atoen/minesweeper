@@ -2,7 +2,7 @@
 
 namespace Minesweeper.UI;
 
-public class TimerText : IAnimatedText
+public class TimerText
 {
     public string Text { get; set; }
     public bool Enabled { get; set; }

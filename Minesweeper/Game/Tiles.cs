@@ -4,8 +4,8 @@ public static class Tiles
 {
     public static readonly TileDisplay Default = new(Color.Gray, Color.Gray, ' ');
     public static readonly TileDisplay Empty = new(Color.DarkGray, Color.DarkGray, ' ');
-    public static readonly TileDisplay Flag = new(Color.Red, Color.Gray, '^');
-    public static readonly TileDisplay Bomb = new(Color.Red, Color.DarkGray, '@');
+    public static readonly TileDisplay Flag = new(Color.Red, Color.Gray, '⚑');
+    public static readonly TileDisplay Bomb = new(Color.Black, Color.DarkGray, '\u25D5');
 
     public static readonly TileDisplay One = new(Color.Blue, Color.DarkGray, '1');
     public static readonly TileDisplay Two = new(Color.Green, Color.DarkGray, '2');

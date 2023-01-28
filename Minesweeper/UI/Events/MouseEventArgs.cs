@@ -6,12 +6,12 @@ public class MouseEventArgs : InputEventArgs
     {
     }
     
-    public MouseButtonState LeftButton { get; init; }
-    public MouseButtonState RightButton { get; init; }
-    public MouseButtonState MiddleButton { get; init; }
+    public required MouseButtonState LeftButton { get; init; }
+    public required MouseButtonState RightButton { get; init; }
+    public required MouseButtonState MiddleButton { get; init; }
     
-    public Coord CursorPosition { get; init; }
-    public Coord RelativeCursorPosition { get; init; }
+    public required Coord CursorPosition { get; init; }
+    public required Coord RelativeCursorPosition { get; init; }
 }
 
 public enum MouseButtonState

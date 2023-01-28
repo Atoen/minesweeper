@@ -10,7 +10,7 @@ public abstract class Control : VisualComponent
     public bool IsMouseOver { get; private set; }
     
     public bool IsFocused { get; private set; }
-    public bool IsFocusable { get; set; } = true;
+    public bool Focusable { get; set; } = true;
     public bool ShowFocusedBorder { get; set; } = true;
     public BorderStyle FocusBorderStyle { get; set; } = BorderStyle.Dotted;
     public Color FocusBorderColor { get; set; } = Color.Black;
@@ -35,12 +35,21 @@ public abstract class Control : VisualComponent
     }
 
     public delegate void MouseEventHandler(object sender, MouseEventArgs e);
+    public delegate void KeyboardEventHandler(object sender, KeyboardEventArgs e);
+    public delegate void FocusEventHandler(object sender, InputEventArgs e);
+    
     public event MouseEventHandler? MouseEnter;
     public event MouseEventHandler? MouseLeave;
     public event MouseEventHandler? MouseDown;
     public event MouseEventHandler? MouseLeftDown;
     public event MouseEventHandler? MouseRightDown;
     public event MouseEventHandler? MouseMove;
+
+    public event KeyboardEventHandler? KeyDown;
+    public event KeyboardEventHandler? KeyUp;
+
+    public event FocusEventHandler? GotFocus;
+    public event FocusEventHandler? LostFocus;
 
     public void SendMouseEvent(MouseEventType mouseEventType, MouseEventArgs e)
     {
@@ -73,14 +82,6 @@ public abstract class Control : VisualComponent
             case MouseEventType.MouseRightUp:
                 OnMouseRightUp();
                 break;
-            
-            case MouseEventType.GotFocus:
-                if (e.OriginalSource == this) OnGotFocus(e);
-                break;
-            
-            case MouseEventType.LostFocus:
-                if (e.OriginalSource == this) OnLostFocus(e);
-                break;
 
             default:
                 throw new ArgumentOutOfRangeException(nameof(mouseEventType), mouseEventType, null);
@@ -90,6 +91,30 @@ public abstract class Control : VisualComponent
 
         e.Source = this;
         (Parent as Control)?.SendMouseEvent(mouseEventType, e);
+    }
+
+    public void SendKeyboardEvent(KeyboardEventType keyboardEventType, KeyboardEventArgs e)
+    {
+        if (keyboardEventType == KeyboardEventType.KeyDown)
+        {
+            OnKeyDown(e);
+            return;
+        }
+        
+        OnKeyUp(e);
+    }
+
+    public void SendFocusEvent(FocusEventType focusEventType, InputEventArgs e)
+    {
+        if (e.OriginalSource != this) return;
+        
+        if (focusEventType == FocusEventType.GotFocus)
+        {
+            OnGotFocus(e);
+            return;
+        }
+        
+        OnLostFocus(e);
     }
 
     protected virtual void OnMouseEnter(MouseEventArgs e)
@@ -125,14 +150,26 @@ public abstract class Control : VisualComponent
 
     protected virtual void OnMouseRightUp() { }
 
-    protected virtual void OnGotFocus(MouseEventArgs e)
+    protected virtual void OnGotFocus(InputEventArgs e)
     {
         IsFocused = true;
+        GotFocus?.Invoke(this, e);
     }
 
-    protected virtual void OnLostFocus(MouseEventArgs e)
+    protected virtual void OnLostFocus(InputEventArgs e)
     {
         IsFocused = false;
+        LostFocus?.Invoke(this, e);
+    }
+
+    protected virtual void OnKeyDown(KeyboardEventArgs e)
+    {
+        KeyDown?.Invoke(this, e);
+    }
+
+    protected virtual void OnKeyUp(KeyboardEventArgs e)
+    {
+        KeyUp?.Invoke(this, e);
     }
 }
 
@@ -144,8 +181,17 @@ public enum MouseEventType
     MouseLeftDown,
     MouseLeftUp,
     MouseRightDown,
-    MouseRightUp,
+    MouseRightUp
+}
 
+public enum KeyboardEventType
+{
+    KeyDown,
+    KeyUp
+}
+
+public enum FocusEventType
+{
     GotFocus,
-    LostFocus,
+    LostFocus
 }

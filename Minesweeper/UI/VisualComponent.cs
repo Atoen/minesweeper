@@ -16,6 +16,7 @@ public abstract class VisualComponent : Component, IRenderable
     public Color DefaultColor { get; set; } = Color.Aqua;
     public Color HighlightedColor { get; set; } = Color.Blue;
     public Color PressedColor { get; set; } = Color.White;
+    public Color DisabledColor { get; set; }
     
     public Color Color
     {
@@ -25,6 +26,7 @@ public abstract class VisualComponent : Component, IRenderable
             DefaultColor = value;
             HighlightedColor = value.Brighter();
             PressedColor = value.Brighter(50);
+            DisabledColor = value.Dimmer();
         }
     }
     
@@ -46,7 +48,7 @@ public abstract class VisualComponent : Component, IRenderable
     {
         get
         {
-            if (!Enabled) return DefaultColor.Dimmer();
+            if (!Enabled) return DisabledColor;
             
             return State switch
             {

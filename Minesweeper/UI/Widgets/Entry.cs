@@ -3,96 +3,36 @@ using Minesweeper.UI.Events;
 
 namespace Minesweeper.UI.Widgets;
 
-public class Entry : Widget
+public class Entry : ContentControl
 {
-    public EntryText Text { get; init; } = new("", Color.Black);
-    public Coord TextOffset = Coord.Zero;
-    public TextMode EntryTextMode { get; set; } = TextMode.Italic;
+    public Entry()
+    {
+        _text = new EntryText(nameof(Entry)) {Parent = this};
+    }
 
-    public Color TextBackground { get; set; } = Color.Gray;
-    public int MaxTextLength { get; set; }
+    private EntryText _text;
+    public EntryText Text
+    {
+        get => _text;
+        set
+        {
+            _text.Remove();
+            _text.Parent = null!;
+            
+            _text = value;
+            _text.Parent = this;
 
-    public EntryMode InputMode { get; init; } = EntryMode.All;
+            MaxTextLenght = _text.Length;
+        }
+    }
+
+    public EntryMode InputMode { get; set; } = EntryMode.All;
+    public TextMode TextModeWhileTyping { get; set; } = TextMode.Italic;
+    
+    public int MaxTextLenght { get; set; }
 
     private bool _inEntryMode;
-
-    public override void Render()
-    {
-        if (_inEntryMode && Enabled) Text.Cycle();
-
-        Display.DrawRect(Position, Size, CurrentColor);
-        
-        var textStart = Center + TextOffset + Coord.Left * (MaxTextLength / 2);
-
-        Display.DrawRect(textStart, (MaxTextLength + 1, 1), TextBackground);
-
-        Display.Print(
-            Center.X + TextOffset.X - MaxTextLength / 2,
-            Center.Y + TextOffset.Y, Text.Text, Text.Foreground,
-            Text.Background ?? TextBackground, Alignment.Left,
-            Text.Mode);
-    }
-
-    private void KeyEvent(KeyboardState obj)
-    {
-        if (!_inEntryMode || !obj.Pressed || !Enabled) return;
-
-        if (obj.Key == ConsoleKey.Enter)
-        {
-            ExitEntryMode();
-            return;
-        }
-
-        var symbol = obj.Char;
-
-        if (CheckIfAllowed(symbol) && Text.Length < MaxTextLength)
-        {
-            Text.Append(symbol);
-        }
-        
-        if (obj.Key == ConsoleKey.Backspace && Text.Length > 0)
-        {
-            Text.RemoveLast(1);
-        }
-    }
-
-    private void ExitEntryMode()
-    {
-        if (!_inEntryMode) return;
-        
-        _inEntryMode = false;
-        Text.Animating = false;
-        Text.Mode = TextMode.Default;
-
-        if (InputMode != EntryMode.Digits) return;
-        
-        if (string.IsNullOrWhiteSpace(Text.Text)) Text.Text = "0";
-    }
-
-    protected override void OnMouseLeftDown(MouseEventArgs e)
-    {
-        _inEntryMode = !_inEntryMode;
-        Text.Mode = _inEntryMode ? EntryTextMode : TextMode.Default;
-        
-        Text.Animating = _inEntryMode;
-        
-        base.OnMouseLeftDown(e);
-    }
-
-    protected override void OnLostFocus(MouseEventArgs e)
-    {
-        ExitEntryMode();
-        
-        base.OnLostFocus(e);
-    }
-
-    // protected override void Resize()
-    // {
-    //     var minSize = new Coord(MaxTextLength + 1 + 2 * InnerPadding.X, 1 + 2 * InnerPadding.Y);
-    //
-    //     Size = Size.ExpandTo(minSize);
-    // }
-
+    
     private bool CheckIfAllowed(char symbol)
     {
         return InputMode switch
@@ -102,6 +42,101 @@ public class Entry : Widget
             EntryMode.Digits => char.IsDigit(symbol),
             _ => !char.IsControl(symbol)
         };
+    }
+
+    public override void Remove()
+    {
+        _text.Remove();
+        base.Remove();
+    }
+
+    public override void Clear()
+    {
+        base.Clear();
+        _text.Clear();
+    }
+
+    private void EnterEntryMode()
+    {
+        _inEntryMode = true;
+        Text.TextMode = TextModeWhileTyping;
+        Text.Animating = true;
+    }
+
+    private void ExitEntryMode()
+    {
+        _inEntryMode = false;
+        Text.Animating = false;
+        Text.TextMode = TextMode.Default;
+        
+        if (InputMode != EntryMode.Digits) return;
+
+        if (string.IsNullOrWhiteSpace(Text.String)) Text.String = "0";
+    }
+
+    private void EnterText(KeyboardEventArgs e)
+    {
+        if (e.IsReleased) return;
+
+        if (e.Key == ConsoleKey.Enter)
+        {
+            ExitEntryMode();
+            return;
+        }
+
+        if (CheckIfAllowed(e.Char) && Text.Length < MaxTextLenght)
+        {
+            if (Text.String == "0" && InputMode == EntryMode.Digits)
+            {
+                Text.String = e.Char.ToString();
+            }
+            else Text.Append(e.Char);
+            
+            return;
+        }
+
+        if (e.Key == ConsoleKey.Backspace && Text.Length > 0)
+        {
+            Text.RemoveLast();
+        }
+    }
+    
+    protected override void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (IsFocused && !_inEntryMode && e.IsPressed) EnterEntryMode();
+        
+        if (_inEntryMode) EnterText(e);
+            
+        base.OnKeyDown(e);
+    }
+
+    protected override void OnMouseLeftDown(MouseEventArgs e)
+    {
+        if (_inEntryMode) ExitEntryMode();
+        else EnterEntryMode();
+
+        base.OnMouseLeftDown(e);
+    }
+
+    protected override void OnLostFocus(InputEventArgs e)
+    {
+        ExitEntryMode();
+        
+        base.OnLostFocus(e);
+    }
+
+    public override void Resize()
+    {
+        MinSize = InnerPadding * 2 + (MaxTextLenght + 1, 1);
+
+        Size = ResizeMode switch
+        {
+            ResizeMode.Grow => Size.ExpandTo(MinSize),
+            ResizeMode.Stretch => MinSize,
+            _ => Size
+        };
+
+        base.Resize();
     }
 }
 

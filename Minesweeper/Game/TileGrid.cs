@@ -141,7 +141,7 @@ public class TileGrid : Control
             
             foreach (var tileToReveal in tilesToReveal)
             {
-                if (tileToReveal.HasBomb || tileToReveal.Flagged || tileToReveal.Revealed) continue;
+                if (tileToReveal.Revealed || tileToReveal.Flagged) continue;
 
                 tileToReveal.Revealed = true;
                 

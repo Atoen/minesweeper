@@ -7,7 +7,7 @@ public class Grid : Control
 {
     public Grid()
     {
-        IsFocusable = false;
+        Focusable = false;
         
         Children.ElementChanged += ChildrenOnElementChanged;
         

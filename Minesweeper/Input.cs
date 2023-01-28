@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI;
 using Minesweeper.UI.Events;
 
@@ -7,17 +6,16 @@ namespace Minesweeper;
 
 public static partial class Input
 {
-    internal static event Action<KeyboardState>? KeyEvent;
     internal static event Action<WindowState>? WindowEvent;
 
     private static bool _running;
-    private static uint _lastMouseButton = unchecked((uint) -1);
+    private static MouseButton _lastMouseButton = MouseButton.None;
     
     private static readonly MouseState MouseState = new();
-    private static KeyboardState _keyboardState;
+    private static readonly KeyboardState KeyboardState = new();
     
     private static readonly List<Control> Controls = new();
-    private static readonly object LockObject = new();
+    private static readonly ReaderWriterLockSlim LockSlim = new();
 
     public static void Init()
     {
@@ -42,12 +40,20 @@ public static partial class Input
     
     public static void Register(Control control)
     {
-        lock (LockObject) Controls.Add(control);
+        LockSlim.EnterWriteLock();
+        
+        Controls.Add(control);
+        
+        LockSlim.ExitWriteLock();
     }
 
     public static void Unregister(Control control)
     {
-        lock (LockObject) Controls.Remove(control);
+        LockSlim.EnterWriteLock();
+        
+        Controls.Remove(control);
+        
+        LockSlim.ExitWriteLock();
     }
 
     private static void HandleInput()
@@ -65,12 +71,13 @@ public static partial class Input
             switch (record.EventType)
             {
                 case MouseEventCode:
-                    HandleMouse(record.MouseEventRecord);
+                    MouseState.Assign(ref record.MouseEventRecord);
+                    HandleMouse();
                     break;
 
                 case KeyEventCode:
-                    _keyboardState.Assign(ref record.KeyEventRecord);
-                    KeyEvent?.Invoke(_keyboardState);
+                    KeyboardState.Assign(ref record.KeyEventRecord);
+                    HandleKeyboard();
                     break;
 
                 case WindowBufferSizeEvent:
@@ -80,10 +87,8 @@ public static partial class Input
         }
     }
 
-    private static void HandleMouse(MouseEventRecord mouseRecord)
+    private static void HandleMouse()
     {
-        MouseState.Assign(ref mouseRecord);
-
         // if (MouseState.Position.Y > Display.Height - 1) MouseState.Position.Y = Display.Height - 1;
         
         var zIndex = int.MinValue;
@@ -91,32 +96,34 @@ public static partial class Input
 
         var pos = MouseState.Position;
 
-        lock (LockObject)
+        LockSlim.EnterWriteLock();
+        
+        foreach (var control in Controls)
         {
-            foreach (var control in Controls)
+            if (control.ContainsPoint(pos) && control.ZIndex > zIndex)
             {
-                if (control.ContainsPoint(pos) && control.ZIndex > zIndex)
-                {
-                    // Previously marked as hit - now detected something on higher layer blocking the cursor 
-                    if (hit is not null) Miss(hit, MouseState.Buttons);
+                // Previously marked as hit - now detected something on higher layer blocking the cursor 
+                if (hit != null) Miss(hit, MouseState.Buttons);
 
-                    zIndex = control.ZIndex;
-                    hit = control;
-                }
-                else
-                {
-                    Miss(control, MouseState.Buttons);
-                }
+                zIndex = control.ZIndex;
+                hit = control;
+            }
+            else
+            {
+                Miss(control, MouseState.Buttons);
             }
         }
+            
+        LockSlim.ExitWriteLock();
 
-        if (hit is null || !hit.Enabled) return;
 
-        var args = CreateMouseArgs(MouseState, hit);
+        if (hit is not {Enabled: true}) return;
+
+        var args = CreateMouseArgs(hit);
         
         SendMouseEvents(hit, args);
 
-        _lastMouseButton = mouseRecord.ButtonState;
+        _lastMouseButton = MouseState.Buttons;
     }
     
     private static void Miss(Control control, MouseButton button)
@@ -125,26 +132,26 @@ public static partial class Input
 
         if (control is {IsMouseOver: true, Enabled: true})
         {
-            args = CreateMouseArgs(MouseState, control);
+            args = CreateMouseArgs(control);
             control.SendMouseEvent(MouseEventType.MouseExit, args);
         }
 
-        if (control is {IsFocusable: true, IsFocused: true} && (button & MouseButton.Left) != 0)
+        if (control is {Focusable: true, IsFocused: true} && (button & MouseButton.Left) != 0)
         {
-            args ??= CreateMouseArgs(MouseState, control);
-            control.SendMouseEvent(MouseEventType.LostFocus, args);
+            args ??= CreateMouseArgs(control);
+            control.SendFocusEvent(FocusEventType.LostFocus, args);
         }
     }
 
     private static void SendMouseEvents(Control control, MouseEventArgs args)
     {
-        if (_lastMouseButton == 0)
+        if (_lastMouseButton == MouseButton.None)
         {
             if ((MouseState.Buttons & MouseButton.Left) != 0)
             {
                 control.SendMouseEvent(MouseEventType.MouseLeftDown, args);
                 
-                if (control.IsFocusable) control.SendMouseEvent(MouseEventType.GotFocus, args);
+                if (control.Focusable) control.SendFocusEvent(FocusEventType.GotFocus, args);
             }
 
             if ((MouseState.Buttons & MouseButton.Right) != 0)
@@ -157,24 +164,58 @@ public static partial class Input
 
         control.SendMouseEvent(MouseEventType.MouseMove, args);
     }
-    
-    private static MouseEventArgs CreateMouseArgs(MouseState state, Control source) => new(source)
+
+    private static MouseEventArgs CreateMouseArgs(Control source) => new(source)
     {
-        CursorPosition = state.Position,
-        RelativeCursorPosition = state.Position - source.GlobalPosition,
+        CursorPosition = MouseState.Position,
+        RelativeCursorPosition = MouseState.Position - source.GlobalPosition,
 
-        LeftButton = (state.Buttons & MouseButton.Left) != 0
+        LeftButton = (MouseState.Buttons & MouseButton.Left) != 0
             ? MouseButtonState.Pressed
             : MouseButtonState.Released,
 
-        RightButton = (state.Buttons & MouseButton.Right) != 0
+        RightButton = (MouseState.Buttons & MouseButton.Right) != 0
             ? MouseButtonState.Pressed
             : MouseButtonState.Released,
 
-        MiddleButton = (state.Buttons & MouseButton.Middle) != 0
+        MiddleButton = (MouseState.Buttons & MouseButton.Middle) != 0
             ? MouseButtonState.Pressed
             : MouseButtonState.Released
     };
+
+    private static void HandleKeyboard()
+    {
+        LockSlim.EnterWriteLock();
+
+        foreach (var control in Controls)
+        {
+            if (!control.IsFocused) continue;
+            
+            SendKeyboardEvent(control);
+            break;
+        }
+            
+        LockSlim.ExitWriteLock();
+    }
+
+    private static void SendKeyboardEvent(Control control)
+    {
+        var args = new KeyboardEventArgs(control)
+        {
+            Key = KeyboardState.Key,
+            Char = KeyboardState.Char,
+            IsPressed = KeyboardState.Pressed,
+            IsReleased = !KeyboardState.Pressed
+        };
+
+        if (KeyboardState.Pressed)
+        {
+            control.SendKeyboardEvent(KeyboardEventType.KeyDown, args);
+            return;
+        }
+        
+        control.SendKeyboardEvent(KeyboardEventType.KeyUp, args);
+    }
 
     internal static void Stop() => _running = false;
 
@@ -239,17 +280,17 @@ public static partial class Input
 
     
     [StructLayout(LayoutKind.Sequential)]
-    public struct SCoord
+    public readonly struct SCoord
     {
-        public short X;
-        public short Y;
+        public readonly short X;
+        public readonly short Y;
         public override string ToString() => $"({X} {Y})";
     }
     
     #endregion
 }
 
-public struct KeyboardState
+internal sealed class KeyboardState
 {
     public ConsoleKey Key;
     public char Char;
@@ -263,7 +304,7 @@ public struct KeyboardState
     }
 }
 
-internal class MouseState
+internal sealed class MouseState
 {
     public Coord Position;
     public MouseButton Buttons;

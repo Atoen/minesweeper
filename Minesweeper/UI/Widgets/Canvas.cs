@@ -4,7 +4,7 @@ namespace Minesweeper.UI.Widgets;
 
 public class Canvas : ContentControl
 {
-    public Canvas() => IsFocusable = false;
+    public Canvas() => Focusable = false;
 
     public required IDrawable Drawable
     {

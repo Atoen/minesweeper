@@ -12,11 +12,13 @@ public class Text : VisualComponent
     
     public Text(string text, Color foreground)
     {
-        String = text;
+        TextInternal = text;
+        Size = new Coord(Length, 1);
+
         Foreground = foreground;
         Background = Color.Transparent;
 
-        ZIndexUpdateMode = ZIndexUpdateMode.SameAsParent;
+        ZIndexUpdateMode = ZIndexUpdateMode.OneHigherThanParent;
     }
 
     public Text(string text, Color foreground, Color background) : this(text, foreground)
@@ -44,27 +46,27 @@ public class Text : VisualComponent
 
     public TextMode TextMode { get; set; } = TextMode.Default;
     public Alignment Alignment { get; set; } = Alignment.Center;
-    
-    private string _text = null!;
 
-    public string String
+    protected string TextInternal;
+
+    public virtual string String
     {
-        get => _text;
+        get => TextInternal;
         set
         {
-            _text = value;
+            TextInternal = value;
             Size = new Coord(Length, 1);
         }
     }
 
-    public int Length => _text.Length;
+    public int Length => TextInternal.Length;
     
     public override void Render()
     {
         var background = Background == Color.Transparent ? Parent.CurrentColor : Background;
         var position = Parent.Center;
         
-        Display.Print(position.X, position.Y, _text, Foreground, background, Alignment, TextMode);
+        Display.Print(position.X, position.Y, TextInternal, Foreground, background, Alignment, TextMode);
     }
     
     public override void Clear()
@@ -79,5 +81,5 @@ public class Text : VisualComponent
         Display.ClearRect(startPos, Size);
     }
 
-    public override string ToString() => _text;
+    public override string ToString() => TextInternal;
 }

@@ -9,13 +9,24 @@ public static class Game
     private static TileGrid _tileGrid = null!;
     private static int _remainingFlags;
 
-    public static void Start(int width, int height, int bombs)
+    private static GamePreset _preset = null!;
+
+    private static Text _smileText = null!;
+
+    private static Text _flagsText = null!;
+
+    public static void Start(GamePreset preset)
     {
-        _tileGrid = new TileGrid(width, height, bombs);
+        _preset = preset;
+        
+        _tileGrid = new TileGrid(preset.Width, preset.Height, preset.Bombs);
 
         _tileGrid.PlacedFlag += ChangeFlagCount;
+        _tileGrid.RemovedFlag += ChangeFlagCount;
         _tileGrid.BombClicked += OnBombClicked;
-        
+
+        _remainingFlags = _tileGrid.Bombs;
+
         DisplayInterface();
     }
 
@@ -28,7 +39,7 @@ public static class Game
             Color = Color.RosyBrown,
             ShowGridLines = true
         };
-        
+
         grid.Columns.Add(new Column());
         grid.Columns.Add(new Column());
         grid.Columns.Add(new Column());
@@ -40,7 +51,7 @@ public static class Game
         {
             Text = new Text("Menu"),
             Color = Color.Crimson,
-            
+
             OnClick = () =>
             {
                 grid.Remove();
@@ -48,37 +59,57 @@ public static class Game
             }
         };
 
+        _flagsText = new Text(_remainingFlags.ToString());
+        var flagsLabel = new Label
+        {
+            Text = _flagsText
+        };
+
+        _smileText = new Text(":)", Color.Yellow);
+
+        Display.SortRenderables();
+
         var restartButton = new Button
         {
-            Text = new Text(":)", Color.Yellow),
+            Text = _smileText,
             Color = Color.RoyalBlue,
-            
+
             InnerPadding = (2, 1),
-            
+
             OnClick = Restart
         };
 
         grid.SetColumnAndRow(menuButton, 0, 0);
+        grid.SetColumnAndRow(flagsLabel, 0, 1);
         grid.SetColumnAndRow(restartButton, 1, 1);
         grid.SetColumnAndRow(_tileGrid, 1, 2);
-        
+
         Display.SortRenderables();
     }
-    
+
     private static void Restart()
     {
         _tileGrid.GenerateNew();
         _tileGrid.SetEnabled(true);
+        _smileText.String = ":)";
+
+        _remainingFlags = _preset.Bombs;
+        _flagsText.String = _remainingFlags.ToString();
+        _flagsText.Background = Color.Transparent;
     }
 
     private static void OnBombClicked(object? sender, EventArgs eventArgs)
     {
         _tileGrid.SetEnabled(false);
+        _smileText.String = ":(";
     }
-    
+
     private static void ChangeFlagCount(object? sender, int change)
     {
-        _remainingFlags += change;
+        _remainingFlags -= change;
+        _flagsText.String = _remainingFlags.ToString();
+
+        _flagsText.Background = _remainingFlags < 0 ? Color.Tomato : Color.Transparent;
     }
 
     private static void Back()
@@ -88,5 +119,6 @@ public static class Game
 
         MainMenu.Show();
     }
-
 }
+
+public record GamePreset(string Name, int Width, int Height, int Bombs);

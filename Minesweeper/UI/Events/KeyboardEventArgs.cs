@@ -6,7 +6,8 @@ public class KeyboardEventArgs : InputEventArgs
     {
     }
 
-    public ConsoleKey Key { get; init; }
-    public bool IsReleased { get; init; }
-    public bool IsPressed { get; init; }
+    public required ConsoleKey Key { get; init; }
+    public required char Char { get; init; }
+    public required bool IsReleased { get; init; }
+    public required bool IsPressed { get; init; }
 }

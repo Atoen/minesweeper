@@ -3,7 +3,7 @@
 public abstract class Component
 {
     public State State { get; protected set; } = State.Default;
-    public bool Enabled { get; protected set; } = true;
+    public bool Enabled { get; private set; } = true;
     
     public ResizeMode ResizeMode { get; set; } = ResizeMode.Stretch;
     public ZIndexUpdateMode ZIndexUpdateMode { get; set; } = ZIndexUpdateMode.OneHigherThanParent;
@@ -203,8 +203,8 @@ public abstract class Component
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
     {
         SizeChanged?.Invoke(sender, e);
-
-        if (sender != this && ResizeMode != ResizeMode.Manual)
+        
+        if (ResizeMode != ResizeMode.Manual)
         {
             Resize();
         }
