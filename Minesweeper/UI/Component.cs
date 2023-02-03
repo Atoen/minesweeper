@@ -11,25 +11,24 @@ public abstract class Component
     private int _zIndex;
     public virtual int ZIndex
     {
-        get => GetZIndex();
-        set
-        {
-            if (ZIndexUpdateMode == ZIndexUpdateMode.Manual) _zIndex = value;
-        }
+        get => GetZIndexInternal();
+        set => SetZIndexInternal(value);
     }
 
     private Component? _parent;
     public Component? Parent
     {
         get => _parent;
-        set => SetParent(value);
+        set => SetParentInternal(value);
     }
     
-    public delegate void PositionChangeEventHandler(object sender, PositionChangedEventArgs e);
-    public delegate void SizeChangeEventHandler(object sender, SizeChangedEventArgs e);
+    public delegate void PositionChangeEventHandler(Component sender, PositionChangedEventArgs e);
+    public delegate void SizeChangeEventHandler(Component sender, SizeChangedEventArgs e);
+    public delegate void ZIndexChangeEventHandler(Component sender, ZIndexChangedEventArgs e);
     
     public event PositionChangeEventHandler? PositionChanged;
     public event SizeChangeEventHandler? SizeChanged;
+    public event ZIndexChangeEventHandler? ZIndexChanged;
 
     private Coord _localPosition;
     private Coord _globalPosition;
@@ -44,35 +43,6 @@ public abstract class Component
     {
         get => _parent == null ? _localPosition : _parent.GlobalPosition + _localPosition;
         set => SetPositionInternal(value, false);
-    }
-
-    private void SetPositionInternal(Coord value, bool isLocal)
-    {
-        var positionBefore = isLocal ? _localPosition : _globalPosition;
-
-        if (_parent == null)
-        {
-            _globalPosition = value;
-            _localPosition = value;
-        }
-        else
-        {
-            if (isLocal)
-            {
-                _localPosition = value;
-                _globalPosition = _localPosition + _parent.GlobalPosition;
-            }
-            else
-            {
-                _globalPosition = value;
-                _localPosition = value - _parent.GlobalPosition;
-            }
-        }
-
-        if (value != positionBefore)
-        {
-            PositionChanged?.Invoke(this, new PositionChangedEventArgs(value - positionBefore));
-        }
     }
 
     public Coord Center
@@ -153,8 +123,22 @@ public abstract class Component
         return pos.X >= GlobalPosition.X && pos.X < GlobalPosition.X + Width &&
                pos.Y >= GlobalPosition.Y && pos.Y < GlobalPosition.Y + Height;
     }
+    
+    private void SetZIndexInternal(int value)
+    {
+        if (ZIndexUpdateMode != ZIndexUpdateMode.Manual) return;
 
-    private int GetZIndex()
+        var indexBefore = GetZIndexInternal();
+
+        _zIndex = value;
+
+        if (value != indexBefore)
+        {
+            ZIndexChanged?.Invoke(this, new ZIndexChangedEventArgs(indexBefore, value));
+        }
+    }
+
+    private int GetZIndexInternal()
     {
         if (ZIndexUpdateMode == ZIndexUpdateMode.Manual || _parent == null) return _zIndex;
 
@@ -166,8 +150,37 @@ public abstract class Component
             _ => _zIndex
         };
     }
+    
+    private void SetPositionInternal(Coord value, bool isLocal)
+    {
+        var positionBefore = isLocal ? _localPosition : _globalPosition;
 
-    private void SetParent(Component? value)
+        if (_parent == null)
+        {
+            _globalPosition = value;
+            _localPosition = value;
+        }
+        else
+        {
+            if (isLocal)
+            {
+                _localPosition = value;
+                _globalPosition = _localPosition + _parent.GlobalPosition;
+            }
+            else
+            {
+                _globalPosition = value;
+                _localPosition = value - _parent.GlobalPosition;
+            }
+        }
+
+        if (value != positionBefore)
+        {
+            PositionChanged?.Invoke(this, new PositionChangedEventArgs(value - positionBefore));
+        }
+    }
+
+    private void SetParentInternal(Component? value)
     {
         if (value == this)
         {
@@ -180,6 +193,8 @@ public abstract class Component
             SizeChanged -= _parent.OnSizeChanged;
         }
 
+        var oldZIndex = GetZIndexInternal();
+
         if (value == null)
         {
             Position = GlobalPosition;
@@ -191,16 +206,23 @@ public abstract class Component
         _parent = value;
         _localPosition = _globalPosition - _parent.GlobalPosition;
 
+        var newZIndex = GetZIndexInternal();
+        
+        if (oldZIndex != newZIndex)
+        {
+            ZIndexChanged?.Invoke(this, new ZIndexChangedEventArgs(oldZIndex, newZIndex));
+        }
+
         _parent.PositionChanged += OnPositionChanged;
         SizeChanged += _parent.OnSizeChanged;
     }
 
-    private void OnPositionChanged(object sender, PositionChangedEventArgs e)
+    private void OnPositionChanged(Component sender, PositionChangedEventArgs e)
     {
         PositionChanged?.Invoke(sender, e);
     }
 
-    private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+    private void OnSizeChanged(Component sender, SizeChangedEventArgs e)
     {
         SizeChanged?.Invoke(sender, e);
         
@@ -250,4 +272,16 @@ public class SizeChangedEventArgs : EventArgs
 
     public Coord OldSize { get; }
     public Coord NewSize { get; }
+}
+
+public class ZIndexChangedEventArgs : EventArgs
+{
+    public ZIndexChangedEventArgs(int oldIndex, int newIndex)
+    {
+        OldIndex = oldIndex;
+        NewIndex = newIndex;
+    }
+
+    public int OldIndex { get; }
+    public int NewIndex { get; }
 }

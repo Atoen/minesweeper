@@ -82,7 +82,7 @@ public class EntryText : Text
         var position = Parent.Center;
 
         var posX = position.X;
-        // if (Length % 2 != 0) posX--;
+        if (Length % 2 != 0 && Animating) posX--;
 
         Display.Print(posX, position.Y, TextInternal, Foreground, background, Alignment, TextMode);
 

@@ -1,4 +1,6 @@
-﻿namespace Minesweeper.UI.Events;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Minesweeper.UI.Events;
 
 public class InputEventArgs : RoutedEventArgs
 {

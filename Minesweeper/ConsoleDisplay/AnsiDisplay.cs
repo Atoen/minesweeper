@@ -1,8 +1,8 @@
-﻿using System.Text;
-using Minesweeper.UI.Widgets;
-using System.Collections.ObjectModel;
-using System.Runtime.CompilerServices;
+﻿using System.Collections.ObjectModel;
+using System.Text;
 using Minesweeper.UI;
+using Minesweeper.UI.Widgets;
+using Minesweeper.Utils;
 
 namespace Minesweeper.ConsoleDisplay;
 
@@ -16,15 +16,25 @@ public sealed class AnsiDisplay : IRenderer
     private readonly Pixel[,] _currentPixels;
     private readonly Pixel[,] _lastPixels;
     
-    private static readonly ReaderWriterLockSlim LockSlim = new();
+    private readonly Func<Color, string> _foregroundCode = color => $"\x1b[38;2;{color.R};{color.G};{color.B}m";
+    private readonly Func<Color, string> _backgroundCode = color => $"\x1b[48;2;{color.R};{color.G};{color.B}m";
+    private readonly Func<Coord, string> _coordCode = coord => $"\x1b[{coord.Y + 1};{coord.X + 1}f";
+
+    private readonly Cache<Color, string> _foregroundColorCache;
+    private readonly Cache<Color, string> _backgroundColorCache;
+    private readonly Cache<Coord, string> _coordCache;
 
     public AnsiDisplay(int width, int height)
     {
-        _displaySize.X = (short) width;
-        _displaySize.Y = (short) height;
+        _displaySize.X = width;
+        _displaySize.Y = height;
 
         _currentPixels = new Pixel[width, height];
         _lastPixels = new Pixel[width, height];
+
+        _foregroundColorCache = new Cache<Color, string>(_foregroundCode);
+        _backgroundColorCache = new Cache<Color, string>(_backgroundCode);
+        _coordCache = new Cache<Coord, string>(_coordCode);
     }
     
     public void Draw(int posX, int posY, char symbol, Color fg, Color bg)
@@ -236,7 +246,7 @@ public sealed class AnsiDisplay : IRenderer
 
         var symbolsBuilder = new StringBuilder();
 
-        _stringBuilder.Append($"\x1b[1;1f");
+        _stringBuilder.Append("\x1b[1;1f");
 
         for (var y = 0; y < _displaySize.Y; y++)
         for (var x = 0; x < _displaySize.X; x++)
@@ -251,7 +261,7 @@ public sealed class AnsiDisplay : IRenderer
                     // Need to specify new coords for printing
                     if (oldStreakPos.Y != y || oldStreakPos.X + oldStreakLen != streakStartPos.X)
                     {
-                        _stringBuilder.Append($"\x1b[{streakStartPos.Y + 1};{streakStartPos.X + 1}f");
+                        _stringBuilder.Append(_coordCache.GetOrAdd(streakStartPos));
                     }
                     
                     AppendTextMode(lastMode, _stringBuilder);
@@ -265,8 +275,8 @@ public sealed class AnsiDisplay : IRenderer
                     // Applying the colors for gathered pixels
                     else
                     {
-                        lastFg.AppendToBuilder(_stringBuilder);
-                        lastBg.AppendToBuilderBg(_stringBuilder);
+                        _stringBuilder.Append(_foregroundColorCache.GetOrAdd(lastFg));
+                        _stringBuilder.Append(_backgroundColorCache.GetOrAdd(lastBg));
                     }
                     
                     // Starting new streak of pixels
@@ -302,13 +312,14 @@ public sealed class AnsiDisplay : IRenderer
         if (symbolsBuilder.Length > 0)
         {
             var lastPixel = _currentPixels[_displaySize.X - 1, _displaySize.Y - 1];
-
-            _stringBuilder.Append($"\x1b[{streakStartPos.Y + 1};{streakStartPos.X + 1}f");
-            AppendTextMode(lastMode, _stringBuilder);
-
-            lastPixel.Fg.AppendToBuilder(_stringBuilder);
-            lastPixel.Bg.AppendToBuilderBg(_stringBuilder);
             
+            _stringBuilder.Append(_coordCache.GetOrAdd(streakStartPos));
+
+            AppendTextMode(lastMode, _stringBuilder);
+            
+            _stringBuilder.Append(_foregroundColorCache.GetOrAdd(lastPixel.Fg));
+            _stringBuilder.Append(_backgroundColorCache.GetOrAdd(lastPixel.Bg));
+
             _stringBuilder.Append(symbolsBuilder);
 
             symbolsBuilder.Clear();

@@ -1,5 +1,4 @@
-﻿using Minesweeper.ConsoleDisplay;
-using Minesweeper.UI;
+﻿using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
 
 namespace Minesweeper.Game;
@@ -67,8 +66,6 @@ public static class Game
 
         _smileText = new Text(":)", Color.Yellow);
 
-        Display.SortRenderables();
-
         var restartButton = new Button
         {
             Text = _smileText,
@@ -83,8 +80,6 @@ public static class Game
         grid.SetColumnAndRow(flagsLabel, 0, 1);
         grid.SetColumnAndRow(restartButton, 1, 1);
         grid.SetColumnAndRow(_tileGrid, 1, 2);
-
-        Display.SortRenderables();
     }
 
     private static void Restart()

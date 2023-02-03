@@ -2,12 +2,18 @@
 using Minesweeper.Game;
 using Minesweeper.UI.Events;
 using Minesweeper.UI.Widgets;
-using Grid = Minesweeper.UI.Widgets.Grid;
 
 namespace Minesweeper.UI;
 
 public static class MainMenu
 {
+    private static readonly List<GamePreset> GamePresets = new()
+    {
+        new GamePreset("Easy", 15, 10, 20),
+        new GamePreset("Medium", 30, 12, 50),
+        new GamePreset("Hard", 40, 20, 120)
+    };
+    
     public static void Show()
     {
         var grid = new Grid
@@ -20,8 +26,6 @@ public static class MainMenu
             GridLineStyle = GridLineStyle.SingleBold
         };
 
-        grid.Position = (4, 4);
-        
         grid.Columns.Add(new Column());
         grid.Columns.Add(new Column());
         grid.Columns.Add(new Column());
@@ -142,6 +146,8 @@ public static class MainMenu
             MaxTextLenght = 3,
             InputMode = EntryMode.Digits
         };
+        
+        widthEntry.SetEnabled(false);
 
         var heightEntry = new Entry
         {
@@ -150,7 +156,9 @@ public static class MainMenu
             MaxTextLenght = 3,
             InputMode = EntryMode.Digits
         };
-
+        
+        heightEntry.SetEnabled(false);
+        
         var bombsEntry = new Entry
         {
             Color = Color.DarkGray,
@@ -159,11 +167,20 @@ public static class MainMenu
             InputMode = EntryMode.Digits
         };
         
+        bombsEntry.SetEnabled(false);
+
         grid.SetColumnAndRow(widthEntry, 1, 5);
         grid.SetColumnAndRow(heightEntry, 2, 5);
         grid.SetColumnAndRow(bombsEntry, 3, 5);
         
-        Display.SortRenderables();
+        variable.OnValueChanged += delegate(Variable _, int value)
+        {
+            var enabled = value == GamePresets.Count;
+
+            widthEntry.SetEnabled(enabled);
+            heightEntry.SetEnabled(enabled);
+            bombsEntry.SetEnabled(enabled);
+        };
     }
 
     private static void StartGame(int preset)
@@ -175,11 +192,4 @@ public static class MainMenu
         
         
     }
-
-    private static readonly List<GamePreset> GamePresets = new()
-    {
-        new GamePreset("Easy", 15, 10, 20),
-        new GamePreset("Medium", 30, 12, 50),
-        new GamePreset("Hard", 40, 20, 120)
-    };
 }

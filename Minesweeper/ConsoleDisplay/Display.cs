@@ -48,27 +48,22 @@ public static partial class Display
 
     public static void AddToRenderList(IRenderable renderable)
     {
+        renderable.ZIndexChanged += RenderableOnZIndexChanged;
+        
         LockSlim.EnterWriteLock();
-        
         Renderables.Add(renderable);
-
-        // Placing foreground and top renderables later so they don't get covered by background
-        Renderables.Sort((r1, r2) => r1.ZIndex.CompareTo(r2.ZIndex));
-        
         LockSlim.ExitWriteLock();
     }
 
     public static void RemoveFromRenderList(IRenderable renderable)
     {
-        LockSlim.EnterWriteLock();
+        renderable.ZIndexChanged -= RenderableOnZIndexChanged;
         
+        LockSlim.EnterWriteLock();
         Renderables.Remove(renderable);
         RemovedRenderables.Add(renderable);
-
         LockSlim.ExitWriteLock();
     }
-
-    public static void SortRenderables() => Renderables.Sort((r1, r2) => r1.ZIndex.CompareTo(r2.ZIndex));
 
     public static void Draw(int posX, int posY, char symbol, Color foreground, Color background) => 
         _renderer.Draw(posX, posY, symbol, foreground, background);
@@ -221,6 +216,15 @@ public static partial class Display
 
         return calculatedLenght > 0;
     }
+    
+    private static void RenderableOnZIndexChanged(Component sender, ZIndexChangedEventArgs e) => SortRenderables();
+
+    private static void SortRenderables()
+    {
+        LockSlim.EnterWriteLock();
+        Renderables.Sort((r1, r2) => r1.CompareTo(r2));
+        LockSlim.ExitWriteLock();
+    }
 
     private static void Draw()
     {
@@ -265,7 +269,6 @@ public static partial class Display
     private static partial bool GetConsoleMode(nint hConsoleInput, out uint mode);
 
     [LibraryImport("kernel32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
     private static partial void SetConsoleMode(nint handle, uint mode);
 }
 

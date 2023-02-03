@@ -44,12 +44,6 @@ public static class Colors
 
     public static Color Dimmer(this Color color, int dimmingPercent = 20) => Brighter(color, -dimmingPercent);
 
-    public static void AppendToBuilder(this Color color, StringBuilder builder) => 
-        builder.Append($"\x1b[38;2;{color.R};{color.G};{color.B}m");
-    
-    public static void AppendToBuilderBg(this Color color, StringBuilder builder) => 
-        builder.Append($"\x1b[48;2;{color.R};{color.G};{color.B}m");
-
     public static short CombineToShort(Color foreground, Color background)
     {
         var foregroundIndex = ConsoleColorIndex(foreground);
@@ -77,5 +71,4 @@ public static class Colors
     {
         return (ConsoleColor) (ConsoleColorIndex(color) << 4);
     }
-
 }

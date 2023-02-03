@@ -1,10 +1,19 @@
 ﻿namespace Minesweeper.UI;
 
-public interface IRenderable
+public interface IRenderable : IComparable<IRenderable>
 {
     void Render();
 
     void Clear();
     
     int ZIndex { get; }
+    event Component.ZIndexChangeEventHandler? ZIndexChanged;
+
+    int IComparable<IRenderable>.CompareTo(IRenderable? other)
+    {
+        if (other == null) return 1;
+        
+        if (ZIndex < other.ZIndex) return -1;
+        return ZIndex > other.ZIndex ? 1 : 0;
+    }
 }

@@ -45,6 +45,19 @@ public class RadioButton : Button
 public sealed class Variable
 {
     public Variable(int val = 0) => Val = val;
-    public int Val { get; set; }
+
+    public int Val
+    {
+        get => _val;
+        set
+        {
+            if (value != _val) OnValueChanged?.Invoke(this, value);
+            _val = value;
+        }
+    }
     
+    private int _val;
+
+    public delegate void ValueChangedEventHandler(Variable variable, int newValue);
+    public event ValueChangedEventHandler? OnValueChanged;
 }

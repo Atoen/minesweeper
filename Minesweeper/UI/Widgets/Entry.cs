@@ -25,7 +25,7 @@ public class Entry : ContentControl
 
     public EntryMode InputMode { get; set; } = EntryMode.All;
     public TextMode TextModeWhileTyping { get; set; } = TextMode.Italic;
-    
+
     public int MaxTextLenght { get; set; }
 
     private bool _inEntryMode;
@@ -49,8 +49,8 @@ public class Entry : ContentControl
 
     public override void Clear()
     {
-        base.Clear();
         _text.Clear();
+        base.Clear();
     }
 
     private void EnterEntryMode()
@@ -83,6 +83,7 @@ public class Entry : ContentControl
 
         if (CheckIfAllowed(e.Char) && Text.Length < MaxTextLenght)
         {
+            // Numbers should not be preceded by the default '0'
             if (Text.String == "0" && InputMode == EntryMode.Digits)
             {
                 Text.String = e.Char.ToString();
@@ -100,7 +101,8 @@ public class Entry : ContentControl
     
     protected override void OnKeyDown(KeyboardEventArgs e)
     {
-        if (IsFocused && !_inEntryMode && e.IsPressed) EnterEntryMode();
+        // Keypress of allowed character while the entry is focused should append said character
+        if (IsFocused && !_inEntryMode && e.IsPressed && CheckIfAllowed(e.Char)) EnterEntryMode();
         
         if (_inEntryMode) EnterText(e);
             

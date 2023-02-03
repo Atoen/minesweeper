@@ -12,12 +12,12 @@ Console.CancelKeyPress += delegate
     
     Input.Stop();
     Display.Stop();
-    
+
     Display.ResetStyle();
-    
+
     Console.Clear();
     Console.WriteLine("Exiting...");
-    
+
     var bytesPerMByte = Math.Pow(2, 20);
     Console.WriteLine(
         $"Memory usage - Physical: {peakPhysical / bytesPerMByte:.00}MB, Paged: {peakPaged / bytesPerMByte:.00}MB");
