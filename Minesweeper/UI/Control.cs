@@ -34,9 +34,9 @@ public abstract class Control : VisualComponent
         base.Remove();
     }
 
-    public delegate void MouseEventHandler(object sender, MouseEventArgs e);
-    public delegate void KeyboardEventHandler(object sender, KeyboardEventArgs e);
-    public delegate void FocusEventHandler(object sender, InputEventArgs e);
+    public delegate void MouseEventHandler(Control sender, MouseEventArgs e);
+    public delegate void KeyboardEventHandler(Control sender, KeyboardEventArgs e);
+    public delegate void FocusEventHandler(Control sender, InputEventArgs e);
     
     public event MouseEventHandler? MouseEnter;
     public event MouseEventHandler? MouseLeave;
@@ -86,7 +86,7 @@ public abstract class Control : VisualComponent
             default:
                 throw new ArgumentOutOfRangeException(nameof(mouseEventType), mouseEventType, null);
         }
-        
+
         if (e.Handled) return;
 
         e.Source = this;

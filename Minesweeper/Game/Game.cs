@@ -8,7 +8,7 @@ public static class Game
     private static TileGrid _tileGrid = null!;
     private static int _remainingFlags;
 
-    private static GamePreset _preset = null!;
+    private static GamePreset _preset;
 
     private static Text _smileText = null!;
 
@@ -118,4 +118,4 @@ public static class Game
     }
 }
 
-public record GamePreset(string Name, int Width, int Height, int Bombs);
+public record struct GamePreset(string Name, int Width, int Height, int Bombs);

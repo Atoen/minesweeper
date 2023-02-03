@@ -31,8 +31,6 @@ public class RadioButton : Button
 
     public override void Render()
     {
-        if (!RenderOnItsOwn && Parent == null) return;
-        
         Text.TextMode = IsSelected ? SelectedTextMode : TextMode.Default;
 
         if (IsSelected && State == State.Default) State = State.Highlighted;

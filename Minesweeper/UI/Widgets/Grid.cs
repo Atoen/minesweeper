@@ -251,8 +251,6 @@ public class Grid : Control
     
     public override void Render()
     {
-        if (!RenderOnItsOwn && Parent == null) return;
-
         base.Render();
         
         if (ShowGridLines) RenderLines();

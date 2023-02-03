@@ -234,7 +234,10 @@ public static partial class Display
 
         RemovedRenderables.Clear();
 
-        foreach (var renderable in Renderables) renderable.Render();
+        foreach (var renderable in Renderables)
+        {
+            if (renderable.ShouldRender) renderable.Render();
+        }
 
         LockSlim.ExitWriteLock();
         

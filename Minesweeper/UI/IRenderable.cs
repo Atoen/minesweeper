@@ -3,6 +3,8 @@
 public interface IRenderable : IComparable<IRenderable>
 {
     void Render();
+    
+    bool ShouldRender { get; }
 
     void Clear();
     

@@ -13,6 +13,10 @@ public static class MainMenu
         new GamePreset("Medium", 30, 12, 50),
         new GamePreset("Hard", 40, 20, 120)
     };
+
+    private static EntryText _customWidthText = new EntryText("15");
+    private static EntryText _customHeightText = new EntryText("20");
+    private static EntryText _customBombsText = new EntryText("100");
     
     public static void Show()
     {
@@ -52,7 +56,7 @@ public static class MainMenu
         
         grid.SetColumnAndRow(titleLabel, 1, 0);
 
-        titleLabel.MouseMove += delegate(object _, MouseEventArgs args)
+        titleLabel.MouseMove += delegate(Control _, MouseEventArgs args)
         {
             if (args.LeftButton == MouseButtonState.Pressed) args.OriginalSource.Center = args.CursorPosition;
         };
@@ -139,34 +143,34 @@ public static class MainMenu
         
         grid.SetColumnAndRow(customButton, 0, GamePresets.Count + 2);
 
+        _customWidthText = new EntryText("15");
         var widthEntry = new Entry
         {
             Color = Color.DarkGray,
-            Text = new EntryText("15"),
+            Text = _customWidthText,
             MaxTextLenght = 3,
             InputMode = EntryMode.Digits
         };
-        
         widthEntry.SetEnabled(false);
 
+        _customHeightText = new EntryText("20");
         var heightEntry = new Entry
         {
             Color = Color.DarkGray,
-            Text = new EntryText("20"),
+            Text = _customHeightText,
             MaxTextLenght = 3,
             InputMode = EntryMode.Digits
         };
-        
         heightEntry.SetEnabled(false);
-        
+
+        _customBombsText = new EntryText("100");
         var bombsEntry = new Entry
         {
             Color = Color.DarkGray,
-            Text = new EntryText("100"),
+            Text = _customBombsText,
             MaxTextLenght = 4,
             InputMode = EntryMode.Digits
         };
-        
         bombsEntry.SetEnabled(false);
 
         grid.SetColumnAndRow(widthEntry, 1, 5);
@@ -188,8 +192,16 @@ public static class MainMenu
         if (preset < GamePresets.Count)
         {
             Game.Game.Start(GamePresets[preset]);
+            return;
         }
         
-        
+        Game.Game.Start(GetCustomPreset());
     }
+
+    private static GamePreset GetCustomPreset() => new()
+    {
+        Width = int.Parse(_customWidthText.String),
+        Height = int.Parse(_customHeightText.String),
+        Bombs = int.Parse(_customBombsText.String),
+    };
 }
