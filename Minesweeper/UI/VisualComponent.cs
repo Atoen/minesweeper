@@ -37,6 +37,8 @@ public abstract class VisualComponent : Component, IRenderable
     public BorderStyle BorderStyle { get; set; } = BorderStyle.Single;
     public Color BorderColor { get; set; } = Color.Cyan;
 
+    public bool RenderOnItsOwn { get; set; } = false;
+
     public int PaddedWidth => Width + OuterPadding.X * 2;
     public int PaddedHeight => Height + OuterPadding.Y * 2;
 
@@ -62,6 +64,8 @@ public abstract class VisualComponent : Component, IRenderable
     [MethodCall(MethodCallMode.Scheduled)]
     public virtual void Render()
     {
+        if (!RenderOnItsOwn && Parent == null) return;
+
         Display.DrawRect(GlobalPosition, Size, CurrentColor);
 
         if (ShowBorder)

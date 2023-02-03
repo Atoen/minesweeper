@@ -26,8 +26,8 @@ public class Text : VisualComponent
         Background = background;
     }
 
-    private VisualComponent _parent = null!;
-    public new VisualComponent Parent
+    private VisualComponent? _parent;
+    public new VisualComponent? Parent
     {
         get => _parent;
         set
@@ -63,8 +63,10 @@ public class Text : VisualComponent
     
     public override void Render()
     {
-        var background = Background == Color.Transparent ? Parent.CurrentColor : Background;
-        var position = Parent.Center;
+        if (_parent == null) return;
+        
+        var background = Background == Color.Transparent ? _parent.CurrentColor : Background;
+        var position = _parent.Center;
         
         Display.Print(position.X, position.Y, TextInternal, Foreground, background, Alignment, TextMode);
     }

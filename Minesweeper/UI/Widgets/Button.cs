@@ -39,8 +39,8 @@ public class Button : ContentControl
 
     public override void Remove()
     {
-        Display.RemoveFromRenderList(this);
         Display.RemoveFromRenderList(_text);
+        base.Remove();
     }
 
     public override void Clear()

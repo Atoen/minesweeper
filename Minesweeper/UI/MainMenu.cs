@@ -19,6 +19,8 @@ public static class MainMenu
             ShowGridLines = true,
             GridLineStyle = GridLineStyle.SingleBold
         };
+
+        grid.Position = (4, 4);
         
         grid.Columns.Add(new Column());
         grid.Columns.Add(new Column());
@@ -137,11 +139,29 @@ public static class MainMenu
         {
             Color = Color.DarkGray,
             Text = new EntryText("15"),
+            MaxTextLenght = 3,
+            InputMode = EntryMode.Digits
+        };
+
+        var heightEntry = new Entry
+        {
+            Color = Color.DarkGray,
+            Text = new EntryText("20"),
+            MaxTextLenght = 3,
+            InputMode = EntryMode.Digits
+        };
+
+        var bombsEntry = new Entry
+        {
+            Color = Color.DarkGray,
+            Text = new EntryText("100"),
             MaxTextLenght = 4,
             InputMode = EntryMode.Digits
         };
         
         grid.SetColumnAndRow(widthEntry, 1, 5);
+        grid.SetColumnAndRow(heightEntry, 2, 5);
+        grid.SetColumnAndRow(bombsEntry, 3, 5);
         
         Display.SortRenderables();
     }

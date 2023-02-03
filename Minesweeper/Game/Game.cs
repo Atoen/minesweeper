@@ -117,6 +117,8 @@ public static class Game
         _tileGrid.PlacedFlag -= ChangeFlagCount;
         _tileGrid.BombClicked -= OnBombClicked;
 
+        Trace.WriteLine("Back");
+        
         MainMenu.Show();
     }
 }

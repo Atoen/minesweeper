@@ -74,20 +74,25 @@ public class EntryText : Text
 
     public override void Render()
     {
+        if (Parent == null) return;
+        
         if (Animating) _enumerator.MoveNext();
 
         var background = Background == Color.Transparent ? Parent.CurrentColor : Background;
         var position = Parent.Center;
-        
-        Display.Print(position.X, position.Y, TextInternal, Foreground, background, Alignment, TextMode);
+
+        var posX = position.X;
+        // if (Length % 2 != 0) posX--;
+
+        Display.Print(posX, position.Y, TextInternal, Foreground, background, Alignment, TextMode);
 
         if (!_displayingCaret) return;
         
         var startX = Alignment switch
         {
             Alignment.Left => position.X,
-            Alignment.Right => position.X - Length,
-            _ => position.X - Length / 2
+            Alignment.Right => position.X - Length + 1,
+            _ => position.X - (Length + 1) / 2
         };
             
         Display.Draw(startX + TextInternal.Length, position.Y, Caret, Foreground, background);

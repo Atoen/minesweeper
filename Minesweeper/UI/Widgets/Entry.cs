@@ -5,10 +5,7 @@ namespace Minesweeper.UI.Widgets;
 
 public class Entry : ContentControl
 {
-    public Entry()
-    {
-        _text = new EntryText(nameof(Entry)) {Parent = this};
-    }
+    public Entry() => _text = new EntryText(nameof(Entry)) {Parent = this};
 
     private EntryText _text;
     public EntryText Text

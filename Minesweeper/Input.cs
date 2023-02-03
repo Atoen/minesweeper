@@ -41,18 +41,14 @@ public static partial class Input
     public static void Register(Control control)
     {
         LockSlim.EnterWriteLock();
-        
         Controls.Add(control);
-        
         LockSlim.ExitWriteLock();
     }
 
     public static void Unregister(Control control)
     {
         LockSlim.EnterWriteLock();
-        
         Controls.Remove(control);
-        
         LockSlim.ExitWriteLock();
     }
 

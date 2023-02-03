@@ -26,7 +26,6 @@ public class Label : ContentControl
 
     public override void Remove()
     {
-        // Display.RemoveFromRenderList(_text);
         _text.Remove();
         base.Remove();
     }

@@ -8,7 +8,8 @@ public class Grid : Control
     public Grid()
     {
         Focusable = false;
-        
+        RenderOnItsOwn = true;
+
         Children.ElementChanged += ChildrenOnElementChanged;
         
         Columns.CollectionChanged += ColumnsOnCollectionChanged;
@@ -250,6 +251,8 @@ public class Grid : Control
     
     public override void Render()
     {
+        if (!RenderOnItsOwn && Parent == null) return;
+
         base.Render();
         
         if (ShowGridLines) RenderLines();
