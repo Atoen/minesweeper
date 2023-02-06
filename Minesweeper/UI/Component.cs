@@ -9,7 +9,7 @@ public abstract class Component
     public ZIndexUpdateMode ZIndexUpdateMode { get; set; } = ZIndexUpdateMode.OneHigherThanParent;
     
     private int _zIndex;
-    public virtual int ZIndex
+    public int ZIndex
     {
         get => GetZIndexInternal();
         set => SetZIndexInternal(value);
@@ -60,7 +60,6 @@ public abstract class Component
     }
 
     private Coord _size;
-
     public Coord Size
     {
         get => _size;

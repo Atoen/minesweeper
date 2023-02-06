@@ -11,7 +11,6 @@ public static class Game
     private static GamePreset _preset;
 
     private static Text _smileText = null!;
-
     private static Text _flagsText = null!;
 
     public static void Start(GamePreset preset)
@@ -23,6 +22,7 @@ public static class Game
         _tileGrid.PlacedFlag += ChangeFlagCount;
         _tileGrid.RemovedFlag += ChangeFlagCount;
         _tileGrid.BombClicked += OnBombClicked;
+        _tileGrid.ClearedField += OnClearedField;
 
         _remainingFlags = _tileGrid.Bombs;
 
@@ -61,7 +61,8 @@ public static class Game
         _flagsText = new Text(_remainingFlags.ToString());
         var flagsLabel = new Label
         {
-            Text = _flagsText
+            Text = _flagsText,
+            ResizeMode = ResizeMode.Grow
         };
 
         _smileText = new Text(":)", Color.Yellow);
@@ -106,11 +107,18 @@ public static class Game
 
         _flagsText.Background = _remainingFlags < 0 ? Color.Tomato : Color.Transparent;
     }
+    
+    private static void OnClearedField(object? sender, EventArgs e)
+    {
+        _smileText.String = ":D";
+    }
 
     private static void Back()
     {
         _tileGrid.PlacedFlag -= ChangeFlagCount;
+        _tileGrid.RemovedFlag -= ChangeFlagCount;
         _tileGrid.BombClicked -= OnBombClicked;
+        _tileGrid.ClearedField -= OnClearedField;
 
         Trace.WriteLine("Back");
         

@@ -16,7 +16,7 @@ public abstract class VisualComponent : Component, IRenderable
     public Color DefaultColor { get; set; } = Color.Aqua;
     public Color HighlightedColor { get; set; } = Color.Blue;
     public Color PressedColor { get; set; } = Color.White;
-    public Color DisabledColor { get; set; }
+    public Color DisabledColor { get; set; } = Color.DarkSlateGray;
     
     public Color Color
     {

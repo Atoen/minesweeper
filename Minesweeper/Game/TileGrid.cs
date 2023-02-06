@@ -27,7 +27,8 @@ public class TileGrid : Control
     private readonly Tile[,] _tiles;
 
     private bool _revealed;
-    private bool _needToRedraw;
+    private int _tilesLeftToReveal;
+    
     public int Bombs { get; private set; }
 
     public void GenerateNew()
@@ -38,8 +39,9 @@ public class TileGrid : Control
             _tiles[x, y] = new Tile {Pos = {X = x, Y = y}};
         }
 
+        _tilesLeftToReveal = Width * Height - Bombs;
+
         _revealed = false;
-        _needToRedraw = true;
     }
 
     private void GenerateBombs(Coord clickPos)
@@ -58,8 +60,7 @@ public class TileGrid : Control
             
             nearTiles.Add(_tiles[tileX, tileY]);
         }
-
-        var random = new Random();
+        
         var bombSpots = Width * Height - nearTiles.Count;
 
         if (Bombs > bombSpots) Bombs = bombSpots;
@@ -81,14 +82,14 @@ public class TileGrid : Control
         for (i = 0; i < Bombs; i++)
         {
             // Ensuring that given index is picked only once
-            var j = random.Next(0, indexList.Count);
+            var j = Random.Shared.Next(0, indexList.Count);
             var index = indexList[j];
             indexList.RemoveAt(j);
         
             flatList[index].HasBomb = true;
         }
 
-        foreach (var tile in flatList.Concat(nearTiles))
+        foreach (var tile in _tiles)
         {
             CheckSurrounding(tile);
         }
@@ -132,6 +133,8 @@ public class TileGrid : Control
     
     private void RevealNearbyTiles(Tile tile)
     {
+        var tilesRevealed = 0;
+        
         var tilesToReveal = new List<Tile> {tile};
 
         // Iterative way of searching for next tiles to reveal
@@ -144,6 +147,7 @@ public class TileGrid : Control
                 if (tileToReveal.Revealed || tileToReveal.Flagged) continue;
 
                 tileToReveal.Revealed = true;
+                tilesRevealed++;
                 
                 // If tile is empty then its neighbours are searched too 
                 if (tileToReveal.NeighbouringBombs == 0) newTiles.AddRange(tileToReveal.Neighbours);
@@ -153,6 +157,13 @@ public class TileGrid : Control
             
             tilesToReveal.Clear();
             tilesToReveal = newTiles;
+        }
+
+        _tilesLeftToReveal -= tilesRevealed;
+
+        if (_tilesLeftToReveal < 1)
+        {
+            ClearedField?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -167,8 +178,6 @@ public class TileGrid : Control
         var tile = _tiles[pos.X, pos.Y];
 
         if (tile.Revealed || tile.Flagged) return;
-        
-        _needToRedraw = true;
 
         if (tile.HasBomb)
         {
@@ -187,18 +196,15 @@ public class TileGrid : Control
         
         if (tile.Revealed) return;
 
-        _needToRedraw = true;
 
         if (tile.Flagged)
         {
             tile.Flagged = false;
-
             RemovedFlag?.Invoke(this, -1);
             return;
         }
         
         tile.Flagged = true;
-        
         PlacedFlag?.Invoke(this, 1);
     }
 
@@ -216,8 +222,6 @@ public class TileGrid : Control
 
     public override void Render()
     {
-        if (!_needToRedraw) return;
-        
         var pos = GlobalPosition;
         
         for (var x = 0; x < Width; x++)

@@ -2,11 +2,8 @@
 
 public class InputEventArgs : RoutedEventArgs
 {
-    public InputEventArgs(Device device, Control source) : base(source)
-    {
-        Device = device;
-    }
-    
+    public InputEventArgs(Device device, Control source) : base(source) => Device = device;
+
     public Device Device { get; }
 }
 

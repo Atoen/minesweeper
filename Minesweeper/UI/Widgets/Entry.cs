@@ -102,10 +102,10 @@ public class Entry : ContentControl
     protected override void OnKeyDown(KeyboardEventArgs e)
     {
         // Keypress of allowed character while the entry is focused should append said character
-        if (IsFocused && !_inEntryMode && e.IsPressed && CheckIfAllowed(e.Char)) EnterEntryMode();
+        if (IsFocused && !_inEntryMode && CheckIfAllowed(e.Char)) EnterEntryMode();
         
         if (_inEntryMode) EnterText(e);
-            
+        
         base.OnKeyDown(e);
     }
 

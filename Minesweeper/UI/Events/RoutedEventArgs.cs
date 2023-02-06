@@ -9,8 +9,6 @@ public class RoutedEventArgs : EventArgs
     }
 
     public bool Handled { get; set; }
-
     public Control Source { get; set; }
-    
     public Control OriginalSource { get; }
 }

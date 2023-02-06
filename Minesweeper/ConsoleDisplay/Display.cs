@@ -133,7 +133,7 @@ public static partial class Display
 
             stopwatch.Stop();
             var sleepTime = tickLength - (int) stopwatch.ElapsedMilliseconds;
-            
+ 
             stopwatch.Reset();
 
             if (sleepTime > 0) Thread.Sleep(sleepTime);
