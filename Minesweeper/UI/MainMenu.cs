@@ -14,9 +14,9 @@ public static class MainMenu
         new GamePreset("Hard", 40, 20, 120)
     };
 
-    private static EntryText _customWidthText = new EntryText("15");
-    private static EntryText _customHeightText = new EntryText("20");
-    private static EntryText _customBombsText = new EntryText("100");
+    private static EntryText _customWidthText = new("15");
+    private static EntryText _customHeightText = new("20");
+    private static EntryText _customBombsText = new("100");
     
     public static void Show()
     {

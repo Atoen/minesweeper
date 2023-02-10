@@ -1,7 +1,8 @@
-﻿using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
+﻿using Microsoft.Win32.SafeHandles;
 using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
+
+using static Minesweeper.NativeConsole;
 
 namespace Minesweeper.ConsoleDisplay;
 
@@ -204,52 +205,8 @@ public sealed class NativeDisplay : IRenderer
             }
         }
     }
-
-    #region NativeMetods
     
-    [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    private static extern SafeFileHandle CreateFile(string fileName,
-        [MarshalAs(UnmanagedType.U4)] uint fileAccess,
-        [MarshalAs(UnmanagedType.U4)] uint fileShare,
-        IntPtr securityAttributes,
-        [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
-        [MarshalAs(UnmanagedType.U4)] int flags,
-        IntPtr template);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool WriteConsoleOutput(
-        SafeFileHandle hConsoleOutput,
-        CharInfo[] lpBuffer,
-        SCoord dwBufferSize,
-        SCoord dwBufferSCoord,
-        ref DisplayRect lpWriteRegion);
-
-    [StructLayout(LayoutKind.Explicit)]
-    private struct CharInfo
+    public void Clear()
     {
-        public static readonly CharInfo Empty = new() {Symbol = '\0', Color = 0};
-
-        [FieldOffset(0)] public char Symbol;
-        [FieldOffset(2)] public short Color;
-    }
-    
-    [StructLayout(LayoutKind.Sequential)]
-    private struct DisplayRect
-    {
-        public short Left;
-        public short Top;
-        public short Right;
-        public short Bottom;
-    }
-
-    #endregion
-    
-    [StructLayout(LayoutKind.Sequential)]
-    private struct SCoord
-    {
-        public short X;
-        public short Y;
-
-        public override string ToString() => $"({X} {Y})";
     }
 }

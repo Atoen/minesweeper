@@ -2,13 +2,15 @@
 using Minesweeper.UI;
 using Minesweeper.UI.Events;
 
+using static Minesweeper.NativeConsole;
+
 namespace Minesweeper;
 
 public static partial class Input
 {
-    internal static event Action<WindowState>? WindowEvent;
+    internal static event EventHandler<SCoord>? WindowEvent; 
 
-    private static bool _running;
+    private static volatile bool _running;
     private static MouseButton _lastMouseButton = MouseButton.None;
     
     private static readonly MouseState MouseState = new();
@@ -22,11 +24,15 @@ public static partial class Input
         if (_running) return;
         _running = true;
 
-        var inHandle = GetStdHandle(StdInputHandle);
-
+        var inHandle = GetStdHandle(unchecked((uint) -10));
+        
         var mode = 0u;
-        GetConsoleMode(inHandle, ref mode);
 
+        GetConsoleMode(inHandle, ref mode);
+        
+        
+        // GetConsoleMode(inHandle, out var mode);
+        
         mode &= ~EnableQuickEditMode;
         mode |= EnableWindowInput;
         mode |= EnableMouseInput;
@@ -54,7 +60,7 @@ public static partial class Input
 
     private static void HandleInput()
     {
-        var handleIn = GetStdHandle(StdInputHandle);
+        var handleIn = GetStdHandle(unchecked((uint) -10));
         var recordArray = new[] {new InputRecord()};
         
         while (_running)
@@ -77,7 +83,7 @@ public static partial class Input
                     break;
 
                 case WindowBufferSizeEvent:
-                    WindowEvent?.Invoke(record.WindowBufferSizeEventRecord);
+                    WindowEvent?.Invoke(null, record.WindowBufferSizeEventRecord.Size);
                     break;
             }
         }
@@ -214,76 +220,6 @@ public static partial class Input
     }
 
     internal static void Stop() => _running = false;
-
-    #region Native Methods
-
-    private const uint StdInputHandle = unchecked((uint) -10);
-
-    private const uint EnableMouseInput = 0x0010,
-        EnableQuickEditMode = 0x0040,
-        EnableWindowInput = 0x0008;
-
-    private const ushort KeyEventCode = 0x0001,
-        MouseEventCode = 0x0002,
-        WindowBufferSizeEvent = 0x0004;
-
-    [StructLayout(LayoutKind.Explicit)]
-    private struct InputRecord
-    {
-        [FieldOffset(0)] public ushort EventType;
-        [FieldOffset(4)] public KeyEventRecord KeyEventRecord;
-        [FieldOffset(4)] public MouseEventRecord MouseEventRecord;
-        [FieldOffset(4)] public WindowState WindowBufferSizeEventRecord;
-    }
-
-    [StructLayout(LayoutKind.Explicit)]
-    public struct MouseEventRecord
-    {
-        [FieldOffset(0)] public SCoord MousePosition;
-        [FieldOffset(4)] public uint ButtonState;
-        [FieldOffset(12)] public uint EventFlags;
-    }
-
-    [StructLayout(LayoutKind.Explicit, CharSet = CharSet.Unicode)]
-    public struct KeyEventRecord
-    {
-        [FieldOffset(0)] public readonly bool KeyDown;
-        [FieldOffset(4)] public readonly ushort RepeatCount;
-        [FieldOffset(6)] public readonly ushort VirtualKeyCode;
-        [FieldOffset(8)] public readonly ushort VirtualScanCode;
-        [FieldOffset(10)] public readonly char UnicodeChar;
-        [FieldOffset(10)] public readonly byte AsciiChar;
-        [FieldOffset(12)] public readonly uint ControlKeyState;
-    }
-
-    public struct WindowState
-    {
-        public SCoord Size;
-    }
-
-    [LibraryImport("kernel32.dll")]
-    private static partial nint GetStdHandle(uint nStdHandle);
-
-    [LibraryImport("kernel32.dll")]
-    private static partial void GetConsoleMode(nint hConsoleInput, ref uint lpMode);
-
-    [LibraryImport("kernel32.dll")]
-    private static partial void SetConsoleMode(nint hConsoleInput, uint dwMode);
-
-    [DllImport("kernel32.dll")]
-    private static extern bool ReadConsoleInput(nint hConsoleInput, [Out] InputRecord[] lpBuffer, uint nLength,
-        ref uint lpNumberOfEventsRead);
-
-    
-    [StructLayout(LayoutKind.Sequential)]
-    public readonly struct SCoord
-    {
-        public readonly short X;
-        public readonly short Y;
-        public override string ToString() => $"({X} {Y})";
-    }
-    
-    #endregion
 }
 
 internal sealed class KeyboardState
@@ -292,7 +228,7 @@ internal sealed class KeyboardState
     public char Char;
     public bool Pressed;
 
-    public void Assign(ref Input.KeyEventRecord record)
+    public void Assign(ref KeyEventRecord record)
     {
         Key = (ConsoleKey) record.VirtualKeyCode;
         Pressed = record.KeyDown;
@@ -307,7 +243,7 @@ internal sealed class MouseState
     public MouseEventFlags Flags;
     public MouseWheelState Wheel;
 
-    public void Assign(ref Input.MouseEventRecord record)
+    public void Assign(ref MouseEventRecord record)
     {
         Position = new Coord(record.MousePosition.X, record.MousePosition.Y);
         Buttons = (MouseButton) record.ButtonState;

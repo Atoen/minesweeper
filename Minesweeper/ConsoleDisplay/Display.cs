@@ -6,13 +6,13 @@ using Minesweeper.UI.Widgets;
 
 namespace Minesweeper.ConsoleDisplay;
 
-public static partial class Display
+public static class Display
 {
     public static int Width { get; private set; }
     public static int Height { get; private set; }
     public static DisplayMode Mode { get; private set; }
     
-    private static bool _refreshing;
+    private static volatile bool _refreshing;
 
     private static readonly List<IRenderable> Renderables = new();
     private static readonly List<IRenderable> RemovedRenderables = new();
@@ -30,6 +30,13 @@ public static partial class Display
         Width = Console.WindowWidth;
         Height = Console.WindowHeight;
 
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            Console.SetBufferSize(Width, Height);
+        }
+
+        Input.WindowEvent += WindowResize;
+
         Mode = mode;
 
         if (Mode == DisplayMode.Auto) GetDisplayMode();
@@ -42,6 +49,12 @@ public static partial class Display
         {
             Name = "Display Thread"
         }.Start();
+    }
+
+    private static void WindowResize(object? sender, NativeConsole.SCoord size)
+    {
+        Console.CursorVisible = false;
+        _renderer.Clear();
     }
 
     public static void Stop() => _refreshing = false;
@@ -128,7 +141,7 @@ public static partial class Display
         while (_refreshing)
         {
             stopwatch.Start();
-
+            
             Draw();
 
             stopwatch.Stop();
@@ -246,33 +259,18 @@ public static partial class Display
 
     private static void GetDisplayMode()
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        var handle = NativeConsole.GetStdHandle(unchecked((uint) -11));
+
+        var mode = 0u;
+        if (handle == (nint) (-1L) || !NativeConsole.GetConsoleMode(handle, ref mode))
         {
             Mode = DisplayMode.Native;
             return;
         }
 
-        var handle = GetStdHandle(-11);
-
-        if (handle == (nint) (-1L) || !GetConsoleMode(handle, out var mode))
-        {
-            Mode = DisplayMode.Native;
-            return;
-        }
-
-        SetConsoleMode(handle, mode | 4U);
+        NativeConsole.SetConsoleMode(handle, mode | 4U);
         Mode = DisplayMode.Ansi;
     }
-    
-    [LibraryImport("kernel32.dll")]
-    private static partial nint GetStdHandle(int nStdHandle);
-
-    [LibraryImport("kernel32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool GetConsoleMode(nint hConsoleInput, out uint mode);
-
-    [LibraryImport("kernel32.dll")]
-    private static partial void SetConsoleMode(nint handle, uint mode);
 }
 
 public enum DisplayMode

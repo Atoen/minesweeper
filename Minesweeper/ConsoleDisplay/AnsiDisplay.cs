@@ -12,6 +12,7 @@ public sealed class AnsiDisplay : IRenderer
 
     private readonly Coord _displaySize;
     private readonly StringBuilder _stringBuilder = new();
+    private readonly StringBuilder _symbolsBuilder = new();
 
     private readonly Pixel[,] _currentPixels;
     private readonly Pixel[,] _lastPixels;
@@ -23,6 +24,8 @@ public sealed class AnsiDisplay : IRenderer
     private readonly Cache<Color, string> _foregroundColorCache;
     private readonly Cache<Color, string> _backgroundColorCache;
     private readonly Cache<Coord, string> _coordCache;
+
+    private bool _shouldClear;
 
     public AnsiDisplay(int width, int height)
     {
@@ -188,6 +191,12 @@ public sealed class AnsiDisplay : IRenderer
 
     public void ResetStyle() => Console.Write("\x1b[0m");
 
+    public void Clear()
+    {
+        Modified = true;
+        _shouldClear = true;
+    }
+
     private void CopyToBuffer()
     {
         for (var x = 0; x < _displaySize.X; x++)
@@ -244,8 +253,12 @@ public sealed class AnsiDisplay : IRenderer
         var oldStreakLen = 0;
         var previousIsCleared = false;
 
-        var symbolsBuilder = new StringBuilder();
-
+        if (_shouldClear)
+        {
+            _stringBuilder.Append("\x1b[2J");
+            _shouldClear = false;
+        }
+        
         _stringBuilder.Append("\x1b[1;1f");
 
         for (var y = 0; y < _displaySize.Y; y++)
@@ -256,7 +269,7 @@ public sealed class AnsiDisplay : IRenderer
             // Printing the already gathered pixels if next one has different visual properties
             if (pixel.Fg != lastFg || pixel.Bg != lastBg || pixel.Mode != lastMode || (previousIsCleared && pixel.IsEmpty))
             {
-                if (symbolsBuilder.Length != 0)
+                if (_symbolsBuilder.Length != 0)
                 {
                     // Need to specify new coords for printing
                     if (oldStreakPos.Y != y || oldStreakPos.X + oldStreakLen != streakStartPos.X)
@@ -280,11 +293,11 @@ public sealed class AnsiDisplay : IRenderer
                     }
                     
                     // Starting new streak of pixels
-                    oldStreakLen = symbolsBuilder.Length;
+                    oldStreakLen = _symbolsBuilder.Length;
                     oldStreakPos = streakStartPos;
                     
-                    _stringBuilder.Append(symbolsBuilder);
-                    symbolsBuilder.Clear();
+                    _stringBuilder.Append(_symbolsBuilder);
+                    _symbolsBuilder.Clear();
                 }
                 
                 lastMode = pixel.Mode;
@@ -293,14 +306,14 @@ public sealed class AnsiDisplay : IRenderer
             }
 
             // Setting the start pos of the collected pixel symbols when collecting the first one
-            if (symbolsBuilder.Length == 0)
+            if (_symbolsBuilder.Length == 0)
             {
                 streakStartPos.X = x;
                 streakStartPos.Y = y;
             }
 
             // Collecting the pixels with same colors together
-            if (!pixel.IsEmpty) symbolsBuilder.Append(pixel.Symbol);
+            if (!pixel.IsEmpty) _symbolsBuilder.Append(pixel.Symbol);
 
             previousIsCleared = pixel.IsCleared;
 
@@ -309,7 +322,7 @@ public sealed class AnsiDisplay : IRenderer
         }
 
         // If the screen buffer ends while symbolsBuilder still has unprinted content
-        if (symbolsBuilder.Length > 0)
+        if (_symbolsBuilder.Length > 0)
         {
             var lastPixel = _currentPixels[_displaySize.X - 1, _displaySize.Y - 1];
             
@@ -320,15 +333,13 @@ public sealed class AnsiDisplay : IRenderer
             _stringBuilder.Append(_foregroundColorCache.GetOrAdd(lastPixel.Fg));
             _stringBuilder.Append(_backgroundColorCache.GetOrAdd(lastPixel.Bg));
 
-            _stringBuilder.Append(symbolsBuilder);
+            _stringBuilder.Append(_symbolsBuilder);
 
-            symbolsBuilder.Clear();
+            _symbolsBuilder.Clear();
         }
 
         // Resetting the console style after full draw
         _stringBuilder.Append("\x1b[0m");
-
-        Console.Title = _stringBuilder.Length.ToString();
 
         return _stringBuilder.ToString();
     }
