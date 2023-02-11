@@ -22,12 +22,10 @@ public static class MainMenu
     {
         var grid = new Grid
         {
-            Size = (10, 10),
-            
             Color = Color.LightSlateGray,
             
             ShowGridLines = true,
-            GridLineStyle = GridLineStyle.SingleBold
+            GridLineStyle = GridLineStyle.Single
         };
 
         grid.Columns.Add(new Column());
@@ -53,12 +51,12 @@ public static class MainMenu
             
             InnerPadding = (2, 1)
         };
-        
+
         grid.SetColumnAndRow(titleLabel, 1, 0);
 
-        titleLabel.MouseMove += delegate(Control _, MouseEventArgs args)
+        titleLabel.MouseMove += delegate(Control sender, MouseEventArgs args)
         {
-            if (args.LeftButton == MouseButtonState.Pressed) args.OriginalSource.Center = args.CursorPosition;
+            if (args.LeftButton == MouseButtonState.Pressed) sender.Center = args.CursorPosition;
         };
 
         var variable = new Variable();
@@ -68,6 +66,8 @@ public static class MainMenu
             Color = Color.Aquamarine,
             
             InnerPadding = (2, 1),
+            ResizeMode = ResizeMode.Expand,
+            OuterPadding = (1, 0),
             
             OnClick = () =>
             {
@@ -108,7 +108,8 @@ public static class MainMenu
             var button = new RadioButton(variable, i)
             {
                 Text = new Text(preset.Name),
-                Color = gradient[i]
+                Color = gradient[i],
+                ResizeMode = ResizeMode.Expand
             };
 
             var width = new Label

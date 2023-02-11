@@ -26,13 +26,8 @@ public class Button : ContentControl
     public override void Resize()
     {
         MinSize = InnerPadding * 2 + _text.Size;
-
-        Size = ResizeMode switch
-        {
-            ResizeMode.Grow => Size.ExpandTo(MinSize),
-            ResizeMode.Stretch => MinSize,
-            _ => Size
-        };
+        
+        ApplyResizing();
 
         base.Resize();
     }

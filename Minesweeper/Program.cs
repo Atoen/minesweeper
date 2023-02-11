@@ -27,6 +27,8 @@ Console.CancelKeyPress += delegate
 
 var displayMode = DisplayMode.Auto;
 
+// Console.SetWindowSize(120, 40);
+
 void ParseArgs(string arg)
 {
     if (arg[0] is not ('/' or '-')) return;

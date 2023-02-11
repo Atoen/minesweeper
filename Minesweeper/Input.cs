@@ -138,7 +138,7 @@ public static partial class Input
             control.SendMouseEvent(MouseEventType.MouseExit, args);
         }
 
-        if (control is {Focusable: true, IsFocused: true} && (button & MouseButton.Left) != 0)
+        if (control is {Focusable: true, Focused: true} && (button & MouseButton.Left) != 0)
         {
             args ??= CreateMouseArgs(control);
             control.SendFocusEvent(FocusEventType.LostFocus, args);
@@ -191,7 +191,7 @@ public static partial class Input
 
         foreach (var control in Controls)
         {
-            if (!control.IsFocused) continue;
+            if (!control.Focused) continue;
             
             SendKeyboardEvent(control);
             break;

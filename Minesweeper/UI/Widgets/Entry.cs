@@ -102,7 +102,7 @@ public class Entry : ContentControl
     protected override void OnKeyDown(KeyboardEventArgs e)
     {
         // Keypress of allowed character while the entry is focused should append said character
-        if (IsFocused && !_inEntryMode && CheckIfAllowed(e.Char)) EnterEntryMode();
+        if (Focused && !_inEntryMode && CheckIfAllowed(e.Char)) EnterEntryMode();
         
         if (_inEntryMode) EnterText(e);
         
@@ -127,14 +127,9 @@ public class Entry : ContentControl
     public override void Resize()
     {
         MinSize = InnerPadding * 2 + (MaxTextLenght + 1, 1);
-
-        Size = ResizeMode switch
-        {
-            ResizeMode.Grow => Size.ExpandTo(MinSize),
-            ResizeMode.Stretch => MinSize,
-            _ => Size
-        };
-
+        
+        ApplyResizing();
+        
         base.Resize();
     }
 }

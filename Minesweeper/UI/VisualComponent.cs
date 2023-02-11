@@ -30,24 +30,14 @@ public abstract class VisualComponent : Component, IRenderable
         }
     }
     
-    public Coord InnerPadding = new(1, 1);
-    public Coord OuterPadding = Coord.Zero;
-    
     public bool ShowBorder { get; set; }
     public BorderStyle BorderStyle { get; set; } = BorderStyle.Single;
     public Color BorderColor { get; set; } = Color.Cyan;
 
     public bool RenderOnItsOwn { get; set; }
 
-    public bool ShouldRender => RenderOnItsOwn || Parent != null;
-
-    public int PaddedWidth => Width + OuterPadding.X * 2;
-    public int PaddedHeight => Height + OuterPadding.Y * 2;
-
-    public Coord PaddedSize => Size + OuterPadding * 2;
-
-    protected Coord MinSize;
-
+    public virtual bool ShouldRender => RenderOnItsOwn || Parent != null;
+    
     public Color CurrentColor
     {
         get

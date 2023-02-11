@@ -32,13 +32,8 @@ public abstract class ContentControl : Control, IContent
 
         var contentSize = _content.PaddedSize + InnerPadding * 2;
         MinSize = MinSize.ExpandTo(contentSize);
-
-        Size = ResizeMode switch
-        {
-            ResizeMode.Grow => Size.ExpandTo(MinSize),
-            ResizeMode.Stretch => MinSize,
-            _ => Size
-        };
+        
+        ApplyResizing();
 
         _content.Center = Center;
     }
@@ -66,8 +61,8 @@ public abstract class ContentControl : Control, IContent
 
         _content.Parent = this;
 
-        if (_content.ResizeMode != ResizeMode.Manual) _content.Resize();
         if (ResizeMode != ResizeMode.Manual) Resize();
+        if (_content.ResizeMode != ResizeMode.Manual) _content.Resize();
     }
 }
 

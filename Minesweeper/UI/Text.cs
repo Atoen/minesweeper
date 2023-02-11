@@ -9,7 +9,7 @@ public class Text : VisualComponent
     {
         Background = Color.Transparent;
     }
-    
+
     public Text(string text, Color foreground)
     {
         TextInternal = text;
@@ -25,6 +25,8 @@ public class Text : VisualComponent
     {
         Background = background;
     }
+    
+    public override bool ShouldRender => Parent is {ShouldRender: true};
 
     private VisualComponent? _parent;
     public new VisualComponent? Parent

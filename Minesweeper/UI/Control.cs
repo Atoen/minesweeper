@@ -9,7 +9,7 @@ public abstract class Control : VisualComponent
 
     public bool IsMouseOver { get; private set; }
     
-    public bool IsFocused { get; private set; }
+    public bool Focused { get; private set; }
     public bool Focusable { get; set; } = true;
     public bool ShowFocusedBorder { get; set; } = true;
     public BorderStyle FocusBorderStyle { get; set; } = BorderStyle.Dotted;
@@ -22,7 +22,7 @@ public abstract class Control : VisualComponent
         base.Render();
         
         // Focus border should not override normal border
-        if (IsFocused && ShowFocusedBorder && !ShowBorder)
+        if (Focused && ShowFocusedBorder && !ShowBorder)
         {
             Display.DrawBorder(GlobalPosition, Size, FocusBorderColor, FocusBorderStyle);
         }
@@ -152,13 +152,13 @@ public abstract class Control : VisualComponent
 
     protected virtual void OnGotFocus(InputEventArgs e)
     {
-        IsFocused = true;
+        Focused = true;
         GotFocus?.Invoke(this, e);
     }
 
     protected virtual void OnLostFocus(InputEventArgs e)
     {
-        IsFocused = false;
+        Focused = false;
         LostFocus?.Invoke(this, e);
     }
 

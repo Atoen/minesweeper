@@ -29,6 +29,16 @@ public abstract class Component
     public event PositionChangeEventHandler? PositionChanged;
     public event SizeChangeEventHandler? SizeChanged;
     public event ZIndexChangeEventHandler? ZIndexChanged;
+    
+    public Coord InnerPadding = new(1, 1);
+    public Coord OuterPadding = Coord.Zero;
+    
+    public int PaddedWidth => Width + OuterPadding.X * 2;
+    public int PaddedHeight => Height + OuterPadding.Y * 2;
+    public Coord PaddedSize => Size + OuterPadding * 2;
+    public Coord InnerSize => Size - InnerPadding * 2;
+    public int InnerWidth => Width - InnerPadding.X * 2;
+    public int InnerHeigth => Height - InnerPadding.Y * 2;
 
     private Coord _localPosition;
     private Coord _globalPosition;
@@ -104,9 +114,27 @@ public abstract class Component
             }
         }
     }
-    
+
+    protected Coord MinSize;
+
+    protected void ApplyResizing()
+    {
+        Size = ResizeMode switch
+        {
+            ResizeMode.Grow or ResizeMode.Expand => Size.ExpandTo(MinSize),
+            ResizeMode.Stretch => MinSize,
+            _ => Size
+        };
+    }
+
     public virtual void Resize()
     {
+    }
+
+    public void Expand(Coord maxSize = default)
+    {
+        if (maxSize == default && Parent != null) maxSize = Parent.InnerSize;
+        Size = MinSize.ExpandTo(maxSize);
     }
 
     public void SetEnabled(bool enabled)
@@ -117,12 +145,10 @@ public abstract class Component
         Enabled = enabled;
     }
     
-    public bool ContainsPoint(Coord pos)
-    {
-        return pos.X >= GlobalPosition.X && pos.X < GlobalPosition.X + Width &&
-               pos.Y >= GlobalPosition.Y && pos.Y < GlobalPosition.Y + Height;
-    }
-    
+    public bool ContainsPoint(Coord pos) =>
+        pos.X >= GlobalPosition.X && pos.X < GlobalPosition.X + Width &&
+        pos.Y >= GlobalPosition.Y && pos.Y < GlobalPosition.Y + Height;
+
     private void SetZIndexInternal(int value)
     {
         if (ZIndexUpdateMode != ZIndexUpdateMode.Manual) return;
@@ -251,7 +277,8 @@ public enum ResizeMode
 {
     Grow,
     Stretch,
-    Manual
+    Manual,
+    Expand
 }
 
 public class PositionChangedEventArgs : EventArgs
