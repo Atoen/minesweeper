@@ -55,14 +55,15 @@ public abstract class ContentControl : Control, IContent
 
         if (_content == null)
         {
-            if (ResizeMode != ResizeMode.Manual) Resize();
+            Resize();
             return;
         }
 
         _content.Parent = this;
 
-        if (ResizeMode != ResizeMode.Manual) Resize();
-        if (_content.ResizeMode != ResizeMode.Manual) _content.Resize();
+        Resize();
+        _content.Resize();
+        if (_content.ResizeMode == ResizeMode.Expand) _content.Expand();
     }
 }
 

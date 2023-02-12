@@ -30,10 +30,10 @@ public class Label : ContentControl
 
     public override void Clear()
     {
-        base.Clear();
         _text.Clear();
+        base.Clear();
     }
-
+    
     public override void Resize()
     {
         MinSize = InnerPadding * 2 + _text.Size;

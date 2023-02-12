@@ -33,12 +33,12 @@ public abstract class Component
     public Coord InnerPadding = new(1, 1);
     public Coord OuterPadding = Coord.Zero;
     
+    public Coord PaddedSize => Size + OuterPadding * 2;
     public int PaddedWidth => Width + OuterPadding.X * 2;
     public int PaddedHeight => Height + OuterPadding.Y * 2;
-    public Coord PaddedSize => Size + OuterPadding * 2;
     public Coord InnerSize => Size - InnerPadding * 2;
     public int InnerWidth => Width - InnerPadding.X * 2;
-    public int InnerHeigth => Height - InnerPadding.Y * 2;
+    public int InnerHeight => Height - InnerPadding.Y * 2;
 
     private Coord _localPosition;
     private Coord _globalPosition;
@@ -115,7 +115,7 @@ public abstract class Component
         }
     }
 
-    protected Coord MinSize;
+    public Coord MinSize { get; protected set; }
 
     protected void ApplyResizing()
     {
@@ -215,7 +215,7 @@ public abstract class Component
         if (value != _parent && _parent != null)
         {
             _parent.PositionChanged -= OnPositionChanged;
-            SizeChanged -= _parent.OnSizeChanged;
+            SizeChanged -= _parent.OnChildSizeChanged;
         }
 
         var oldZIndex = GetZIndexInternal();
@@ -239,7 +239,7 @@ public abstract class Component
         }
 
         _parent.PositionChanged += OnPositionChanged;
-        SizeChanged += _parent.OnSizeChanged;
+        SizeChanged += _parent.OnChildSizeChanged;
     }
 
     private void OnPositionChanged(Component sender, PositionChangedEventArgs e)
@@ -247,7 +247,7 @@ public abstract class Component
         PositionChanged?.Invoke(sender, e);
     }
 
-    private void OnSizeChanged(Component sender, SizeChangedEventArgs e)
+    private void OnChildSizeChanged(Component sender, SizeChangedEventArgs e)
     {
         SizeChanged?.Invoke(sender, e);
         

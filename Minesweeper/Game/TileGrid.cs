@@ -16,7 +16,15 @@ public class TileGrid : Control
 
         _tiles = new Tile[width, height];
 
-        GenerateNew();
+        for (var x = 0; x < Width; x++)
+        for (var y = 0; y < Height; y++)
+        {
+            _tiles[x, y] = new Tile {Pos = {X = x, Y = y}};
+        }
+
+        _tilesLeftToReveal = Width * Height - Bombs;
+
+        _revealed = false;
     }
 
     public event EventHandler? BombClicked;
@@ -33,10 +41,9 @@ public class TileGrid : Control
 
     public void GenerateNew()
     {
-        for (var x = 0; x < Width; x++)
-        for (var y = 0; y < Height; y++)
+        foreach (var tile in _tiles)
         {
-            _tiles[x, y] = new Tile {Pos = {X = x, Y = y}};
+            tile.Reset();
         }
 
         _tilesLeftToReveal = Width * Height - Bombs;

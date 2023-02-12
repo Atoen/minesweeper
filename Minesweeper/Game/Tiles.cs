@@ -34,6 +34,15 @@ public sealed class Tile
     public readonly List<Tile> Neighbours = new(8);
 
     public Coord Pos;
+
+    public void Reset()
+    {
+        Revealed = false;
+        Flagged = false;
+        HasBomb = false;
+        Neighbours.Clear();
+        NeighbouringBombs = 0;
+    }
 }
 
 public struct TileDisplay

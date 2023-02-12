@@ -35,6 +35,7 @@ public abstract class Control : VisualComponent
     }
 
     public delegate void MouseEventHandler(Control sender, MouseEventArgs e);
+    public delegate void MouseScrollEventHandler(Control sender, MouseScrollEventArgs e);
     public delegate void KeyboardEventHandler(Control sender, KeyboardEventArgs e);
     public delegate void FocusEventHandler(Control sender, InputEventArgs e);
     
@@ -44,6 +45,7 @@ public abstract class Control : VisualComponent
     public event MouseEventHandler? MouseLeftDown;
     public event MouseEventHandler? MouseRightDown;
     public event MouseEventHandler? MouseMove;
+    public event MouseScrollEventHandler? MouseScroll;
 
     public event KeyboardEventHandler? KeyDown;
     public event KeyboardEventHandler? KeyUp;
@@ -81,6 +83,10 @@ public abstract class Control : VisualComponent
             
             case MouseEventType.MouseRightUp:
                 OnMouseRightUp();
+                break;
+            
+            case MouseEventType.MouseScroll:
+                OnMouseScroll((MouseScrollEventArgs) e);
                 break;
 
             default:
@@ -150,6 +156,11 @@ public abstract class Control : VisualComponent
 
     protected virtual void OnMouseRightUp() { }
 
+    protected virtual void OnMouseScroll(MouseScrollEventArgs e)
+    {
+        MouseScroll?.Invoke(this, e);
+    }
+
     protected virtual void OnGotFocus(InputEventArgs e)
     {
         Focused = true;
@@ -181,7 +192,8 @@ public enum MouseEventType
     MouseLeftDown,
     MouseLeftUp,
     MouseRightDown,
-    MouseRightUp
+    MouseRightUp,
+    MouseScroll
 }
 
 public enum KeyboardEventType

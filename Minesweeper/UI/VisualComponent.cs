@@ -80,7 +80,7 @@ public abstract class VisualComponent : Component, IRenderable
     {
         Display.ClearRect(GlobalPosition - e.Delta, Size);
     }
-    
+
     protected virtual void OnSizeChanged(object sender, SizeChangedEventArgs e)
     {
         Display.ClearRect(GlobalPosition, e.OldSize);

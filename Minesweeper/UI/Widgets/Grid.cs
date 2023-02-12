@@ -22,7 +22,6 @@ public class Grid : Control
     public readonly GridElementCollection<Row> Rows = new();
 
     public GridResizeDirection GridResizeDirection { get; set; } = GridResizeDirection.Both;
-    
     public VerticalAlignment VerticalAlignment { get; set; } = VerticalAlignment.Middle;
     public HorizontalAlignment HorizontalAlignment { get; set; } = HorizontalAlignment.Middle;
 
@@ -58,7 +57,7 @@ public class Grid : Control
             entry.Row = row;
         }
 
-        if (control is not ContentControl {Content: not null} && control.ResizeMode != ResizeMode.Manual)
+        if (control is not ContentControl {Content: not null})
         {
             control.Resize();
         }
@@ -128,7 +127,7 @@ public class Grid : Control
         control.Position = baseOffset;
     }
 
-    private void AdjustCellSize(Coord size, int column, int row)
+    private void AdjustCellSize(Coord size, int column, int row, bool dontMoveContent = false)
     {
         var shouldMoveContent = false;
         
@@ -150,6 +149,8 @@ public class Grid : Control
             shouldMoveContent = true;
         }
         
+        if (dontMoveContent) return;
+        
         if (shouldMoveContent) AdjustContentPosition();
     }
 
@@ -157,7 +158,7 @@ public class Grid : Control
     {
         foreach (var entry in _entries)
         {
-            if (entry.Reference.Target is not Control control) continue;
+            if (entry.RefTarget is not { } control) continue;
 
             if (control.ResizeMode == ResizeMode.Expand)
             {
@@ -187,7 +188,7 @@ public class Grid : Control
         SetEvenSizes(Columns, InnerWidth);
 
     private void RowsOnCollectionChanged(object? sender, EventArgs e) =>
-        SetEvenSizes(Rows, InnerHeigth);
+        SetEvenSizes(Rows, InnerHeight);
 
     private static void SetEvenSizes<T>(GridElementCollection<T> collection, int totalSize)
         where T : class, IGridLayoutElement
@@ -223,7 +224,7 @@ public class Grid : Control
         {
             pos.X = Columns.GetOffset(i) + Position.X + Columns[i].Size + 1;
 
-            Display.DrawLine(pos, Coord.Down, InnerHeigth, GridLinesColor, CurrentColor,
+            Display.DrawLine(pos, Coord.Down, InnerHeight, GridLinesColor, CurrentColor,
                 GridLines.Symbols[GridLineStyle][GridLineFragment.Vertical]);
 
             for (var c = i; c < crosses.Length; c += Columns.Count - 1)
@@ -276,6 +277,37 @@ public class Grid : Control
         Children.Clear();
     }
 
+    public override void Resize()
+    {
+        Span<int> columnsMinimumWidth = stackalloc int[Columns.Count];
+        Span<int> rowsMinimumHeight = stackalloc int[Rows.Count];
+        
+        foreach (var entry in _entries)
+        {
+            if (entry.RefTarget is not { } control) continue;
+
+            var minSize = control.ResizeMode == ResizeMode.Expand ? control.MinSize + control.OuterPadding * 2 : control.PaddedSize;
+
+            if (minSize.X > columnsMinimumWidth[entry.Column]) columnsMinimumWidth[entry.Column] = minSize.X;
+            if (minSize.Y > rowsMinimumHeight[entry.Row]) rowsMinimumHeight[entry.Row] = minSize.Y;
+        }
+
+        for (var i = 0; i < Columns.Count; i++)
+        {
+            Columns[i].Size = columnsMinimumWidth[i];
+        }
+        
+        for (var i = 0; i < Rows.Count; i++)
+        {
+            Rows[i].Size = rowsMinimumHeight[i];
+        }
+        
+        Width = Columns.Size + InnerPadding.X * 2;
+        Height = Rows.Size + InnerPadding.Y * 2;
+
+        AdjustContentPosition();
+    }
+
     private class Entry
     {
         public Entry(Control control, int column, int row, int columnSpan, int rowSpawn)
@@ -295,7 +327,6 @@ public class Grid : Control
 
         public int ColumnSpan { get; set; }
         public int RowSpawn { get; set; }
-
     }
 }
 

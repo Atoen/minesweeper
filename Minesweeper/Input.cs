@@ -1,12 +1,11 @@
-﻿using System.Runtime.InteropServices;
-using Minesweeper.UI;
+﻿using Minesweeper.UI;
 using Minesweeper.UI.Events;
 
 using static Minesweeper.NativeConsole;
 
 namespace Minesweeper;
 
-public static partial class Input
+public static class Input
 {
     internal static event EventHandler<SCoord>? WindowEvent; 
 
@@ -29,13 +28,11 @@ public static partial class Input
         var mode = 0u;
 
         GetConsoleMode(inHandle, ref mode);
-        
-        
-        // GetConsoleMode(inHandle, out var mode);
-        
+
         mode &= ~EnableQuickEditMode;
         mode |= EnableWindowInput;
         mode |= EnableMouseInput;
+        
         SetConsoleMode(inHandle, mode);
 
         new Thread(HandleInput)
@@ -118,7 +115,6 @@ public static partial class Input
             
         LockSlim.ExitWriteLock();
 
-
         if (hit is not {Enabled: true}) return;
 
         var args = CreateMouseArgs(hit);
@@ -145,18 +141,23 @@ public static partial class Input
         }
     }
 
-    private static void SendMouseEvents(Control control, MouseEventArgs args)
+    private static void SendMouseEvents(Control control, MouseScrollEventArgs args)
     {
+        if (args.ScrollDirection != ScrollDirection.None)
+        {
+            control.SendMouseEvent(MouseEventType.MouseScroll, args);
+        }
+        
         if (_lastMouseButton == MouseButton.None)
         {
-            if ((MouseState.Buttons & MouseButton.Left) != 0)
+            if (args.LeftButton == MouseButtonState.Pressed)
             {
                 control.SendMouseEvent(MouseEventType.MouseLeftDown, args);
                 
                 if (control.Focusable) control.SendFocusEvent(FocusEventType.GotFocus, args);
             }
 
-            if ((MouseState.Buttons & MouseButton.Right) != 0)
+            if (args.RightButton == MouseButtonState.Pressed)
             {
                 control.SendMouseEvent(MouseEventType.MouseRightDown, args);
             }
@@ -167,7 +168,7 @@ public static partial class Input
         control.SendMouseEvent(MouseEventType.MouseMove, args);
     }
 
-    private static MouseEventArgs CreateMouseArgs(Control source) => new(source)
+    private static MouseScrollEventArgs CreateMouseArgs(Control source) => new(source)
     {
         CursorPosition = MouseState.Position,
         RelativeCursorPosition = MouseState.Position - source.GlobalPosition,
@@ -182,7 +183,14 @@ public static partial class Input
 
         MiddleButton = (MouseState.Buttons & MouseButton.Middle) != 0
             ? MouseButtonState.Pressed
-            : MouseButtonState.Released
+            : MouseButtonState.Released,
+        
+        ScrollDirection = MouseState.Wheel switch
+        {
+            MouseWheelState.Down or MouseWheelState.AnsiDown => ScrollDirection.Down,
+            MouseWheelState.Up or MouseWheelState.AnsiUp => ScrollDirection.Up,
+            _ => ScrollDirection.None
+        }
     };
 
     private static void HandleKeyboard()
