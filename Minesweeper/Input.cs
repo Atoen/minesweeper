@@ -23,7 +23,7 @@ public static class Input
         if (_running) return;
         _running = true;
 
-        var inHandle = GetStdHandle(unchecked((uint) -10));
+        var inHandle = GetStdHandle(StdHandleIn);
         
         var mode = 0u;
 
@@ -57,7 +57,7 @@ public static class Input
 
     private static void HandleInput()
     {
-        var handleIn = GetStdHandle(unchecked((uint) -10));
+        var handleIn = GetStdHandle(StdHandleIn);
         var recordArray = new[] {new InputRecord()};
         
         while (_running)
@@ -143,11 +143,16 @@ public static class Input
 
     private static void SendMouseEvents(Control control, MouseScrollEventArgs args)
     {
+        if ((MouseState.Flags & MouseEventFlags.DoubleClicked) != 0)
+        {
+            control.SendMouseEvent(MouseEventType.DoubleClick, args);
+        }
+        
         if (args.ScrollDirection != ScrollDirection.None)
         {
             control.SendMouseEvent(MouseEventType.MouseScroll, args);
         }
-        
+
         if (_lastMouseButton == MouseButton.None)
         {
             if (args.LeftButton == MouseButtonState.Pressed)

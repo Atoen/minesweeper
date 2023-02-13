@@ -11,7 +11,7 @@ public static class Display
     public static int Width { get; private set; }
     public static int Height { get; private set; }
     public static DisplayMode Mode { get; private set; }
-    
+
     private static volatile bool _refreshing;
 
     private static readonly List<IRenderable> Renderables = new();
@@ -50,9 +50,11 @@ public static class Display
             Name = "Display Thread"
         }.Start();
     }
-
+    
     private static void WindowResize(object? sender, NativeConsole.SCoord size)
     {
+        if (size.Y > Console.LargestWindowHeight || size.X > Console.LargestWindowWidth) return;
+        
         Console.CursorVisible = false;
         _renderer.Clear();
     }
@@ -141,7 +143,7 @@ public static class Display
         while (_refreshing)
         {
             stopwatch.Start();
-            
+
             Draw();
 
             stopwatch.Stop();
@@ -259,7 +261,7 @@ public static class Display
 
     private static void GetDisplayMode()
     {
-        var handle = NativeConsole.GetStdHandle(unchecked((uint) -11));
+        var handle = NativeConsole.GetStdHandle(NativeConsole.StdHandleOut);
 
         var mode = 0u;
         if (handle == (nint) (-1L) || !NativeConsole.GetConsoleMode(handle, ref mode))

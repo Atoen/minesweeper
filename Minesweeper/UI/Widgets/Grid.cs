@@ -127,7 +127,7 @@ public class Grid : Control
         control.Position = baseOffset;
     }
 
-    private void AdjustCellSize(Coord size, int column, int row, bool dontMoveContent = false)
+    private void AdjustCellSize(Coord size, int column, int row)
     {
         var shouldMoveContent = false;
         
@@ -148,9 +148,7 @@ public class Grid : Control
 
             shouldMoveContent = true;
         }
-        
-        if (dontMoveContent) return;
-        
+
         if (shouldMoveContent) AdjustContentPosition();
     }
 
@@ -184,34 +182,16 @@ public class Grid : Control
     private void ChildrenOnElementChanged(object? sender, CollectionChangedEventArgs<Control> e) => 
         e.Element.Parent = e.ChangeType == ChangeType.Add ? this : null;
 
-    private void ColumnsOnCollectionChanged(object? sender, EventArgs e) => 
-        SetEvenSizes(Columns, InnerWidth);
-
-    private void RowsOnCollectionChanged(object? sender, EventArgs e) =>
-        SetEvenSizes(Rows, InnerHeight);
-
-    private static void SetEvenSizes<T>(GridElementCollection<T> collection, int totalSize)
-        where T : class, IGridLayoutElement
+    private void ColumnsOnCollectionChanged(object? sender, EventArgs e)
     {
-        if (totalSize == 0) return;
+        Columns.SetEvenSizes(InnerWidth);
+        if (_entries.Count > 0) Resize();
+    }
 
-        var elementsCount = collection.Count;
-        
-        var sizeToDivide = totalSize - collection.TotalPadding;
-        var size = sizeToDivide / elementsCount;
-        var remainder = sizeToDivide % elementsCount;
-
-        for (var i = 0; i < elementsCount; i++)
-        {
-            var elementSize = size;
-            if (remainder > 0)
-            {
-                elementSize++;
-                remainder--;
-            }
-
-            collection[i].Size = elementSize;
-        }
+    private void RowsOnCollectionChanged(object? sender, EventArgs e)
+    {
+        Rows.SetEvenSizes(InnerHeight);
+        if (_entries.Count > 0) Resize();
     }
 
     private void RenderLines()

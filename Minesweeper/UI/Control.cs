@@ -46,6 +46,7 @@ public abstract class Control : VisualComponent
     public event MouseEventHandler? MouseRightDown;
     public event MouseEventHandler? MouseMove;
     public event MouseScrollEventHandler? MouseScroll;
+    public event MouseEventHandler? DoubleClick;
 
     public event KeyboardEventHandler? KeyDown;
     public event KeyboardEventHandler? KeyUp;
@@ -87,6 +88,10 @@ public abstract class Control : VisualComponent
             
             case MouseEventType.MouseScroll:
                 OnMouseScroll((MouseScrollEventArgs) e);
+                break;
+            
+            case MouseEventType.DoubleClick:
+                OnDoubleClick(e);
                 break;
 
             default:
@@ -161,6 +166,11 @@ public abstract class Control : VisualComponent
         MouseScroll?.Invoke(this, e);
     }
 
+    protected virtual void OnDoubleClick(MouseEventArgs e)
+    {
+        DoubleClick?.Invoke(this, e);
+    }
+
     protected virtual void OnGotFocus(InputEventArgs e)
     {
         Focused = true;
@@ -193,7 +203,8 @@ public enum MouseEventType
     MouseLeftUp,
     MouseRightDown,
     MouseRightUp,
-    MouseScroll
+    MouseScroll,
+    DoubleClick
 }
 
 public enum KeyboardEventType

@@ -7,8 +7,8 @@ using Minesweeper.Utils;
 namespace Minesweeper.ConsoleDisplay;
 
 public sealed class AnsiDisplay : IRenderer
-{ 
-    public bool Modified { get; set; }
+{
+    private bool _modified = true;
 
     private readonly Coord _displaySize;
     private readonly StringBuilder _stringBuilder = new();
@@ -180,20 +180,19 @@ public sealed class AnsiDisplay : IRenderer
     public void Draw()
     {
         CopyToBuffer();
-
-        if (!Modified) return;
+        if (!_modified) return;
 
         Console.Write(GenerateDisplayString());
         _stringBuilder.Clear();
         
-        Modified = false;
+        _modified = false;
     }
 
     public void ResetStyle() => Console.Write("\x1b[0m");
 
     public void Clear()
     {
-        Modified = true;
+        _modified = true;
         _shouldClear = true;
     }
 
@@ -204,7 +203,7 @@ public sealed class AnsiDisplay : IRenderer
         {
             if (_currentPixels[x, y] == _lastPixels[x, y]) continue;
 
-            Modified = true;
+            _modified = true;
             Array.Copy(_currentPixels, _lastPixels, _displaySize.X * _displaySize.Y);
             
             return;
@@ -255,7 +254,7 @@ public sealed class AnsiDisplay : IRenderer
 
         if (_shouldClear)
         {
-            _stringBuilder.Append("\x1b[2J");
+            Console.Clear();
             _shouldClear = false;
         }
         

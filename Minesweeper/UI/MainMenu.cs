@@ -101,7 +101,7 @@ public static class MainMenu
         var titleLabel = new Label
         {
             Color = Color.Orange,
-            Text = new Text("MINE"),
+            Text = new Text("MINESWEEPER"),
             
             BorderColor = Color.Black,
             BorderStyle = BorderStyle.Rounded,
@@ -127,7 +127,7 @@ public static class MainMenu
         var variable = new Variable();
         var playButton = new Button
         {
-            Text = new Text("PLAY ORO VERy"),
+            Text = new Text("PLAY"),
             Color = Color.Aquamarine,
             
             ResizeMode = ResizeMode.Expand,
@@ -169,11 +169,17 @@ public static class MainMenu
         for (var i = 0; i < GamePresets.Count; i++)
         {
             var preset = GamePresets[i];
-            var button = new RadioButton(variable, i)
+            var radioButton = new RadioButton(variable, i)
             {
                 Text = new Text(preset.Name),
                 Color = gradient[i],
                 ResizeMode = ResizeMode.Expand
+            };
+            
+            radioButton.DoubleClick += delegate
+            {
+                grid.Remove();
+                StartGame(variable.Val);
             };
 
             var width = new Label
@@ -194,7 +200,7 @@ public static class MainMenu
                 Color = Color.DarkGray
             };
             
-            grid.SetColumnAndRow(button, 0, i + 2);
+            grid.SetColumnAndRow(radioButton, 0, i + 2);
             grid.SetColumnAndRow(width, 1, i + 2);
             grid.SetColumnAndRow(height, 2, i + 2);
             grid.SetColumnAndRow(bombs, 3, i + 2);
@@ -205,6 +211,12 @@ public static class MainMenu
             Text = new Text("Custom"),
             Color = Color.DarkCyan,
             ResizeMode = ResizeMode.Expand
+        };
+        
+        customButton.DoubleClick += delegate
+        {
+            grid.Remove();
+            StartGame(variable.Val);
         };
         
         grid.SetColumnAndRow(customButton, 0, GamePresets.Count + 2);

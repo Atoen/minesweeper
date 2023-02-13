@@ -8,7 +8,7 @@ namespace Minesweeper.ConsoleDisplay;
 
 public sealed class NativeDisplay : IRenderer
 {
-    public bool Modified { get; set; }
+    private bool _modified;
     
     private readonly SafeFileHandle _fileHandle;
     
@@ -178,13 +178,13 @@ public sealed class NativeDisplay : IRenderer
         {
             CopyToBuffer();
 
-            if (!Modified) return;
+            if (!_modified) return;
             
             Debug.WriteLine("Modified");
             
             WriteConsoleOutput(_fileHandle, _currentBuffer, _displaySize, _startPos, ref _screenRect);
 
-            Modified = false;
+            _modified = false;
         }
     }
 
@@ -198,7 +198,7 @@ public sealed class NativeDisplay : IRenderer
             {
                 if (current[i].Symbol == last[i].Symbol && current[i].Color == last[i].Color) continue;
                 
-                Modified = true;
+                _modified = true;
                 Array.Copy(_currentBuffer, _lastBuffer, _displaySize.X * _displaySize.Y);
                 
                 return;

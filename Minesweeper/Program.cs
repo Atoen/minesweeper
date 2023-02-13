@@ -61,4 +61,4 @@ Display.Init(displayMode);
 
 Input.Init();
 
-MainMenu.Show2();
+MainMenu.Show();

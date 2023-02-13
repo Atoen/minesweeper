@@ -24,8 +24,6 @@ public interface IRenderer
     void Draw();
 
     void ResetStyle();
-    
-    public bool Modified { get; set; }
 
-    public void Clear();
+    void Clear();
 }

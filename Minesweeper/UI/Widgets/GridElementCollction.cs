@@ -19,6 +19,25 @@ public sealed class GridElementCollection<T> : ObservableList<T> where T : class
 
         return offset;
     }
+
+    public void SetEvenSizes(int totalSize)
+    {
+        var sizeToDivide = totalSize - TotalPadding;
+        var size = sizeToDivide / Count;
+        var remainder = sizeToDivide % Count;
+
+        for (var i = 0; i < Count; i++)
+        {
+            var elementSize = size;
+            if (remainder > 0)
+            {
+                elementSize++;
+                remainder--;
+            }
+
+            this[i].Size = elementSize;
+        }
+    }
 }
 
 public sealed class Column : IGridLayoutElement

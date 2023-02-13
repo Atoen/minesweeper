@@ -107,4 +107,7 @@ internal static partial class NativeConsole
     public const uint EnableMouseInput = 0x0010,
         EnableQuickEditMode = 0x0040,
         EnableWindowInput = 0x0008;
+
+    public const uint StdHandleOut = unchecked((uint) -11),
+        StdHandleIn = unchecked((uint) -10);
 }
