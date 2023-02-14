@@ -3,13 +3,14 @@ using System.Text;
 using Minesweeper.Game;
 using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
+using Minesweeper.Utils;
 
 namespace Minesweeper.ConsoleDisplay;
 
 public static class Display
 {
-    public static int Width { get; private set; }
-    public static int Height { get; private set; }
+    public static int Width => ScreenResizer.ScreenWidth;
+    public static int Height => ScreenResizer.ScreenHeight;
     public static DisplayMode Mode { get; private set; }
 
     private static volatile bool _refreshing;
@@ -18,6 +19,7 @@ public static class Display
     private static readonly List<IRenderable> RemovedRenderables = new();
 
     private static IRenderer _renderer = null!;
+    private static readonly bool ShouldTryToResizeConsoleBuffer = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
     private static readonly ReaderWriterLockSlim LockSlim = new();
 
@@ -27,13 +29,7 @@ public static class Display
         Console.CursorVisible = false;
         Console.OutputEncoding = Encoding.UTF8;
 
-        Width = Console.WindowWidth;
-        Height = Console.WindowHeight;
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            Console.SetBufferSize(Width, Height);
-        }
+        ScreenResizer.Init();
 
         Input.WindowEvent += WindowResize;
 
@@ -41,9 +37,13 @@ public static class Display
 
         if (Mode == DisplayMode.Auto) GetDisplayMode();
 
-        _renderer = Mode == DisplayMode.Ansi
-            ? new AnsiDisplay(Width, Height)
-            : new NativeDisplay(Width, Height);
+        if (Mode == DisplayMode.Native)
+        {
+            ScreenResizer.BufferSizeStep = 2;
+            _renderer = new NativeDisplay(Width, Height);
+        }
+        else _renderer = new AnsiDisplay(Width, Height);
+        
 
         new Thread(Start)
         {
@@ -80,53 +80,57 @@ public static class Display
         LockSlim.ExitWriteLock();
     }
 
-    public static void Draw(int posX, int posY, char symbol, Color foreground, Color background) => 
+    public static void Draw(int posX, int posY, char symbol, Color foreground, Color background)
+    {
         _renderer.Draw(posX, posY, symbol, foreground, background);
+    }
 
-    public static void ClearAt(Coord pos) => _renderer.ClearAt(pos.X, pos.Y);
+    public static void ClearAt(Vector pos) => _renderer.ClearAt(pos.X, pos.Y);
 
     public static void ClearAt(int posX, int posY) => _renderer.ClearAt(posX, posY);
 
-    public static void ResetStyle() => _renderer.ResetStyle();
+    public static void ResetStyle() => _renderer?.ResetStyle();
 
     public static void Print(int posX, int posY, string text, Color foreground, Color background,
-        Alignment alignment = Alignment.Center, TextMode mode = TextMode.Default) =>
+        Alignment alignment = Alignment.Center, TextMode mode = TextMode.Default)
+    {
         _renderer.Print(posX, posY, text, foreground, background, alignment, mode);
+    }
 
     public static void Draw(int posX, int posY, TileDisplay tileDisplay) =>
         _renderer.Draw(posX, posY, tileDisplay.Symbol, tileDisplay.Foreground, tileDisplay.Background);
 
-    public static void DrawRect(Coord pos, Coord size, Color color, char symbol = ' ')
+    public static void DrawRect(Vector pos, Vector size, Color color, char symbol = ' ')
     {
         if (!CalculateDrawArea(pos, size, out var start, out var end)) return;
         
         _renderer.DrawRect(start, end, color, symbol);
     }
 
-    public static void DrawLine(Coord pos, Coord direction, int length, Color foreground, Color background, char symbol)
+    public static void DrawLine(Vector pos, Vector direction, int length, Color foreground, Color background, char symbol)
     {
         if (!CalculateLineLength(pos, direction, length, out var start, out var calculatedLenght)) return;
         
         _renderer.DrawLine(start, direction, calculatedLenght, foreground, background, symbol);
     }
 
-    public static void ClearRect(Coord pos, Coord size)
+    public static void ClearRect(Vector pos, Vector size)
     {
         if (!CalculateDrawArea(pos, size, out var start, out var end)) return;
         
         _renderer.ClearRect(start, end);
     }
 
-    public static void DrawBorder(Coord pos, Coord size, Color color, BorderStyle style)
+    public static void DrawBorder(Vector pos, Vector size, Color color, BorderStyle style)
     {
         if (!CalculateDrawArea(pos, size, out var start, out var end)) return;
         
         _renderer.DrawBorder(start, end, color, style);
     }
 
-    public static void DrawBuffer(Coord pos, Pixel[,] buffer)
+    public static void DrawBuffer(Vector pos, Pixel[,] buffer)
     {
-        var size = new Coord {X = buffer.GetLength(0), Y = buffer.GetLength(1)};
+        var size = new Vector {X = buffer.GetLength(0), Y = buffer.GetLength(1)};
 
         if (!CalculateDrawArea(pos, size, out var start, out var end)) return;
         
@@ -144,6 +148,9 @@ public static class Display
         {
             stopwatch.Start();
 
+            var shouldResizeBuffer = ScreenResizer.Resize(ShouldTryToResizeConsoleBuffer);
+            if (shouldResizeBuffer) _renderer.ResizeBuffer(ScreenResizer.BufferSize);
+
             Draw();
 
             stopwatch.Stop();
@@ -155,12 +162,12 @@ public static class Display
         }
     }
     
-    private static bool CalculateDrawArea(Coord position, Coord size, out Coord start, out Coord end)
+    private static bool CalculateDrawArea(Vector position, Vector size, out Vector start, out Vector end)
     {
-        start = new Coord();
-        end = new Coord();
+        start = new Vector();
+        end = new Vector();
         
-        if (position.X >= Width || position.Y >= Height || size == Coord.Zero) return false;
+        if (position.X >= Width || position.Y >= Height || size == Vector.Zero) return false;
         
         start.X = Math.Max(position.X, 0);
         start.Y = Math.Max(position.Y, 0);
@@ -171,13 +178,18 @@ public static class Display
         return start.X != end.X && start.Y != end.Y;
     }
 
-    private static bool CalculateLineLength(Coord position, Coord direction, int originalLength,
-        out Coord start, out int calculatedLenght)
+    private static bool CalculateLineLength(Vector position, Vector direction, int originalLength,
+        out Vector start, out int calculatedLenght)
     {
-        start = new Coord();
+        start = new Vector();
         calculatedLenght = 0;
 
-        if (originalLength == 0 || direction == Coord.Zero) return false;
+        if (originalLength == 0 || direction == Vector.Zero) return false;
+        
+        if (position.X < 0 && direction.X <= 0) return false;
+        if (position.X >= Width && direction.X >= 0) return false;
+        if (position.Y < 0 && direction.Y <= 0) return false;
+        if (position.Y >= Height && direction.Y >= 0) return false;
         
         start.X = Math.Max(Math.Min(position.X, Width - 1), 0);
         start.Y = Math.Max(Math.Min(position.Y, Height - 1), 0);
@@ -185,11 +197,6 @@ public static class Display
         // Skipping unnecessary operations if line is not diagonal
         if (direction is {X: not 0, Y: not 0})
         {
-            if (position.X < 0 && direction.X <= 0) return false;
-            if (position.X >= Width && direction.X >= 0) return false;
-            if (position.Y < 0 && direction.Y <= 0) return false;
-            if (position.Y >= Height && direction.Y >= 0) return false;
-            
             var adjusted = false;
 
             if (start.X != position.X)
@@ -213,7 +220,7 @@ public static class Display
             }
         }
         
-        var end = new Coord
+        var end = new Vector
         {
             X = Math.Min(Math.Max(position.X + direction.X * originalLength, 0), Width - 1),
             Y = Math.Min(Math.Max(position.Y + direction.Y * originalLength, 0), Height - 1)

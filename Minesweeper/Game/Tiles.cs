@@ -33,7 +33,7 @@ public sealed class Tile
     
     public readonly List<Tile> Neighbours = new(8);
 
-    public Coord Pos;
+    public Vector Pos;
 
     public void Reset()
     {

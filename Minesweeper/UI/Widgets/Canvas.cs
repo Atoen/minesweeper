@@ -77,7 +77,7 @@ public interface IDrawable
     int Width { get; }
     int Height { get; }
     
-    Coord Offset { get; set; }
+    Vector Offset { get; set; }
 
     void Draw();
 

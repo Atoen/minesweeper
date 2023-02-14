@@ -9,47 +9,43 @@ namespace Minesweeper.ConsoleDisplay;
 public sealed class AnsiDisplay : IRenderer
 {
     private bool _modified = true;
-
-    private readonly Coord _displaySize;
+    
     private readonly StringBuilder _stringBuilder = new();
     private readonly StringBuilder _symbolsBuilder = new();
 
-    private readonly Pixel[,] _currentPixels;
-    private readonly Pixel[,] _lastPixels;
+    private Pixel[,] _currentPixels;
+    private Pixel[,] _lastPixels;
     
     private readonly Func<Color, string> _foregroundCode = color => $"\x1b[38;2;{color.R};{color.G};{color.B}m";
     private readonly Func<Color, string> _backgroundCode = color => $"\x1b[48;2;{color.R};{color.G};{color.B}m";
-    private readonly Func<Coord, string> _coordCode = coord => $"\x1b[{coord.Y + 1};{coord.X + 1}f";
+    private readonly Func<Vector, string> _coordCode = coord => $"\x1b[{coord.Y + 1};{coord.X + 1}f";
 
     private readonly Cache<Color, string> _foregroundColorCache;
     private readonly Cache<Color, string> _backgroundColorCache;
-    private readonly Cache<Coord, string> _coordCache;
+    private readonly Cache<Vector, string> _coordCache;
 
     private bool _shouldClear;
 
     public AnsiDisplay(int width, int height)
     {
-        _displaySize.X = width;
-        _displaySize.Y = height;
-
         _currentPixels = new Pixel[width, height];
         _lastPixels = new Pixel[width, height];
 
         _foregroundColorCache = new Cache<Color, string>(_foregroundCode);
         _backgroundColorCache = new Cache<Color, string>(_backgroundCode);
-        _coordCache = new Cache<Coord, string>(_coordCode);
+        _coordCache = new Cache<Vector, string>(_coordCode);
     }
     
     public void Draw(int posX, int posY, char symbol, Color fg, Color bg)
     {
-        if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
+        if (posX < 0 || posX >= Display.Width || posY < 0 || posY >= Display.Height) return;
 
         _currentPixels[posX, posY].Symbol = symbol;
         _currentPixels[posX, posY].Fg = fg;
         _currentPixels[posX, posY].Bg = bg;
     }
 
-    public void DrawRect(Coord start, Coord end, Color color, char symbol = ' ')
+    public void DrawRect(Vector start, Vector end, Color color, char symbol = ' ')
     {
         for (var x = start.X; x < end.X; x++)
         for (var y = start.Y; y < end.Y; y++)
@@ -60,7 +56,7 @@ public sealed class AnsiDisplay : IRenderer
         }
     }
 
-    public void DrawLine(Coord pos, Coord direction, int length, Color fg, Color bg, char symbol)
+    public void DrawLine(Vector pos, Vector direction, int length, Color fg, Color bg, char symbol)
     {
         var distance = 0;
 
@@ -77,7 +73,7 @@ public sealed class AnsiDisplay : IRenderer
     
     public void Print(int posX, int posY, string text, Color fg, Color bg, Alignment alignment, TextMode mode)
     {
-        if (posY < 0 || posY >= _displaySize.Y) return;
+        if (posY < 0 || posY >= Display.Height) return;
         
         var startX = alignment switch
         {
@@ -86,10 +82,10 @@ public sealed class AnsiDisplay : IRenderer
             _ => posX - text.Length / 2
         };
 
-        if (startX >= _displaySize.X) return;
+        if (startX >= Display.Width) return;
         
         var endX = startX + text.Length;
-        if (endX >= _displaySize.X) endX = _displaySize.X - 1;
+        if (endX >= Display.Width) endX = Display.Width - 1;
         
         var firstLetterOffset = 0;
         
@@ -108,7 +104,7 @@ public sealed class AnsiDisplay : IRenderer
         }
     }
 
-    public void DrawBuffer(Coord start, Coord end, Pixel[,] buffer)
+    public void DrawBuffer(Vector start, Vector end, Pixel[,] buffer)
     {
         for (var x = start.X; x < end.X; x++)
         for (var y = start.Y; y < end.Y; y++)
@@ -117,7 +113,7 @@ public sealed class AnsiDisplay : IRenderer
         }
     }
 
-    public void DrawBorder(Coord start, Coord end, Color color, BorderStyle style)
+    public void DrawBorder(Vector start, Vector end, Color color, BorderStyle style)
     {
         for (var x = start.X + 1; x < end.X - 1; x++)
         {
@@ -163,12 +159,12 @@ public sealed class AnsiDisplay : IRenderer
 
     public void ClearAt(int posX, int posY)
     {
-        if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
+        if (posX < 0 || posX >= Display.Width || posY < 0 || posY >= Display.Height) return;
         
         _currentPixels[posX, posY] = Pixel.Cleared;
     }
 
-    public void ClearRect(Coord start, Coord end)
+    public void ClearRect(Vector start, Vector end)
     {
         for (var x = start.X; x < end.X; x++)
         for (var y = start.Y; y < end.Y; y++)
@@ -196,15 +192,21 @@ public sealed class AnsiDisplay : IRenderer
         _shouldClear = true;
     }
 
+    public void ResizeBuffer(Vector newBufferSize)
+    {
+        _currentPixels = new Pixel[newBufferSize.X, newBufferSize.Y];
+        _lastPixels = new Pixel[newBufferSize.X, newBufferSize.Y];
+    }
+
     private void CopyToBuffer()
     {
-        for (var x = 0; x < _displaySize.X; x++)
-        for (var y = 0; y < _displaySize.Y; y++)
+        for (var x = 0; x < Display.Width; x++)
+        for (var y = 0; y < Display.Height; y++)
         {
             if (_currentPixels[x, y] == _lastPixels[x, y]) continue;
 
             _modified = true;
-            Array.Copy(_currentPixels, _lastPixels, _displaySize.X * _displaySize.Y);
+            Array.Copy(_currentPixels, _lastPixels, Display.Width * Display.Height);
             
             return;
         }
@@ -247,21 +249,21 @@ public sealed class AnsiDisplay : IRenderer
         var lastMode = TextMode.Default;
 
         // starting position for printing the gathered pixel symbols
-        var streakStartPos = new Coord();
-        var oldStreakPos = new Coord();
+        var streakStartPos = new Vector();
+        var oldStreakPos = new Vector();
         var oldStreakLen = 0;
         var previousIsCleared = false;
 
         if (_shouldClear)
         {
-            Console.Clear();
+            _stringBuilder.Append("\x1b[2J");
             _shouldClear = false;
         }
         
         _stringBuilder.Append("\x1b[1;1f");
 
-        for (var y = 0; y < _displaySize.Y; y++)
-        for (var x = 0; x < _displaySize.X; x++)
+        for (var y = 0; y < Display.Height; y++)
+        for (var x = 0; x < Display.Width; x++)
         {
             var pixel = _currentPixels[x, y];
 
@@ -323,7 +325,7 @@ public sealed class AnsiDisplay : IRenderer
         // If the screen buffer ends while symbolsBuilder still has unprinted content
         if (_symbolsBuilder.Length > 0)
         {
-            var lastPixel = _currentPixels[_displaySize.X - 1, _displaySize.Y - 1];
+            var lastPixel = _currentPixels[Display.Width - 1, Display.Height - 1];
             
             _stringBuilder.Append(_coordCache.GetOrAdd(streakStartPos));
 

@@ -4,14 +4,14 @@ namespace Minesweeper.UI.Old;
 
 public class FrameOld
 {
-    private record WidgetEntry(Widget Widget, Coord GridPos, Coord GridSpan);
+    private record WidgetEntry(Widget Widget, Vector GridPos, Vector GridSpan);
     
     private readonly GridUiOld _grid;
     private readonly List<WidgetEntry> _widgets = new();
-    private readonly Coord _padding;
-    private Coord _pos = Coord.Zero;
+    private readonly Vector _padding;
+    private Vector _pos = Vector.Zero;
 
-    public Coord Pos
+    public Vector Pos
     {
         get => _pos;
         set
@@ -57,9 +57,9 @@ public class FrameOld
         CheckIfNeedToRedraw();
     }
 
-    private void SetMultipleCellSize(Coord firstCellPos, int rowSpan, int columnSpan, Coord widgetSize, GridAlignment alignment)
+    private void SetMultipleCellSize(Vector firstCellPos, int rowSpan, int columnSpan, Vector widgetSize, GridAlignment alignment)
     {
-        var paddings = new Coord((columnSpan - 1) * _padding.X, (rowSpan - 1) * _padding.Y);
+        var paddings = new Vector((columnSpan - 1) * _padding.X, (rowSpan - 1) * _padding.Y);
 
         var lastCellPos = firstCellPos + (rowSpan - 1, columnSpan - 1);
         var currentSizeAvailable = _grid[lastCellPos].End - _grid[firstCellPos].Start;
@@ -77,7 +77,7 @@ public class FrameOld
                 var size = cellWidth + remainder;
                 if (remainder > 0) remainder--;
                 
-                _grid.SetCellSize(firstCellPos.X, firstCellPos.Y + i, Coord.Right * size, alignment);
+                _grid.SetCellSize(firstCellPos.X, firstCellPos.Y + i, Vector.Right * size, alignment);
             }
         }
 
@@ -94,14 +94,14 @@ public class FrameOld
                 var size = cellWidth + remainder;
                 if (remainder > 0) remainder--;
                 
-                _grid.SetCellSize(firstCellPos.X + i, firstCellPos.Y, Coord.Down * size, alignment);
+                _grid.SetCellSize(firstCellPos.X + i, firstCellPos.Y, Vector.Down * size, alignment);
             }
         }
     }
     
     public void Place(Widget widget, int posX, int posY)
     {
-        _widgets.Add(new WidgetEntry(widget, Coord.Zero, Coord.Zero));
+        _widgets.Add(new WidgetEntry(widget, Vector.Zero, Vector.Zero));
         
         // widget.Anchor = new Coord(posX, posY);
         // widget.Offset = Coord.Zero;
@@ -127,7 +127,7 @@ public class FrameOld
         _widgets.Remove(entry);
     }
 
-    private void FillWidget(Widget widget, Coord cellSize)
+    private void FillWidget(Widget widget, Vector cellSize)
     {
         // switch (widget.GridResizeMode)
         // {

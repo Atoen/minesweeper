@@ -10,7 +10,7 @@ public static class MainMenu
     private static readonly List<GamePreset> GamePresets = new()
     {
         new GamePreset("Easy", 15, 10, 15),
-        new GamePreset("Medium", 30, 12, 50),
+        new GamePreset("Medium", 30, 12, 40),
         new GamePreset("Hard", 40, 20, 90)
     };
 
@@ -191,13 +191,15 @@ public static class MainMenu
             var height = new Label
             {
                 Text = new Text(preset.Height.ToString()),
-                Color = Color.DarkGray
+                Color = Color.DarkGray,
+                ResizeMode = ResizeMode.Expand
             };
             
             var bombs = new Label
             {
                 Text = new Text(preset.Bombs.ToString()),
-                Color = Color.DarkGray
+                Color = Color.DarkGray,
+                ResizeMode = ResizeMode.Expand
             };
             
             grid.SetColumnAndRow(radioButton, 0, i + 2);
@@ -237,7 +239,8 @@ public static class MainMenu
             Color = Color.DarkGray,
             Text = _customHeightText,
             MaxTextLenght = 3,
-            InputMode = EntryMode.Digits
+            InputMode = EntryMode.Digits,
+            ResizeMode = ResizeMode.Expand
         };
         heightEntry.SetEnabled(false);
 
@@ -247,7 +250,8 @@ public static class MainMenu
             Color = Color.DarkGray,
             Text = _customBombsText,
             MaxTextLenght = 4,
-            InputMode = EntryMode.Digits
+            InputMode = EntryMode.Digits,
+            ResizeMode = ResizeMode.Expand
         };
         bombsEntry.SetEnabled(false);
 

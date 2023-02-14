@@ -64,7 +64,7 @@ public class Grid : Control
 
         AdjustCellSize(control.PaddedSize, column, row);
 
-        var pos = new Coord
+        var pos = new Vector
         {
             X = Columns.GetOffset(column) + InnerPadding.X,
             Y = Rows.GetOffset(row) + InnerPadding.Y
@@ -108,7 +108,7 @@ public class Grid : Control
         }
     }
 
-    private void CalculatePosition(Control control, Coord baseOffset, int column, int row)
+    private void CalculatePosition(Control control, Vector baseOffset, int column, int row)
     {
         baseOffset.X += HorizontalAlignment switch
         {
@@ -127,7 +127,7 @@ public class Grid : Control
         control.Position = baseOffset;
     }
 
-    private void AdjustCellSize(Coord size, int column, int row)
+    private void AdjustCellSize(Vector size, int column, int row)
     {
         var shouldMoveContent = false;
         
@@ -160,12 +160,12 @@ public class Grid : Control
 
             if (control.ResizeMode == ResizeMode.Expand)
             {
-                var expandSize = new Coord(Columns[entry.Column].Size, Rows[entry.Row].Size) - control.OuterPadding * 2;
+                var expandSize = new Vector(Columns[entry.Column].Size, Rows[entry.Row].Size) - control.OuterPadding * 2;
                 
                 control.Expand(expandSize);
             }
 
-            var baseOffset = new Coord
+            var baseOffset = new Vector
             {
                 X = Columns.GetOffset(entry.Column),
                 Y = Rows.GetOffset(entry.Row)
@@ -179,8 +179,18 @@ public class Grid : Control
         _entries.RemoveAll(e => !e.Reference.IsAlive);
     }
 
-    private void ChildrenOnElementChanged(object? sender, CollectionChangedEventArgs<Control> e) => 
-        e.Element.Parent = e.ChangeType == ChangeType.Add ? this : null;
+    private void ChildrenOnElementChanged(object? sender, CollectionChangedEventArgs<Control> e)
+    {
+        if (e.ChangeType == ChangeType.Remove && e.Element.Parent == this)
+        {
+            e.Element.Parent = null;
+        }
+
+        else if (e.ChangeType == ChangeType.Add)
+        {
+            e.Element.Parent = this;
+        }
+    }
 
     private void ColumnsOnCollectionChanged(object? sender, EventArgs e)
     {
@@ -196,18 +206,21 @@ public class Grid : Control
 
     private void RenderLines()
     {
-        Span<Coord> crosses = stackalloc Coord[(Columns.Count - 1) * (Rows.Count - 1)];
+        var columns = Columns.Count;
+        var rows = Rows.Count;
+        
+        Span<Vector> crosses = stackalloc Vector[(columns - 1) * (rows - 1)];
 
         var pos  = GlobalPosition + InnerPadding;
 
-        for (var i = 0; i < Columns.Count - 1; i++)
+        for (var i = 0; i < columns - 1; i++)
         {
             pos.X = Columns.GetOffset(i) + Position.X + Columns[i].Size + 1;
 
-            Display.DrawLine(pos, Coord.Down, InnerHeight, GridLinesColor, CurrentColor,
+            Display.DrawLine(pos, Vector.Down, InnerHeight, GridLinesColor, CurrentColor,
                 GridLines.Symbols[GridLineStyle][GridLineFragment.Vertical]);
 
-            for (var c = i; c < crosses.Length; c += Columns.Count - 1)
+            for (var c = i; c < crosses.Length; c += columns - 1)
             {
                 crosses[c].X = pos.X;
             }
@@ -215,16 +228,16 @@ public class Grid : Control
 
         pos = GlobalPosition + InnerPadding;
 
-        for (var i = 0; i < Rows.Count - 1; i++)
+        for (var i = 0; i < rows - 1; i++)
         {
             pos.Y = Rows.GetOffset(i) + Position.Y + Rows[i].Size + 1;
             
-            Display.DrawLine(pos, Coord.Right, InnerWidth, GridLinesColor, CurrentColor,
+            Display.DrawLine(pos, Vector.Right, InnerWidth, GridLinesColor, CurrentColor,
                 GridLines.Symbols[GridLineStyle][GridLineFragment.Horizontal]);
 
-            for (var c = 0; c < Columns.Count - 1; c++)
+            for (var c = 0; c < columns - 1; c++)
             {
-                var index = c + i * (Columns.Count - 1);
+                var index = c + i * (columns - 1);
 
                 crosses[index].Y = pos.Y;
             }

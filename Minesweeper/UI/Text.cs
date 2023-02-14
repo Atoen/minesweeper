@@ -13,7 +13,7 @@ public class Text : VisualComponent
     public Text(string text, Color foreground)
     {
         TextInternal = text;
-        Size = new Coord(Length, 1);
+        Size = new Vector(Length, 1);
 
         Foreground = foreground;
         Background = Color.Transparent;
@@ -57,7 +57,7 @@ public class Text : VisualComponent
         set
         {
             TextInternal = value;
-            Size = new Coord(Length, 1);
+            Size = new Vector(Length, 1);
         }
     }
 
@@ -78,8 +78,8 @@ public class Text : VisualComponent
         var startPos = Alignment switch
         {
             Alignment.Left => GlobalPosition,
-            Alignment.Right => new Coord(GlobalPosition.X - Length, GlobalPosition.Y),
-            _ => new Coord(GlobalPosition.X - Length / 2, GlobalPosition.Y)
+            Alignment.Right => new Vector(GlobalPosition.X - Length, GlobalPosition.Y),
+            _ => new Vector(GlobalPosition.X - Length / 2, GlobalPosition.Y)
         };
         
         Display.ClearRect(startPos, Size);

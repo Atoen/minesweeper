@@ -1,7 +1,6 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
-
 using static Minesweeper.NativeConsole;
 
 namespace Minesweeper.ConsoleDisplay;
@@ -11,15 +10,13 @@ public sealed class NativeDisplay : IRenderer
     private bool _modified;
     
     private readonly SafeFileHandle _fileHandle;
-    
+    private readonly SCoord _startPos = new();
+
+    private SCoord _displaySize;
     private DisplayRect _screenRect;
-    private readonly SCoord _displaySize;
-    private readonly SCoord _startPos = new() {X = 0, Y = 0};
 
-    private readonly CharInfo[] _currentBuffer;
-    private readonly CharInfo[] _lastBuffer;
-
-    private readonly object _threadLock = new();
+    private CharInfo[] _currentBuffer;
+    private CharInfo[] _lastBuffer;
 
     public NativeDisplay(int width, int height)
     {
@@ -32,9 +29,9 @@ public sealed class NativeDisplay : IRenderer
             nint.Zero);
         
         if (_fileHandle.IsInvalid) throw new IOException("Console buffer file is invalid");
-        
-        _displaySize = new SCoord {X = (short) width, Y = (short) height};
-        _screenRect = new DisplayRect {Left = 0, Top = 0, Right = (short) width, Bottom = (short) height};
+
+        _displaySize = new SCoord { X = (short)width, Y = (short)height };
+        _screenRect = new DisplayRect { Left = 0, Top = 0, Right = (short)width, Bottom = (short)height };
 
         _currentBuffer = new CharInfo[width * height];
         _lastBuffer = new CharInfo[width * height];
@@ -47,38 +44,40 @@ public sealed class NativeDisplay : IRenderer
         var bufferIndex = posY * _displaySize.X + posX;
         
         var color = Colors.CombineToShort(fg, bg);
-
-        lock(_threadLock)
-        {
-            _currentBuffer[bufferIndex].Symbol = symbol;
-            _currentBuffer[bufferIndex].Color = color;
-        }
-    }
-
-    public void DrawRect(Coord pos, Coord size, Color color, char symbol = ' ')
-    {
-        if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
         
-        var endX = Math.Min(size.X, _displaySize.X - pos.X);
-        var endY = Math.Min(size.Y, _displaySize.Y - pos.Y);
+        _currentBuffer[bufferIndex].Symbol = symbol;
+        _currentBuffer[bufferIndex].Color = color;
+    }
 
+    public void DrawRect(Vector start, Vector end, Color color, char symbol = ' ')
+    {
         var consoleColor = (short) (color.ConsoleColorIndex() << 4);
-
-        lock (_threadLock)
+        
+        for (var x = start.X; x < end.X; x++)
+        for (var y = start.Y; y < end.Y; y++)
         {
-            for (var x = 0; x < endX; x++)
-            for (var y = 0; y < endY; y++)
-            {
-                var bufferIndex = (pos.Y + y) * _displaySize.X + pos.X + x;
+            var bufferIndex = y * _displaySize.X + x;
 
-                _currentBuffer[bufferIndex].Symbol = symbol;
-                _currentBuffer[bufferIndex].Color = consoleColor;
-            }
+            _currentBuffer[bufferIndex].Symbol = symbol;
+            _currentBuffer[bufferIndex].Color = consoleColor;
         }
     }
 
-    public void DrawLine(Coord pos, Coord direction, int length, Color fg, Color bg, char symbol)
+    public void DrawLine(Vector pos, Vector direction, int length, Color fg, Color bg, char symbol)
     {
+        var consoleColor = Colors.CombineToShort(fg, bg);
+        var distance = 0;
+
+        while (distance < length)
+        {
+            var bufferIndex = pos.Y * _displaySize.X + pos.X;
+
+            _currentBuffer[bufferIndex].Symbol = symbol;
+            _currentBuffer[bufferIndex].Color = consoleColor;
+
+            pos += direction;
+            distance++;
+        }
     }
 
     public void Print(int posX, int posY, string text, Color fg, Color bg, Alignment alignment, TextMode _)
@@ -102,41 +101,29 @@ public sealed class NativeDisplay : IRenderer
         var color = Colors.CombineToShort(fg, bg);
         
         var bufferIndex = posY * _displaySize.X + startX;
-
-        lock (_threadLock)
+        
+        for (var i = 0; i < endX - startX; i++)
         {
-            for (var i = 0; i < endX - startX; i++)
-            {
-                _currentBuffer[bufferIndex + i].Color = color;
-                _currentBuffer[bufferIndex + i].Symbol = text[i];
-            }
+            _currentBuffer[bufferIndex + i].Color = color;
+            _currentBuffer[bufferIndex + i].Symbol = text[i];
         }
     }
 
-    public void DrawBuffer(Coord pos, Coord size, Pixel[,] buffer)
+    public void DrawBuffer(Vector start, Vector end, Pixel[,] buffer)
     {
-        if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
-
-        var endX = Math.Min(size.X, _displaySize.X - pos.X);
-        var endY = Math.Min(size.Y, _displaySize.Y - size.Y);
-            
-        lock (_threadLock)
+        for (var x = start.X; x < end.X; x++)
+        for (var y = start.Y; y < end.Y; y++)
         {
-            for (var x = 0; x < endX; x++)
-            for (var y = 0; y < endY; y++)
-            {
-                var index = (y + pos.Y) * _displaySize.X + x + pos.X;
-                var pixel = buffer[x, y];
-                
-                _currentBuffer[index].Symbol = pixel.Symbol;
-
-                var color = Colors.CombineToShort(buffer[x, y].Fg, buffer[x, y].Bg);
-                _currentBuffer[index].Color = color;
-            }
+            var color = Colors.CombineToShort(buffer[x, y].Fg, buffer[x, y].Bg);
+            var bufferIndex = y * _displaySize.X + x;
+            var pixel = buffer[x, y];
+            
+            _currentBuffer[bufferIndex].Symbol = pixel.Symbol;
+            _currentBuffer[bufferIndex].Color = color;
         }
     }
 
-    public void DrawBorder(Coord pos, Coord size, Color color, BorderStyle style)
+    public void DrawBorder(Vector pos, Vector size, Color color, BorderStyle style)
     {
     }
 
@@ -146,46 +133,30 @@ public sealed class NativeDisplay : IRenderer
         if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
 
         var bufferIndex = posY * _displaySize.X + posX;
-
-        lock (_threadLock)
-        {
-            _currentBuffer[bufferIndex] = CharInfo.Empty;
-        }
+        
+        _currentBuffer[bufferIndex] = CharInfo.Empty;
     }
 
-    public void ClearRect(Coord pos, Coord size)
+    public void ClearRect(Vector start, Vector end)
     {
-        if (pos.X >= _displaySize.X || pos.Y >= _displaySize.Y) return;
-        
-        var endX = Math.Min(size.X, _displaySize.X - pos.X);
-        var endY = Math.Min(size.Y, _displaySize.Y - pos.Y);
-
-        lock (_threadLock)
+        for (var x = start.X; x < end.X; x++)
+        for (var y = start.Y; y < end.Y; y++)
         {
-            for (var x = 0; x < endX; x++)
-            for (var y = 0; y < endY; y++)
-            {
-                var bufferIndex = (pos.Y + y) * _displaySize.X + pos.X + x;
+            var bufferIndex = y * _displaySize.X + x;
 
-                _currentBuffer[bufferIndex] = CharInfo.Empty;
-            }
+            _currentBuffer[bufferIndex] = CharInfo.Empty;
         }
     }
 
     public void Draw()
     {
-        lock (_threadLock)
-        {
-            CopyToBuffer();
+        CopyToBuffer();
 
-            if (!_modified) return;
-            
-            Debug.WriteLine("Modified");
-            
-            WriteConsoleOutput(_fileHandle, _currentBuffer, _displaySize, _startPos, ref _screenRect);
+        if (!_modified) return;
 
-            _modified = false;
-        }
+        WriteConsoleOutput(_fileHandle, _currentBuffer, _displaySize, _startPos, ref _screenRect);
+
+        _modified = false;
     }
 
     public void ResetStyle() => Console.ResetColor();
@@ -206,7 +177,17 @@ public sealed class NativeDisplay : IRenderer
         }
     }
     
-    public void Clear()
+    public void Clear() => _modified = true;
+
+    public void ResizeBuffer(Vector newBufferSize)
     {
+        _currentBuffer = new CharInfo[newBufferSize.X * newBufferSize.Y];
+        _lastBuffer = new CharInfo[newBufferSize.X * newBufferSize.Y];
+
+        _displaySize.X = (short)newBufferSize.X;
+        _displaySize.Y = (short)newBufferSize.Y;
+
+        _screenRect.Right = (short)newBufferSize.X;
+        _screenRect.Bottom = (short)newBufferSize.Y;
     }
 }

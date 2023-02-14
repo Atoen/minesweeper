@@ -251,14 +251,14 @@ internal sealed class KeyboardState
 
 internal sealed class MouseState
 {
-    public Coord Position;
+    public Vector Position;
     public MouseButton Buttons;
     public MouseEventFlags Flags;
     public MouseWheelState Wheel;
 
     public void Assign(ref MouseEventRecord record)
     {
-        Position = new Coord(record.MousePosition.X, record.MousePosition.Y);
+        Position = new Vector(record.MousePosition.X, record.MousePosition.Y);
         Buttons = (MouseButton) record.ButtonState;
         Wheel = (MouseWheelState) record.ButtonState;
         Flags = (MouseEventFlags) record.EventFlags;

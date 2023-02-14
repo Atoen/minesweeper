@@ -18,7 +18,7 @@ Console.CancelKeyPress += delegate
     Console.Clear();
     Console.WriteLine("Exiting...");
 
-    var bytesPerMByte = Math.Pow(2, 20);
+    const double bytesPerMByte = 1_048_576D;
     Console.WriteLine(
         $"Memory usage - Physical: {peakPhysical / bytesPerMByte:.00}MB, Paged: {peakPaged / bytesPerMByte:.00}MB");
     
@@ -57,7 +57,7 @@ void ParseArgs(string arg)
 
 if (args.Length > 0) ParseArgs(args[0]);
 
-Display.Init(displayMode);
+Display.Init(displayMode = DisplayMode.Native);
 
 Input.Init();
 

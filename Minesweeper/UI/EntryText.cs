@@ -17,7 +17,7 @@ public class EntryText : Text
     public EntryText(string text, Color foreground, Color background) : base(text, foreground, background)
     {
         _enumerator = Cycle();
-        Size = new Coord(Length + 1, 1);
+        Size = new Vector(Length + 1, 1);
     }
 
     public char Caret { get; set; } = '_';
@@ -44,7 +44,7 @@ public class EntryText : Text
         set
         {
             TextInternal = value;
-            Size = new Coord(Length + 1, 1);
+            Size = new Vector(Length + 1, 1);
         }
     }
 

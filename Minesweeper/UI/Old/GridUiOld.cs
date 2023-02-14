@@ -3,9 +3,9 @@
 public sealed class GridUiOld
 {
     private readonly Cell[,] _cells;
-    public Coord InnerPadding;
+    public Vector InnerPadding;
 
-    public Coord Pos = Coord.Zero;
+    public Vector Pos = Vector.Zero;
 
     public GridUiOld(int rows, int columns)
     {
@@ -14,9 +14,9 @@ public sealed class GridUiOld
 
     public Cell this[int row, int column] => _cells[row, column];
 
-    public Cell this[Coord pos] => _cells[pos.X, pos.Y];
+    public Cell this[Vector pos] => _cells[pos.X, pos.Y];
 
-    public void SetCellSize(int row, int column, Coord size, GridAlignment alignment)
+    public void SetCellSize(int row, int column, Vector size, GridAlignment alignment)
     {
         _cells[row, column].ItemSize = size;
         _cells[row, column].Alignment = alignment;
@@ -70,13 +70,13 @@ public sealed class GridUiOld
 
     public struct Cell
     {
-        public Coord Start;
-        public Coord Size;
-        public Coord ItemSize;
+        public Vector Start;
+        public Vector Size;
+        public Vector ItemSize;
         public GridAlignment Alignment;
 
-        public Coord Center => Start + Size / 2;
-        public Coord End => Start + Size;
+        public Vector Center => Start + Size / 2;
+        public Vector End => Start + Size;
         public int Width
         {
             get => Size.X;

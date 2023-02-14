@@ -30,32 +30,33 @@ public abstract class Component
     public event SizeChangeEventHandler? SizeChanged;
     public event ZIndexChangeEventHandler? ZIndexChanged;
     
-    public Coord InnerPadding = new(1, 1);
-    public Coord OuterPadding = Coord.Zero;
+    public Vector InnerPadding = new(1, 1);
+    public Vector OuterPadding = Vector.Zero;
     
-    public Coord PaddedSize => Size + OuterPadding * 2;
+    public Vector PaddedSize => Size + OuterPadding * 2;
     public int PaddedWidth => Width + OuterPadding.X * 2;
     public int PaddedHeight => Height + OuterPadding.Y * 2;
-    public Coord InnerSize => Size - InnerPadding * 2;
+    
+    public Vector InnerSize => Size - InnerPadding * 2;
     public int InnerWidth => Width - InnerPadding.X * 2;
     public int InnerHeight => Height - InnerPadding.Y * 2;
 
-    private Coord _localPosition;
-    private Coord _globalPosition;
+    private Vector _localPosition;
+    private Vector _globalPosition;
     
-    public Coord Position
+    public Vector Position
     {
         get => _localPosition;
         set => SetPositionInternal(value, true);
     }
 
-    public Coord GlobalPosition
+    public Vector GlobalPosition
     {
         get => _parent == null ? _localPosition : _parent.GlobalPosition + _localPosition;
         set => SetPositionInternal(value, false);
     }
 
-    public Coord Center
+    public Vector Center
     {
         get => GlobalPosition + Size / 2;
         set
@@ -69,8 +70,8 @@ public abstract class Component
         }
     }
 
-    private Coord _size;
-    public Coord Size
+    private Vector _size;
+    public Vector Size
     {
         get => _size;
         set
@@ -115,7 +116,7 @@ public abstract class Component
         }
     }
 
-    public Coord MinSize { get; protected set; }
+    public Vector MinSize { get; protected set; }
 
     protected void ApplyResizing()
     {
@@ -131,7 +132,7 @@ public abstract class Component
     {
     }
 
-    public void Expand(Coord maxSize = default)
+    public void Expand(Vector maxSize = default)
     {
         if (maxSize == default && Parent != null) maxSize = Parent.InnerSize;
         Size = MinSize.ExpandTo(maxSize);
@@ -145,7 +146,7 @@ public abstract class Component
         Enabled = enabled;
     }
     
-    public bool ContainsPoint(Coord pos) =>
+    public bool ContainsPoint(Vector pos) =>
         pos.X >= GlobalPosition.X && pos.X < GlobalPosition.X + Width &&
         pos.Y >= GlobalPosition.Y && pos.Y < GlobalPosition.Y + Height;
 
@@ -176,7 +177,7 @@ public abstract class Component
         };
     }
     
-    private void SetPositionInternal(Coord value, bool isLocal)
+    private void SetPositionInternal(Vector value, bool isLocal)
     {
         var positionBefore = isLocal ? _localPosition : _globalPosition;
 
@@ -283,21 +284,21 @@ public enum ResizeMode
 
 public class PositionChangedEventArgs : EventArgs
 {
-    public PositionChangedEventArgs(Coord delta) => Delta = delta;
+    public PositionChangedEventArgs(Vector delta) => Delta = delta;
 
-    public Coord Delta { get; }
+    public Vector Delta { get; }
 }
 
 public class SizeChangedEventArgs : EventArgs
 {
-    public SizeChangedEventArgs(Coord oldSize, Coord newSize)
+    public SizeChangedEventArgs(Vector oldSize, Vector newSize)
     {
         OldSize = oldSize;
         NewSize = newSize;
     }
 
-    public Coord OldSize { get; }
-    public Coord NewSize { get; }
+    public Vector OldSize { get; }
+    public Vector NewSize { get; }
 }
 
 public class ZIndexChangedEventArgs : EventArgs

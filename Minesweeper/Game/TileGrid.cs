@@ -51,7 +51,7 @@ public class TileGrid : Control
         _revealed = false;
     }
 
-    private void GenerateBombs(Coord clickPos)
+    private void GenerateBombs(Vector clickPos)
     {
         // Tiles near the clicked one are guaranteed not to have bombs
         var nearTiles = new List<Tile>();
@@ -174,7 +174,7 @@ public class TileGrid : Control
         }
     }
 
-    private void LeftClick(Coord pos)
+    private void LeftClick(Vector pos)
     {
         if (!_revealed)
         {
@@ -197,7 +197,7 @@ public class TileGrid : Control
         RevealNearbyTiles(tile);
     }
 
-    private void RightClick(Coord pos)
+    private void RightClick(Vector pos)
     {
         var tile = _tiles[pos.X, pos.Y];
         

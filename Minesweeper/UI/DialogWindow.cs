@@ -9,8 +9,8 @@ public class DialogWindow : Control
     {
         ZIndex = 10;
         
-        Position = new Coord(4, 5);
-        Size = new Coord(16, 5);
+        Position = new Vector(4, 5);
+        Size = new Vector(16, 5);
         
         DefaultColor = Color.Red;
     }

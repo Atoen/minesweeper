@@ -73,8 +73,6 @@ public class Entry : ContentControl
 
     private void EnterText(KeyboardEventArgs e)
     {
-        if (e.IsReleased) return;
-
         if (e.Key == ConsoleKey.Enter)
         {
             ExitEntryMode();

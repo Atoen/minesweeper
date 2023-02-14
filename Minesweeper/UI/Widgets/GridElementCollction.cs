@@ -23,8 +23,10 @@ public sealed class GridElementCollection<T> : ObservableList<T> where T : class
     public void SetEvenSizes(int totalSize)
     {
         var sizeToDivide = totalSize - TotalPadding;
-        var size = sizeToDivide / Count;
-        var remainder = sizeToDivide % Count;
+        // var size = sizeToDivide / Count;
+        // var remainder = sizeToDivide % Count;
+
+        var (size, remainder) = int.DivRem(sizeToDivide, Count);
 
         for (var i = 0; i < Count; i++)
         {
