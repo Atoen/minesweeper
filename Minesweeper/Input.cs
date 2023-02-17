@@ -166,6 +166,11 @@ public static class Input
             {
                 control.SendMouseEvent(MouseEventType.MouseRightDown, args);
             }
+
+            if (args.MiddleButton == MouseButtonState.Pressed)
+            {
+                control.SendMouseEvent(MouseEventType.MouseMiddleDown, args);
+            }
         }
         
         if (!control.IsMouseOver) control.SendMouseEvent(MouseEventType.MouseEnter, args);
@@ -285,8 +290,8 @@ internal enum MouseEventFlags : byte
 
 internal enum MouseWheelState : ulong
 {
-    Down = 0xff880000,
-    AnsiDown = 0xff800000,
-    Up = 0x780000,
-    AnsiUp = 0x800000
+    Up = 0xff880000,
+    AnsiUp = 0xff800000,
+    Down = 0x780000,
+    AnsiDown = 0x800000
 }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace Minesweeper.UI;
+namespace Minesweeper.Visual;
 
 public static class GridLines
 {
@@ -55,28 +55,22 @@ public static class GridLines
                     {GridLineFragment.HorizontalUp, '·'},
                     {GridLineFragment.VerticalRight, '·'},
                     {GridLineFragment.VerticalLeft, '·'},
-                    {GridLineFragment.Cross, '·'},
+                    {GridLineFragment.Cross, '+'},
+                }
+            },
+
+            {
+                GridLineStyle.Ascii, new Dictionary<GridLineFragment, char>
+                {
+                    {GridLineFragment.Vertical, '|'},
+                    {GridLineFragment.Horizontal, '-'},
+                    {GridLineFragment.HorizontalDown, '·'},
+                    {GridLineFragment.HorizontalUp, '·'},
+                    {GridLineFragment.VerticalRight, '·'},
+                    {GridLineFragment.VerticalLeft, '·'},
+                    {GridLineFragment.Cross, '+'},
                 }
             }
         });
 
-}
-
-public enum GridLineStyle
-{
-    Single,
-    Double,
-    SingleBold,
-    Dashed
-}
-
-public enum GridLineFragment
-{
-    Vertical,
-    VerticalLeft,
-    VerticalRight,
-    Horizontal,
-    HorizontalUp,
-    HorizontalDown,
-    Cross
 }

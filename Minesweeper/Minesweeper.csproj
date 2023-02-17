@@ -12,9 +12,32 @@
 
     <ItemGroup>
       <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.1.0" />
-      <PackageReference Include="Serilog" Version="2.12.0" />
-      <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
-      <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+      <PackageReference Include="FIGlet.Net" Version="1.1.2" />
+      <PackageReference Include="Fody" Version="6.6.4">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="MethodBoundaryAspect.Fody" Version="2.0.148" />
+      <PackageReference Include="MethodDecorator.Fody" Version="1.1.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Visual\Figlet\default.flf" />
+      <EmbeddedResource Include="Visual\FigletText\default.flf">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="Visual\FigletText\4max.flf" />
+      <EmbeddedResource Include="Visual\FigletText\4max.flf" />
+      <None Remove="Visual\FigletText\amc3.flf" />
+      <EmbeddedResource Include="Visual\FigletText\amc3.flf" />
+      <None Remove="Visual\FigletText\ansi shadow.flf" />
+      <EmbeddedResource Include="Visual\FigletText\ansi shadow.flf" />
+      <None Remove="Visual\FigletText\ansi regular.flf" />
+      <EmbeddedResource Include="Visual\FigletText\ansi regular.flf" />
+      <None Remove="Visual\FigletText\bigfig.flf" />
+      <EmbeddedResource Include="Visual\FigletText\bigfig.flf" />
+      <None Remove="Visual\FigletText\calvin s.flf" />
+      <EmbeddedResource Include="Visual\FigletText\calvin s.flf" />
     </ItemGroup>
 
 </Project>

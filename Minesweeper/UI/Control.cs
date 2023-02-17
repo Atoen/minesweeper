@@ -1,5 +1,6 @@
 ﻿using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI.Events;
+using Minesweeper.Visual;
 
 namespace Minesweeper.UI;
 
@@ -86,6 +87,10 @@ public abstract class Control : VisualComponent
                 OnMouseRightUp();
                 break;
             
+            case MouseEventType.MouseMiddleDown:
+                OnMouseMiddleDown(e);
+                break;
+            
             case MouseEventType.MouseScroll:
                 OnMouseScroll((MouseScrollEventArgs) e);
                 break;
@@ -161,6 +166,11 @@ public abstract class Control : VisualComponent
 
     protected virtual void OnMouseRightUp() { }
 
+    protected virtual void OnMouseMiddleDown(MouseEventArgs e)
+    {
+        MouseDown?.Invoke(this, e);
+    }
+
     protected virtual void OnMouseScroll(MouseScrollEventArgs e)
     {
         MouseScroll?.Invoke(this, e);
@@ -203,6 +213,7 @@ public enum MouseEventType
     MouseLeftUp,
     MouseRightDown,
     MouseRightUp,
+    MouseMiddleDown,
     MouseScroll,
     DoubleClick
 }

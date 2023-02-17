@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
+using Minesweeper.Visual;
 using static Minesweeper.NativeConsole;
 
 namespace Minesweeper.ConsoleDisplay;

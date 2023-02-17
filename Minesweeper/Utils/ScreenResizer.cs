@@ -5,7 +5,7 @@ namespace Minesweeper.Utils;
 
 internal static class ScreenResizer
 {
-    public static int ResizeRetryAttempts { get; private set; } = 1;
+    public static int ResizeRetryAttempts { get; set; } = 1;
     public static int ResizeFails { get; private set; }
 
     public static Vector MinBufferSize { get; } = new(30, 20);

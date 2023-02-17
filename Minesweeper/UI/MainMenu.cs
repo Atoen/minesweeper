@@ -2,6 +2,8 @@
 using Minesweeper.Game;
 using Minesweeper.UI.Events;
 using Minesweeper.UI.Widgets;
+using Minesweeper.Visual;
+using Minesweeper.Visual.FigletText;
 
 namespace Minesweeper.UI;
 
@@ -101,7 +103,7 @@ public static class MainMenu
         var titleLabel = new Label
         {
             Color = Color.Orange,
-            Text = new Text("MINESWEEPER"),
+            Text = new BigText("minesweeper", FigletFont.CalvinS),
             
             BorderColor = Color.Black,
             BorderStyle = BorderStyle.Rounded,
@@ -113,21 +115,29 @@ public static class MainMenu
 
         grid.SetColumnAndRow(titleLabel, 1, 0);
 
-        titleLabel.MouseMove += delegate(Control sender, MouseEventArgs args)
-        {
-            if (args.LeftButton == MouseButtonState.Pressed) sender.Center = args.CursorPosition;
-        };
-        
         titleLabel.MouseScroll += delegate(Control sender, MouseScrollEventArgs args)
         {
             if (args.ScrollDirection == ScrollDirection.Down && sender.Width > sender.MinSize.X) sender.Width--;
             else if (args.ScrollDirection == ScrollDirection.Up) sender.Width++;
         };
+        
+        titleLabel.MouseDown += delegate(Control sender, MouseEventArgs args)
+        {
+            if (sender is not Label {Text: BigText bigText}) return;
+
+            bigText.CharacterWidth = args switch
+            {
+                { LeftButton: MouseButtonState.Pressed } => CharacterWidth.Full,
+                { MiddleButton: MouseButtonState.Pressed } => CharacterWidth.Fitted,
+                { RightButton: MouseButtonState.Pressed } => CharacterWidth.Smush,
+                _ => throw new ArgumentOutOfRangeException(nameof(args), args, null)
+            };
+        };
 
         var variable = new Variable();
         var playButton = new Button
         {
-            Text = new Text("PLAY"),
+            Text = new BigText("PLAY", FigletFont.FourMax),
             Color = Color.Aquamarine,
             
             ResizeMode = ResizeMode.Expand,

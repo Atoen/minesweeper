@@ -1,6 +1,11 @@
-﻿using Minesweeper;
+﻿using System.Text;
+using Minesweeper;
 using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI;
+using Minesweeper.Visual;
+using Minesweeper.Visual.FigletText;
+using WenceyWang.FIGlet;
+using CharacterWidth = WenceyWang.FIGlet.CharacterWidth;
 
 Console.CancelKeyPress += delegate
 {
@@ -29,9 +34,11 @@ var displayMode = DisplayMode.Auto;
 
 void ParseArgs(string arg)
 {
-    if (arg[0] is not ('/' or '-')) return;
+    var argSpan = arg.ToLower().AsSpan();
     
-    var mode = arg[1..].ToLower();
+    if (argSpan[0] is not ('/' or '-')) return;
+    
+    var mode = argSpan[1..];
 
     switch (mode)
     {
@@ -57,7 +64,7 @@ void ParseArgs(string arg)
 
 if (args.Length > 0) ParseArgs(args[0]);
 
-Display.Init(displayMode = DisplayMode.Native);
+Display.Init(displayMode);
 
 Input.Init();
 

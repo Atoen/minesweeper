@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace Minesweeper.UI;
+namespace Minesweeper.Visual;
 
 public static class Border
 {
@@ -77,26 +77,18 @@ public static class Border
                     {BorderFragment.LowerLeft, '·'},
                     {BorderFragment.LowerRight, '·'}
                 }
+            },
+
+            {
+                BorderStyle.Ascii, new Dictionary<BorderFragment, char>
+                {
+                    {BorderFragment.Vertical, '|'},
+                    {BorderFragment.Horizontal, '-'},
+                    {BorderFragment.UpperLeft, '·'},
+                    {BorderFragment.UpperRight, '·'},
+                    {BorderFragment.LowerLeft, '·'},
+                    {BorderFragment.LowerRight, '·'}
+                }
             }
         });
-}
-
-public enum BorderStyle
-{
-    Single,
-    SingleBold,
-    Double,
-    Rounded,
-    Dashed,
-    Dotted
-}
-
-public enum BorderFragment
-{
-    Vertical,
-    Horizontal,
-    UpperLeft,
-    UpperRight,
-    LowerLeft,
-    LowerRight
 }

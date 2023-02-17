@@ -196,7 +196,7 @@ public class TileGrid : Control
         
         RevealNearbyTiles(tile);
     }
-
+    
     private void RightClick(Vector pos)
     {
         var tile = _tiles[pos.X, pos.Y];

@@ -1,5 +1,6 @@
 ﻿using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
+using Minesweeper.Visual;
 
 namespace Minesweeper.ConsoleDisplay;
 

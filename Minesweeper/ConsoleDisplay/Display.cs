@@ -4,6 +4,7 @@ using Minesweeper.Game;
 using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
 using Minesweeper.Utils;
+using Minesweeper.Visual;
 
 namespace Minesweeper.ConsoleDisplay;
 
@@ -44,7 +45,6 @@ public static class Display
         }
         else _renderer = new AnsiDisplay(Width, Height);
         
-
         new Thread(Start)
         {
             Name = "Display Thread"
@@ -53,8 +53,6 @@ public static class Display
     
     private static void WindowResize(object? sender, NativeConsole.SCoord size)
     {
-        if (size.Y > Console.LargestWindowHeight || size.X > Console.LargestWindowWidth) return;
-        
         Console.CursorVisible = false;
         _renderer.Clear();
     }

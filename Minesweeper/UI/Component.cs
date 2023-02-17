@@ -1,4 +1,6 @@
-﻿namespace Minesweeper.UI;
+﻿using Minesweeper.Attributes;
+
+namespace Minesweeper.UI;
 
 public abstract class Component
 {
@@ -71,9 +73,12 @@ public abstract class Component
     }
 
     private Vector _size;
+
     public Vector Size
     {
         get => _size;
+        
+        [MinSize(100, 100)]
         set
         {
             var sizeBefore = _size;

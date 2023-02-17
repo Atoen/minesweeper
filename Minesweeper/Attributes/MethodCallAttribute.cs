@@ -1,4 +1,4 @@
-﻿namespace Minesweeper.Utils;
+﻿namespace Minesweeper.Attributes;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class MethodCallAttribute : Attribute

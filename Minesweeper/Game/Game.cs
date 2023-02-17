@@ -12,7 +12,7 @@ public static class Game
 
     private static Text _smileText = null!;
     private static Text _flagsText = null!;
-
+    
     public static void Start(GamePreset preset)
     {
         _preset = preset;
