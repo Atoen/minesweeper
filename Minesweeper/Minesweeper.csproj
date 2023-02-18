@@ -12,7 +12,6 @@
 
     <ItemGroup>
       <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.1.0" />
-      <PackageReference Include="FIGlet.Net" Version="1.1.2" />
       <PackageReference Include="Fody" Version="6.6.4">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -23,21 +22,22 @@
 
     <ItemGroup>
       <None Remove="Visual\Figlet\default.flf" />
-      <EmbeddedResource Include="Visual\FigletText\default.flf">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </EmbeddedResource>
+      <EmbeddedResource Include="Visual\Figlet\default.flf" />
       <None Remove="Visual\FigletText\4max.flf" />
-      <EmbeddedResource Include="Visual\FigletText\4max.flf" />
+      <EmbeddedResource Include="Visual\Figlet\4max.flf" />
       <None Remove="Visual\FigletText\amc3.flf" />
-      <EmbeddedResource Include="Visual\FigletText\amc3.flf" />
+      <EmbeddedResource Include="Visual\Figlet\amc3.flf" />
       <None Remove="Visual\FigletText\ansi shadow.flf" />
-      <EmbeddedResource Include="Visual\FigletText\ansi shadow.flf" />
+      <EmbeddedResource Include="Visual\Figlet\ansi shadow.flf" />
       <None Remove="Visual\FigletText\ansi regular.flf" />
-      <EmbeddedResource Include="Visual\FigletText\ansi regular.flf" />
+      <EmbeddedResource Include="Visual\Figlet\ansi regular.flf" />
       <None Remove="Visual\FigletText\bigfig.flf" />
-      <EmbeddedResource Include="Visual\FigletText\bigfig.flf" />
+      <EmbeddedResource Include="Visual\Figlet\bigfig.flf" />
       <None Remove="Visual\FigletText\calvin s.flf" />
-      <EmbeddedResource Include="Visual\FigletText\calvin s.flf" />
+      <EmbeddedResource Include="Visual\Figlet\calvin s.flf" />
+      <None Remove="Visual\FigletText\broadway.flf" />
+      <None Remove="Visual\FigletText\cyber.flf" />
+      <EmbeddedResource Include="Visual\Figlet\cyber.flf" />
     </ItemGroup>
 
 </Project>

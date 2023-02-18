@@ -3,7 +3,7 @@ using Minesweeper.Game;
 using Minesweeper.UI.Events;
 using Minesweeper.UI.Widgets;
 using Minesweeper.Visual;
-using Minesweeper.Visual.FigletText;
+using Minesweeper.Visual.Figlet;
 
 namespace Minesweeper.UI;
 
@@ -103,7 +103,7 @@ public static class MainMenu
         var titleLabel = new Label
         {
             Color = Color.Orange,
-            Text = new BigText("minesweeper", FigletFont.CalvinS),
+            Text = new BigText("MINESWEEPER", Font.Cyber),
             
             BorderColor = Color.Black,
             BorderStyle = BorderStyle.Rounded,
@@ -137,12 +137,12 @@ public static class MainMenu
         var variable = new Variable();
         var playButton = new Button
         {
-            Text = new BigText("PLAY", FigletFont.FourMax),
+            Text = new BigText("play", Font.CalvinS),
             Color = Color.Aquamarine,
             
             ResizeMode = ResizeMode.Expand,
             OuterPadding = (1, 0),
-            
+
             OnClick = () =>
             {
                 grid.Remove();

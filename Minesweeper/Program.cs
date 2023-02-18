@@ -1,11 +1,7 @@
-﻿using System.Text;
-using Minesweeper;
+﻿using Minesweeper;
 using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI;
-using Minesweeper.Visual;
-using Minesweeper.Visual.FigletText;
-using WenceyWang.FIGlet;
-using CharacterWidth = WenceyWang.FIGlet.CharacterWidth;
+using Minesweeper.Visual.Figlet;
 
 Console.CancelKeyPress += delegate
 {

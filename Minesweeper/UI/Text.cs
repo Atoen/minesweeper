@@ -12,6 +12,13 @@ public class Text : VisualComponent
 
     public Text(string text, Color foreground)
     {
+        ArgumentNullException.ThrowIfNull(text);
+        
+        if (text.Contains(Environment.NewLine))
+        {
+            throw new ArgumentException("Text cannot contain newline character");
+        }
+        
         TextInternal = text;
         Size = new Vector(Length, 1);
 
