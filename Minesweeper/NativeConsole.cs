@@ -3,7 +3,7 @@ using Microsoft.Win32.SafeHandles;
 
 namespace Minesweeper;
 
-internal static partial class NativeConsole
+public static partial class NativeConsole
 {
     [LibraryImport("kernel32.dll")]
     public static partial nint GetStdHandle(uint nStdHandle);
@@ -31,11 +31,11 @@ internal static partial class NativeConsole
         SCoord dwBufferSize,
         SCoord dwBufferSCoord,
         ref DisplayRect lpWriteRegion);
-    
+
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "ReadConsoleInput")]
     public static extern bool ReadConsoleInput(nint consoleInput, [Out] InputRecord[] buffer, uint length,
         ref uint numberOfEventsRead);
-    
+
     [StructLayout(LayoutKind.Explicit)]
     public struct CharInfo
     {
@@ -44,7 +44,7 @@ internal static partial class NativeConsole
         [FieldOffset(0)] public char Symbol;
         [FieldOffset(2)] public short Color;
     }
-    
+
     [StructLayout(LayoutKind.Sequential)]
     public struct DisplayRect
     {
@@ -79,7 +79,7 @@ internal static partial class NativeConsole
         [FieldOffset(4)] public uint ButtonState;
         [FieldOffset(12)] public uint EventFlags;
     }
-    
+
     public struct WindowState
     {
         public SCoord Size;
@@ -103,7 +103,7 @@ internal static partial class NativeConsole
     public const ushort KeyEventCode = 0x1,
         MouseEventCode = 0x2,
         WindowBufferSizeEvent = 0x4;
-    
+
     public const uint EnableMouseInput = 0x0010,
         EnableQuickEditMode = 0x0040,
         EnableWindowInput = 0x0008;

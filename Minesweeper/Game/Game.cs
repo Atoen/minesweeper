@@ -12,7 +12,7 @@ public static class Game
 
     private static Text _smileText = null!;
     private static Text _flagsText = null!;
-    
+
     public static void Start(GamePreset preset)
     {
         _preset = preset;
@@ -107,7 +107,7 @@ public static class Game
 
         _flagsText.Background = _remainingFlags < 0 ? Color.Tomato : Color.Transparent;
     }
-    
+
     private static void OnClearedField(object? sender, EventArgs e)
     {
         _smileText.String = ":D";

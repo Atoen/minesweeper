@@ -18,7 +18,7 @@ public class RadioButton : Button
     public bool IsSelected => _variable.Val == _value;
 
     public TextMode SelectedTextMode { get; set; } = TextMode.DoubleUnderline;
-    
+
     private readonly Variable _variable;
     private readonly int _value;
 
@@ -53,7 +53,7 @@ public sealed class Variable
             _val = value;
         }
     }
-    
+
     private int _val;
 
     public delegate void ValueChangedEventHandler(Variable variable, int newValue);

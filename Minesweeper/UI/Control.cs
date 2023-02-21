@@ -9,19 +9,19 @@ public abstract class Control : VisualComponent
     protected Control() => Input.Register(this);
 
     public bool IsMouseOver { get; private set; }
-    
+
     public bool Focused { get; private set; }
     public bool Focusable { get; set; } = true;
     public bool ShowFocusedBorder { get; set; } = true;
     public BorderStyle FocusBorderStyle { get; set; } = BorderStyle.Dotted;
     public Color FocusBorderColor { get; set; } = Color.Black;
-    
+
     public int TabIndex { get; set; }
 
     public override void Render()
     {
         base.Render();
-        
+
         // Focus border should not override normal border
         if (Focused && ShowFocusedBorder && !ShowBorder)
         {
@@ -36,17 +36,16 @@ public abstract class Control : VisualComponent
     }
 
     public delegate void MouseEventHandler(Control sender, MouseEventArgs e);
-    public delegate void MouseScrollEventHandler(Control sender, MouseScrollEventArgs e);
     public delegate void KeyboardEventHandler(Control sender, KeyboardEventArgs e);
     public delegate void FocusEventHandler(Control sender, InputEventArgs e);
-    
+
     public event MouseEventHandler? MouseEnter;
     public event MouseEventHandler? MouseLeave;
     public event MouseEventHandler? MouseDown;
     public event MouseEventHandler? MouseLeftDown;
     public event MouseEventHandler? MouseRightDown;
     public event MouseEventHandler? MouseMove;
-    public event MouseScrollEventHandler? MouseScroll;
+    public event MouseEventHandler? MouseScroll;
     public event MouseEventHandler? DoubleClick;
 
     public event KeyboardEventHandler? KeyDown;
@@ -62,15 +61,15 @@ public abstract class Control : VisualComponent
             case MouseEventType.MouseMove:
                 OnMouseMove(e);
                 break;
-            
+
             case MouseEventType.MouseEnter:
                 OnMouseEnter(e);
                 break;
-            
+
             case MouseEventType.MouseExit:
                 OnMouseExit(e);
                 break;
-            
+
             case MouseEventType.MouseLeftDown:
                 OnMouseLeftDown(e);
                 break;
@@ -78,23 +77,23 @@ public abstract class Control : VisualComponent
             case MouseEventType.MouseLeftUp:
                 OnMouseLeftUp();
                 break;
-            
+
             case MouseEventType.MouseRightDown:
                 OnMouseRightDown(e);
                 break;
-            
+
             case MouseEventType.MouseRightUp:
                 OnMouseRightUp();
                 break;
-            
+
             case MouseEventType.MouseMiddleDown:
                 OnMouseMiddleDown(e);
                 break;
-            
+
             case MouseEventType.MouseScroll:
-                OnMouseScroll((MouseScrollEventArgs) e);
+                OnMouseScroll(e);
                 break;
-            
+
             case MouseEventType.DoubleClick:
                 OnDoubleClick(e);
                 break;
@@ -116,20 +115,20 @@ public abstract class Control : VisualComponent
             OnKeyDown(e);
             return;
         }
-        
+
         OnKeyUp(e);
     }
 
     public void SendFocusEvent(FocusEventType focusEventType, InputEventArgs e)
     {
         if (e.OriginalSource != this) return;
-        
+
         if (focusEventType == FocusEventType.GotFocus)
         {
             OnGotFocus(e);
             return;
         }
-        
+
         OnLostFocus(e);
     }
 
@@ -171,7 +170,7 @@ public abstract class Control : VisualComponent
         MouseDown?.Invoke(this, e);
     }
 
-    protected virtual void OnMouseScroll(MouseScrollEventArgs e)
+    protected virtual void OnMouseScroll(MouseEventArgs e)
     {
         MouseScroll?.Invoke(this, e);
     }

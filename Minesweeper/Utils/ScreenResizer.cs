@@ -11,7 +11,7 @@ internal static class ScreenResizer
     public static Vector MinBufferSize { get; } = new(30, 20);
     public static Vector BufferSize { get; private set; }
     public static int BufferSizeStep { get; set; } = 5;
-    
+
     public static Vector ScreenSize { get; private set; }
     public static int ScreenWidth => ScreenSize.X;
     public static int ScreenHeight => ScreenSize.Y;
@@ -28,17 +28,15 @@ internal static class ScreenResizer
             Console.SetBufferSize(windowWidth, windowHeight);
         }
     }
-    
+
     public static bool Resize(bool modifyConsoleBufferSize = true)
     {
 #pragma warning disable CA1416
         if (modifyConsoleBufferSize) ChangeConsoleBufferSize();
-        else ScreenSize = new Vector(Console.WindowWidth, Console.WindowHeight);
 #pragma warning restore CA1416
+        else ScreenSize = new Vector(Console.WindowWidth, Console.WindowHeight);
 
         var bufferChanged = ChangeDisplayBufferSize();
-
-        Console.Title = $"Screen: {ScreenSize}, Buffer: {BufferSize}";
 
         return bufferChanged;
     }

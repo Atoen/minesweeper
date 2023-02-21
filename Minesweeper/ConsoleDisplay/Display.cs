@@ -36,7 +36,10 @@ public static class Display
 
         Mode = mode;
 
-        if (Mode == DisplayMode.Auto) GetDisplayMode();
+        if (Mode == DisplayMode.Auto)
+        {
+            GetDisplayMode();
+        }
 
         if (Mode == DisplayMode.Native)
         {
@@ -44,13 +47,13 @@ public static class Display
             _renderer = new NativeDisplay(Width, Height);
         }
         else _renderer = new AnsiDisplay(Width, Height);
-        
+
         new Thread(Start)
         {
             Name = "Display Thread"
         }.Start();
     }
-    
+
     private static void WindowResize(object? sender, NativeConsole.SCoord size)
     {
         Console.CursorVisible = false;
@@ -62,7 +65,7 @@ public static class Display
     public static void AddToRenderList(IRenderable renderable)
     {
         renderable.ZIndexChanged += RenderableOnZIndexChanged;
-        
+
         LockSlim.EnterWriteLock();
         Renderables.Add(renderable);
         LockSlim.ExitWriteLock();
@@ -71,7 +74,7 @@ public static class Display
     public static void RemoveFromRenderList(IRenderable renderable)
     {
         renderable.ZIndexChanged -= RenderableOnZIndexChanged;
-        
+
         LockSlim.EnterWriteLock();
         Renderables.Remove(renderable);
         RemovedRenderables.Add(renderable);
@@ -101,28 +104,28 @@ public static class Display
     public static void DrawRect(Vector pos, Vector size, Color color, char symbol = ' ')
     {
         if (!CalculateDrawArea(pos, size, out var start, out var end)) return;
-        
+
         _renderer.DrawRect(start, end, color, symbol);
     }
 
     public static void DrawLine(Vector pos, Vector direction, int length, Color foreground, Color background, char symbol)
     {
         if (!CalculateLineLength(pos, direction, length, out var start, out var calculatedLenght)) return;
-        
+
         _renderer.DrawLine(start, direction, calculatedLenght, foreground, background, symbol);
     }
 
     public static void ClearRect(Vector pos, Vector size)
     {
         if (!CalculateDrawArea(pos, size, out var start, out var end)) return;
-        
+
         _renderer.ClearRect(start, end);
     }
 
     public static void DrawBorder(Vector pos, Vector size, Color color, BorderStyle style)
     {
         if (!CalculateDrawArea(pos, size, out var start, out var end)) return;
-        
+
         _renderer.DrawBorder(start, end, color, style);
     }
 
@@ -131,11 +134,23 @@ public static class Display
         var size = new Vector {X = buffer.GetLength(0), Y = buffer.GetLength(1)};
 
         if (!CalculateDrawArea(pos, size, out var start, out var end)) return;
-        
+
         _renderer.DrawBuffer(start, end, buffer);
     }
 
     private static void Start()
+    {
+        try
+        {
+            MainLoop();
+        }
+        catch (Exception exception)
+        {
+            Application.Exit(exception);
+        }
+    }
+
+    private static void MainLoop()
     {
         const int tickLength = 1000 / 20;
         var stopwatch = new Stopwatch();
@@ -153,23 +168,23 @@ public static class Display
 
             stopwatch.Stop();
             var sleepTime = tickLength - (int) stopwatch.ElapsedMilliseconds;
- 
+
             stopwatch.Reset();
 
             if (sleepTime > 0) Thread.Sleep(sleepTime);
         }
     }
-    
+
     private static bool CalculateDrawArea(Vector position, Vector size, out Vector start, out Vector end)
     {
         start = new Vector();
         end = new Vector();
-        
+
         if (position.X >= Width || position.Y >= Height || size == Vector.Zero) return false;
-        
+
         start.X = Math.Max(position.X, 0);
         start.Y = Math.Max(position.Y, 0);
-        
+
         end.X = Math.Min(Math.Max(position.X + size.X, 0), Width);
         end.Y = Math.Min(Math.Max(position.Y + size.Y, 0), Height);
 
@@ -183,12 +198,12 @@ public static class Display
         calculatedLenght = 0;
 
         if (originalLength == 0 || direction == Vector.Zero) return false;
-        
+
         if (position.X < 0 && direction.X <= 0) return false;
         if (position.X >= Width && direction.X >= 0) return false;
         if (position.Y < 0 && direction.Y <= 0) return false;
         if (position.Y >= Height && direction.Y >= 0) return false;
-        
+
         start.X = Math.Max(Math.Min(position.X, Width - 1), 0);
         start.Y = Math.Max(Math.Min(position.Y, Height - 1), 0);
 
@@ -201,29 +216,29 @@ public static class Display
             {
                 var difference = position.X - start.X;
                 if (Math.Abs(difference) > originalLength) return false;
-                
+
                 start.Y += direction.Y * difference;
                 start.Y = Math.Max(Math.Min(start.Y, Height - 1), 0);
 
                 adjusted = true;
             }
-            
+
             if (start.Y != position.Y && !adjusted)
             {
                 var difference = position.Y - start.Y;
                 if (Math.Abs(difference) > originalLength) return false;
-                
+
                 start.X += direction.X * difference;
                 start.X = Math.Max(Math.Min(start.X, Width - 1), 0);
             }
         }
-        
+
         var end = new Vector
         {
             X = Math.Min(Math.Max(position.X + direction.X * originalLength, 0), Width - 1),
             Y = Math.Min(Math.Max(position.Y + direction.Y * originalLength, 0), Height - 1)
         };
-        
+
         var lengthX = Math.Abs(end.X - start.X);
         var lengthY = Math.Abs(end.Y - start.Y);
 
@@ -236,7 +251,7 @@ public static class Display
 
         return calculatedLenght > 0;
     }
-    
+
     private static void RenderableOnZIndexChanged(Component sender, ZIndexChangedEventArgs e) => SortRenderables();
 
     private static void SortRenderables()
@@ -249,7 +264,7 @@ public static class Display
     private static void Draw()
     {
         LockSlim.EnterWriteLock();
-        
+
         foreach (var removed in RemovedRenderables) removed.Clear();
 
         RemovedRenderables.Clear();
@@ -260,7 +275,7 @@ public static class Display
         }
 
         LockSlim.ExitWriteLock();
-        
+
         _renderer.Draw();
     }
 

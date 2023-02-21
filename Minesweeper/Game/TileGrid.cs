@@ -36,7 +36,7 @@ public class TileGrid : Control
 
     private bool _revealed;
     private int _tilesLeftToReveal;
-    
+
     public int Bombs { get; private set; }
 
     public void GenerateNew()
@@ -62,16 +62,16 @@ public class TileGrid : Control
         {
             var tileX = clickPos.X + x;
             var tileY = clickPos.Y + y;
-            
+
             if (tileX < 0 || tileX >= Width || tileY < 0 || tileY >= Height) continue;
-            
+
             nearTiles.Add(_tiles[tileX, tileY]);
         }
-        
+
         var bombSpots = Width * Height - nearTiles.Count;
 
         if (Bombs > bombSpots) Bombs = bombSpots;
-        
+
         var flatList = new Tile[bombSpots];
         var indexList = Enumerable.Range(0, bombSpots).ToList();
 
@@ -81,7 +81,7 @@ public class TileGrid : Control
         for (var y = 0; y < Height; y++)
         {
             if (nearTiles.Contains(_tiles[x, y])) continue;
-            
+
             flatList[i] = _tiles[x, y];
             i++;
         }
@@ -92,7 +92,7 @@ public class TileGrid : Control
             var j = Random.Shared.Next(0, indexList.Count);
             var index = indexList[j];
             indexList.RemoveAt(j);
-        
+
             flatList[index].HasBomb = true;
         }
 
@@ -101,7 +101,7 @@ public class TileGrid : Control
             CheckSurrounding(tile);
         }
     }
-    
+
     private void CheckSurrounding(Tile tile)
     {
         if (tile.HasBomb)
@@ -111,17 +111,17 @@ public class TileGrid : Control
         }
 
         var bombCount = 0;
-        
+
         for (var x = -1; x < 2; x++)
         for (var y = -1; y < 2; y++)
         {
             var tileX = tile.Pos.X + x;
             var tileY = tile.Pos.Y + y;
-            
+
             if (tileX < 0 || tileX >= Width || tileY < 0 || tileY >= Height) continue;
-            
+
             if (x != 0 || y != 0) tile.Neighbours.Add(_tiles[tileX, tileY]);
-            
+
             if (_tiles[tileX, tileY].HasBomb) bombCount++;
         }
 
@@ -137,31 +137,31 @@ public class TileGrid : Control
             tile.Revealed = true;
         }
     }
-    
+
     private void RevealNearbyTiles(Tile tile)
     {
         var tilesRevealed = 0;
-        
+
         var tilesToReveal = new List<Tile> {tile};
 
         // Iterative way of searching for next tiles to reveal
         while (true)
         {
             var newTiles = new List<Tile>();
-            
+
             foreach (var tileToReveal in tilesToReveal)
             {
                 if (tileToReveal.Revealed || tileToReveal.Flagged) continue;
 
                 tileToReveal.Revealed = true;
                 tilesRevealed++;
-                
-                // If tile is empty then its neighbours are searched too 
+
+                // If tile is empty then its neighbours are searched too
                 if (tileToReveal.NeighbouringBombs == 0) newTiles.AddRange(tileToReveal.Neighbours);
             }
 
             if (newTiles.Count == 0) break;
-            
+
             tilesToReveal.Clear();
             tilesToReveal = newTiles;
         }
@@ -176,33 +176,32 @@ public class TileGrid : Control
 
     private void LeftClick(Vector pos)
     {
+        var tile = _tiles[pos.X, pos.Y];
+
+        if (tile.Revealed || tile.Flagged) return;
+
         if (!_revealed)
         {
             GenerateBombs(pos);
             _revealed = true;
         }
 
-        var tile = _tiles[pos.X, pos.Y];
-
-        if (tile.Revealed || tile.Flagged) return;
-
         if (tile.HasBomb)
         {
             BombClicked?.Invoke(this, EventArgs.Empty);
-            
+
             ShowAllBombs();
             return;
         }
-        
+
         RevealNearbyTiles(tile);
     }
-    
+
     private void RightClick(Vector pos)
     {
         var tile = _tiles[pos.X, pos.Y];
-        
-        if (tile.Revealed) return;
 
+        if (tile.Revealed) return;
 
         if (tile.Flagged)
         {
@@ -210,7 +209,7 @@ public class TileGrid : Control
             RemovedFlag?.Invoke(this, -1);
             return;
         }
-        
+
         tile.Flagged = true;
         PlacedFlag?.Invoke(this, 1);
     }
@@ -230,7 +229,7 @@ public class TileGrid : Control
     public override void Render()
     {
         var pos = GlobalPosition;
-        
+
         for (var x = 0; x < Width; x++)
         for (var y = 0; y < Height; y++)
         {

@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using System.Text;
-using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
 using Minesweeper.Utils;
 using Minesweeper.Visual;
@@ -10,13 +9,13 @@ namespace Minesweeper.ConsoleDisplay;
 public sealed class AnsiDisplay : IRenderer
 {
     private bool _modified = true;
-    
+
     private readonly StringBuilder _stringBuilder = new();
     private readonly StringBuilder _symbolsBuilder = new();
 
     private Pixel[,] _currentPixels;
     private Pixel[,] _lastPixels;
-    
+
     private readonly Func<Color, string> _foregroundCode = color => $"\x1b[38;2;{color.R};{color.G};{color.B}m";
     private readonly Func<Color, string> _backgroundCode = color => $"\x1b[48;2;{color.R};{color.G};{color.B}m";
     private readonly Func<Vector, string> _coordCode = coord => $"\x1b[{coord.Y + 1};{coord.X + 1}f";
@@ -36,7 +35,7 @@ public sealed class AnsiDisplay : IRenderer
         _backgroundColorCache = new Cache<Color, string>(_backgroundCode);
         _coordCache = new Cache<Vector, string>(_coordCode);
     }
-    
+
     public void Draw(int posX, int posY, char symbol, Color fg, Color bg)
     {
         if (posX < 0 || posX >= Display.Width || posY < 0 || posY >= Display.Height) return;
@@ -71,11 +70,11 @@ public sealed class AnsiDisplay : IRenderer
             distance++;
         }
     }
-    
+
     public void Print(int posX, int posY, string text, Color fg, Color bg, Alignment alignment, TextMode mode)
     {
         if (posY < 0 || posY >= Display.Height) return;
-        
+
         var startX = alignment switch
         {
             Alignment.Left => posX,
@@ -84,12 +83,12 @@ public sealed class AnsiDisplay : IRenderer
         };
 
         if (startX >= Display.Width) return;
-        
+
         var endX = startX + text.Length;
         if (endX >= Display.Width) endX = Display.Width - 1;
-        
+
         var firstLetterOffset = 0;
-        
+
         if (startX < 0)
         {
             firstLetterOffset = -startX;
@@ -129,7 +128,7 @@ public sealed class AnsiDisplay : IRenderer
         {
             _currentPixels[start.X, y].Symbol = Border.Symbols[style][BorderFragment.Vertical];
             _currentPixels[start.X, y].Fg = color;
-            
+
             _currentPixels[end.X - 1, y].Symbol = Border.Symbols[style][BorderFragment.Vertical];
             _currentPixels[end.X - 1, y].Fg = color;
         }
@@ -161,7 +160,7 @@ public sealed class AnsiDisplay : IRenderer
     public void ClearAt(int posX, int posY)
     {
         if (posX < 0 || posX >= Display.Width || posY < 0 || posY >= Display.Height) return;
-        
+
         _currentPixels[posX, posY] = Pixel.Cleared;
     }
 
@@ -181,7 +180,7 @@ public sealed class AnsiDisplay : IRenderer
 
         Console.Write(GenerateDisplayString());
         _stringBuilder.Clear();
-        
+
         _modified = false;
     }
 
@@ -208,7 +207,7 @@ public sealed class AnsiDisplay : IRenderer
 
             _modified = true;
             Array.Copy(_currentPixels, _lastPixels, Display.Width * Display.Height);
-            
+
             return;
         }
     }
@@ -230,7 +229,7 @@ public sealed class AnsiDisplay : IRenderer
         if (mode == TextMode.Default)
         {
             builder.Append(_ansiTextModes[TextMode.Default]);
-            
+
             return;
         }
 
@@ -242,7 +241,7 @@ public sealed class AnsiDisplay : IRenderer
             }
         }
     }
-    
+
     private string GenerateDisplayString()
     {
         var lastFg = Color.Transparent;
@@ -260,7 +259,7 @@ public sealed class AnsiDisplay : IRenderer
             _stringBuilder.Append("\x1b[2J");
             _shouldClear = false;
         }
-        
+
         _stringBuilder.Append("\x1b[1;1f");
 
         for (var y = 0; y < Display.Height; y++)
@@ -278,7 +277,7 @@ public sealed class AnsiDisplay : IRenderer
                     {
                         _stringBuilder.Append(_coordCache.GetOrAdd(streakStartPos));
                     }
-                    
+
                     AppendTextMode(lastMode, _stringBuilder);
 
                     // Resetting the colors to clear the pixels
@@ -293,15 +292,15 @@ public sealed class AnsiDisplay : IRenderer
                         _stringBuilder.Append(_foregroundColorCache.GetOrAdd(lastFg));
                         _stringBuilder.Append(_backgroundColorCache.GetOrAdd(lastBg));
                     }
-                    
+
                     // Starting new streak of pixels
                     oldStreakLen = _symbolsBuilder.Length;
                     oldStreakPos = streakStartPos;
-                    
+
                     _stringBuilder.Append(_symbolsBuilder);
                     _symbolsBuilder.Clear();
                 }
-                
+
                 lastMode = pixel.Mode;
                 lastFg = pixel.Fg;
                 lastBg = pixel.Bg;
@@ -327,11 +326,11 @@ public sealed class AnsiDisplay : IRenderer
         if (_symbolsBuilder.Length > 0)
         {
             var lastPixel = _currentPixels[Display.Width - 1, Display.Height - 1];
-            
+
             _stringBuilder.Append(_coordCache.GetOrAdd(streakStartPos));
 
             AppendTextMode(lastMode, _stringBuilder);
-            
+
             _stringBuilder.Append(_foregroundColorCache.GetOrAdd(lastPixel.Fg));
             _stringBuilder.Append(_backgroundColorCache.GetOrAdd(lastPixel.Bg));
 

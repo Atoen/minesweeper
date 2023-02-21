@@ -29,7 +29,7 @@ public class Entry : ContentControl
     public int MaxTextLenght { get; set; }
 
     private bool _inEntryMode;
-    
+
     private bool CheckIfAllowed(char symbol)
     {
         return InputMode switch
@@ -87,7 +87,7 @@ public class Entry : ContentControl
                 Text.String = e.Char.ToString();
             }
             else Text.Append(e.Char);
-            
+
             return;
         }
 
@@ -96,7 +96,7 @@ public class Entry : ContentControl
             Text.RemoveLast();
         }
     }
-    
+
     protected override void OnKeyDown(KeyboardEventArgs e)
     {
         // Keypress of allowed character while the entry is focused should append said character

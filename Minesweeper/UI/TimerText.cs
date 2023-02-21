@@ -6,14 +6,14 @@ public class TimerText
 {
     public string Text { get; set; }
     public bool Enabled { get; set; }
-    
+
     public bool Animating { get; set; }
-    
+
     public Color Foreground { get; set; }
     public Color? Background { get; set; }
-    
+
     public TextMode Mode { get; set; }
-    
+
     private readonly Timer _timer;
 
     public TimerText(Color foreground, Color? background = null)
@@ -46,7 +46,7 @@ public class TimerText
         
         _timer.Elapsed += delegate { Enabled = false; };
     }
-    
+
     public void Cycle()
     {
         if (Enabled) Text = _timer.String;

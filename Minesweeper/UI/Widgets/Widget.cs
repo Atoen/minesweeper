@@ -38,7 +38,7 @@ public abstract class Widget : Control
     public override void Remove()
     {
         Display.RemoveFromRenderList(this);
-        
+
         base.Remove();
     }
 }

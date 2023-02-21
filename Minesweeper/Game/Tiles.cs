@@ -30,7 +30,7 @@ public sealed class Tile
     public bool Flagged;
     public bool HasBomb;
     public int NeighbouringBombs;
-    
+
     public readonly List<Tile> Neighbours = new(8);
 
     public Vector Pos;

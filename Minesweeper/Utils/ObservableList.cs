@@ -3,7 +3,7 @@
 public class ObservableList<T> : List<T>
 {
     public event EventHandler<CollectionChangedEventArgs<T>>? ElementChanged;
-    public event EventHandler? CollectionChanged; 
+    public event EventHandler? CollectionChanged;
 
     public new void Add(T item)
     {

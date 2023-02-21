@@ -10,8 +10,8 @@ public class MinSizeAttribute : ValidateInputAttribute<Vector>
         MinWidth = minWidth;
         MinHeight = minHeight;
     }
-    
-    public int MinWidth { get; } 
+
+    public int MinWidth { get; }
     public int MinHeight { get; }
 
     [DoesNotReturn]

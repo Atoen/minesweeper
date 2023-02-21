@@ -15,17 +15,18 @@ public class Font
     [LoadFont] public static Font CalvinS => default!;
     [LoadFont] public static Font Cyber => default!;
 
-    private const string FontFileSignature = "flf2a";
-    private const char Space = ' ';
     public required int Height { get; init;}
     public required int BaseLine { get; init;}
     public required int MaxLength { get; init;}
     public required ReadOnlyDictionary<char, string[]> Symbols { get; init; }
 
-    public string GetCharacterLine(char symbol, int lineIndex)
+    private const string FontFileSignature = "flf2a";
+    private const char Space = ' ';
+
+    public string GetCharacterLine(char @char, int lineIndex)
     {
-        return Symbols.TryGetValue(symbol, out var line)
-            ? line[lineIndex]
+        return Symbols.TryGetValue(@char, out var symbol)
+            ? symbol[lineIndex]
             : Symbols[Space][lineIndex];
     }
 
@@ -73,8 +74,8 @@ public class Font
         var baseLine = int.Parse(config[2]);
         var maxLength = int.Parse(config[3]);
         var commentLines = int.Parse(config[5]);
-        
-        // Skipping comment lines 
+
+        // Skipping comment lines
         for (var line = 0; line < commentLines; line++)
         {
             reader.ReadLine();
@@ -83,7 +84,7 @@ public class Font
         var dict = new Dictionary<char, string[]>();
 
         var currentChar = Space;
-        
+
         while (!reader.EndOfStream)
         {
             var line = reader.ReadLine() ?? string.Empty;
@@ -92,7 +93,7 @@ public class Font
             {
                 currentChar = (char)charIndex;
             }
-            
+
             dict.Add(currentChar, new string[height]);
 
             var lineIndex = 0;

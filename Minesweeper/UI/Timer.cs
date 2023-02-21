@@ -31,7 +31,7 @@ public class Timer
         _timeSpan = timeSpan;
         
         if (countDown)
-        { 
+        {
             SetTimeout(timeSpan);
         }
 
@@ -42,7 +42,7 @@ public class Timer
     {
         _startTime = DateTime.Now.Add(_countingDown ? _timeSpan : -_timeSpan);
     }
-    
+
     public string String => Seconds.ToString(_format);
 
     public event Action? Elapsed;

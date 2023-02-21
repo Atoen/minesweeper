@@ -18,7 +18,7 @@ public static class Border
                     {BorderFragment.LowerRight, '┘'}
                 }
             },
-            
+
             {
                 BorderStyle.SingleBold, new Dictionary<BorderFragment, char>
                 {
@@ -66,7 +66,7 @@ public static class Border
                     {BorderFragment.LowerRight, '┘'}
                 }
             },
-            
+
             {
                 BorderStyle.Dotted, new Dictionary<BorderFragment, char>
                 {

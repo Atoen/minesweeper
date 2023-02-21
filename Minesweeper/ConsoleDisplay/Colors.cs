@@ -66,7 +66,7 @@ public static class Colors
     {
         return (ConsoleColor) ConsoleColorIndex(color);
     }
-    
+
     public static ConsoleColor ConsoleColorBg(this Color color)
     {
         return (ConsoleColor) (ConsoleColorIndex(color) << 4);

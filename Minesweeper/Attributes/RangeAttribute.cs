@@ -11,8 +11,8 @@ public class RangeAttribute : ValidateInputAttribute<int>
         MinValue = minValue;
         MaxValue = maxValue;
     }
-    
-    public int MinValue { get; } 
+
+    public int MinValue { get; }
     public int MaxValue { get; }
 
     [DoesNotReturn]

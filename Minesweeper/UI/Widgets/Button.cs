@@ -20,7 +20,7 @@ public class Button : ContentControl
             _text.Parent = this;
         }
     }
-    
+
     public Action? OnClick { get; set; }
 
     public override void Resize()

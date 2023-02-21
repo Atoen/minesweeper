@@ -4,7 +4,7 @@ using Minesweeper.Visual.Figlet;
 
 namespace Minesweeper.UI;
 
-public class BigText : Text 
+public class BigText : Text
 {
     public BigText(string text, Font? font = null, CharacterWidth characterWidth = CharacterWidth.Fitted) : base(text,
         Color.Black)
@@ -18,7 +18,7 @@ public class BigText : Text
 
         GenerateNew();
     }
-    
+
     public string[] Result { get; private set; }
 
     public Font Font
@@ -71,8 +71,6 @@ public class BigText : Text
             _ => throw new ArgumentOutOfRangeException(nameof(CharacterWidth))
         };
 
-        ;
-        
         Size = new Vector(Result.Max(line => line.Length), Font.Height);
     }
 
@@ -107,7 +105,7 @@ public class BigText : Text
             {
                 var currentChar = TextInternal[charIndex];
                 var currentCharacterLine = Font.GetCharacterLine(currentChar, line);
-                
+
                 if (lastChar != ' ' && currentChar != ' ')
                 {
                     if (_builder[^1] == ' ')
@@ -124,7 +122,7 @@ public class BigText : Text
 
                 lastChar = currentChar;
             }
-            
+
             result[line] = _builder.ToString();
             _builder.Clear();
         }
@@ -143,7 +141,7 @@ public class BigText : Text
                 _builder.Append(Font.GetCharacterLine(symbol, line));
                 _builder.Append(' ');
             }
-            
+
             result[line] = _builder.ToString();
             _builder.Clear();
         }
@@ -161,7 +159,7 @@ public class BigText : Text
         for (var i = 0; i < Height; i++)
         {
             var offset = i - Height / 2;
-            
+
             Display.Print(position.X, position.Y + offset, Result[i], Foreground, background, Alignment, TextMode);
         }
     }

@@ -18,6 +18,7 @@
       </PackageReference>
       <PackageReference Include="MethodBoundaryAspect.Fody" Version="2.0.148" />
       <PackageReference Include="MethodDecorator.Fody" Version="1.1.1" />
+      <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.3" />
     </ItemGroup>
 
     <ItemGroup>

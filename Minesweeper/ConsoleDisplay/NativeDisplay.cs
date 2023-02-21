@@ -1,5 +1,4 @@
 ﻿using Microsoft.Win32.SafeHandles;
-using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
 using Minesweeper.Visual;
 using static Minesweeper.NativeConsole;
@@ -9,7 +8,7 @@ namespace Minesweeper.ConsoleDisplay;
 public sealed class NativeDisplay : IRenderer
 {
     private bool _modified;
-    
+
     private readonly SafeFileHandle _fileHandle;
     private readonly SCoord _startPos = new();
 
@@ -37,7 +36,7 @@ public sealed class NativeDisplay : IRenderer
         _currentBuffer = new CharInfo[width * height];
         _lastBuffer = new CharInfo[width * height];
     }
-    
+
     public void Draw(int posX, int posY, char symbol, Color fg, Color bg)
     {
         if (posX < 0 || posX >= _displaySize.X || posY < 0 || posY >= _displaySize.Y) return;
@@ -118,7 +117,7 @@ public sealed class NativeDisplay : IRenderer
             var color = Colors.CombineToShort(buffer[x, y].Fg, buffer[x, y].Bg);
             var bufferIndex = y * _displaySize.X + x;
             var pixel = buffer[x, y];
-            
+
             _currentBuffer[bufferIndex].Symbol = pixel.Symbol;
             _currentBuffer[bufferIndex].Color = color;
         }
@@ -169,15 +168,15 @@ public sealed class NativeDisplay : IRenderer
             for (var i = 0; i < _displaySize.X * _displaySize.Y; i++)
             {
                 if (current[i].Symbol == last[i].Symbol && current[i].Color == last[i].Color) continue;
-                
+
                 _modified = true;
                 Array.Copy(_currentBuffer, _lastBuffer, _displaySize.X * _displaySize.Y);
-                
+
                 return;
             }
         }
     }
-    
+
     public void Clear() => _modified = true;
 
     public void ResizeBuffer(Vector newBufferSize)

@@ -30,7 +30,7 @@ public static class GridLines
                     {GridLineFragment.VerticalRight, '┣'},
                     {GridLineFragment.VerticalLeft, '┫'},
                     {GridLineFragment.Cross, '╋'},
-                }  
+                }
             },
 
             {

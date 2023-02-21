@@ -53,7 +53,7 @@ public class EntryText : Text
     public void Append(char symbol) => TextInternal += symbol;
 
     public void RemoveLast(int n = 1) => TextInternal = TextInternal[..^n];
-    
+
     private IEnumerator Cycle()
     {
         var i = 0;

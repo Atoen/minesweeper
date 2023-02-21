@@ -1,16 +1,15 @@
 ﻿using Minesweeper;
 using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI;
-using Minesweeper.Visual.Figlet;
 
 Console.CancelKeyPress += delegate
 {
     using var process = Process.GetCurrentProcess();
-    
+
     process.Refresh();
     var peakPhysical = process.PeakWorkingSet64;
     var peakPaged = process.PeakPagedMemorySize64;
-    
+
     Input.Stop();
     Display.Stop();
 
@@ -22,7 +21,7 @@ Console.CancelKeyPress += delegate
     const double bytesPerMByte = 1_048_576D;
     Console.WriteLine(
         $"Memory usage - Physical: {peakPhysical / bytesPerMByte:.00}MB, Paged: {peakPaged / bytesPerMByte:.00}MB");
-    
+
     Environment.Exit(Environment.ExitCode);
 };
 
@@ -31,9 +30,9 @@ var displayMode = DisplayMode.Auto;
 void ParseArgs(string arg)
 {
     var argSpan = arg.ToLower().AsSpan();
-    
+
     if (argSpan[0] is not ('/' or '-')) return;
-    
+
     var mode = argSpan[1..];
 
     switch (mode)
@@ -41,18 +40,18 @@ void ParseArgs(string arg)
         case "0" or "native":
             displayMode = DisplayMode.Native;
             break;
-        
+
         case "1" or "ansi":
             displayMode = DisplayMode.Ansi;
             break;
-        
+
         case "auto":
             break;
-        
+
         default:
             Console.WriteLine($"Unknown display mode: {mode}");
             Console.WriteLine("Modes: native (0), ansi (1), auto");
-            
+
             Environment.Exit(1);
             return;
     }
@@ -60,8 +59,6 @@ void ParseArgs(string arg)
 
 if (args.Length > 0) ParseArgs(args[0]);
 
-Display.Init(displayMode);
-
-Input.Init();
+Application.Start(displayMode);
 
 MainMenu.Show();

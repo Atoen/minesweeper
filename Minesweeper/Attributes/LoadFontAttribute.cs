@@ -17,7 +17,7 @@ public class LoadFontAttribute : OnMethodBoundaryAspect
             arg.ReturnValue = font;
             return;
         }
-        
+
         var newFont = LoadFont(fontName);
         Fonts.Add(fontName, newFont);
 
@@ -27,7 +27,7 @@ public class LoadFontAttribute : OnMethodBoundaryAspect
     private static Font LoadFont(string fontName)
     {
         Debug.WriteLine($"Loading font {fontName}");
-        
+
         var enumValue = (BuiltInFonts)Enum.Parse(typeof(BuiltInFonts), fontName);
 
         return Font.LoadBuiltInFont(enumValue);

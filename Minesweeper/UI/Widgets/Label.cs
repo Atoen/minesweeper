@@ -33,7 +33,7 @@ public class Label : ContentControl
         _text.Clear();
         base.Clear();
     }
-    
+
     public override void Resize()
     {
         MinSize = InnerPadding * 2 + _text.Size;

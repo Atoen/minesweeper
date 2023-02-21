@@ -15,7 +15,7 @@ public abstract class ValidateInputAttribute<T> : OnMethodBoundaryAspect
     }
 
     public Predicate<T> Predicate { get; }
-    
+
     public override void OnEntry(MethodExecutionArgs arg)
     {
         if (arg.Arguments is not [T input]) return;

@@ -25,7 +25,7 @@ public abstract class ContentControl : Control, IContent
         base.Clear();
         Content?.Clear();
     }
-    
+
     public override void Resize()
     {
         if (_content == null) return;
@@ -37,7 +37,7 @@ public abstract class ContentControl : Control, IContent
 
         _content.Center = Center;
     }
-    
+
     private void SetContent(Control? value)
     {
         if (value == this)

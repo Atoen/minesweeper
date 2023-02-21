@@ -2,24 +2,25 @@
 
 namespace Minesweeper.ConsoleDisplay;
 
+[DebuggerDisplay("Pixel({Symbol}), Fg: {Fg.ToString()}, Bg: {Bg.ToString()}, Mode: {Mode}")]
 public struct Pixel : IEquatable<Pixel>
 {
-    private Pixel(char symbol, TextMode mode, Color fg, Color bg)
+    private Pixel(char symbol, Color fg, Color bg, TextMode mode)
     {
         Symbol = symbol;
-        Mode = mode;
         Fg = fg;
         Bg = bg;
+        Mode = mode;
     }
 
     private const char ClearedSymbol = ' ';
 
-    public static readonly Pixel Empty = new('\0', TextMode.Default, Color.Empty, Color.Empty);
-    public static readonly Pixel Cleared = new(ClearedSymbol, TextMode.Default, Color.Empty, Color.Empty);
+    public static readonly Pixel Empty = new('\0', Color.Empty, Color.Empty, TextMode.Default);
+    public static readonly Pixel Cleared = new(ClearedSymbol, Color.Empty, Color.Empty, TextMode.Default);
 
     public TextMode Mode;
     public char Symbol;
-    
+
     public Color Fg = Color.Empty;
     public Color Bg = Color.Empty;
 
@@ -32,7 +33,7 @@ public struct Pixel : IEquatable<Pixel>
     public bool IsCleared => Symbol == ClearedSymbol && Fg == Color.Empty && Bg == Color.Empty;
 
     public static implicit operator Pixel(TileDisplay tileDisplay) =>
-        new(tileDisplay.Symbol, TextMode.Default, tileDisplay.Foreground, tileDisplay.Background);
+        new(tileDisplay.Symbol, tileDisplay.Foreground, tileDisplay.Background, TextMode.Default);
 
     public static bool operator ==(Pixel a, Pixel b)
     {

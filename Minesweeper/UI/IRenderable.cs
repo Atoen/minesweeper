@@ -3,11 +3,11 @@
 public interface IRenderable : IComparable<IRenderable>
 {
     void Render();
-    
+
     bool ShouldRender { get; }
 
     void Clear();
-    
+
     int ZIndex { get; }
     event Component.ZIndexChangeEventHandler? ZIndexChanged;
 

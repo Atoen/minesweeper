@@ -13,7 +13,7 @@ public class Canvas : ContentControl
         {
             _buffer = new Pixel[value.Width, value.Height];
             value.SetBuffer(_buffer);
-            
+
             _drawable = value;
         }
     }
@@ -24,7 +24,7 @@ public class Canvas : ContentControl
     public override void Render()
     {
         base.Render();
-        
+
         Display.DrawBuffer(GlobalPosition + InnerPadding, _buffer);
     }
 
@@ -33,7 +33,7 @@ public class Canvas : ContentControl
         MinSize = InnerPadding * 2 + (Drawable.Width, Drawable.Height);
 
         ApplyResizing();
-        
+
         base.Resize();
     }
 
@@ -76,7 +76,7 @@ public interface IDrawable
 {
     int Width { get; }
     int Height { get; }
-    
+
     Vector Offset { get; set; }
 
     void Draw();

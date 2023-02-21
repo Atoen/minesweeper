@@ -19,7 +19,7 @@ public abstract class VisualComponent : Component, IRenderable
     public Color HighlightedColor { get; set; } = Color.Blue;
     public Color PressedColor { get; set; } = Color.White;
     public Color DisabledColor { get; set; } = Color.DarkSlateGray;
-    
+
     public Color Color
     {
         get => DefaultColor;
@@ -31,7 +31,7 @@ public abstract class VisualComponent : Component, IRenderable
             DisabledColor = value.Dimmer();
         }
     }
-    
+
     public bool ShowBorder { get; set; }
     public BorderStyle BorderStyle { get; set; } = BorderStyle.Single;
     public Color BorderColor { get; set; } = Color.Cyan;
@@ -39,7 +39,7 @@ public abstract class VisualComponent : Component, IRenderable
     public bool RenderOnItsOwn { get; set; }
 
     public virtual bool ShouldRender => RenderOnItsOwn || Parent != null;
-    
+
     public Color CurrentColor
     {
         get

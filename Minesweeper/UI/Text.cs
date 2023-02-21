@@ -13,12 +13,12 @@ public class Text : VisualComponent
     public Text(string text, Color foreground)
     {
         ArgumentNullException.ThrowIfNull(text);
-        
+
         if (text.Contains(Environment.NewLine))
         {
             throw new ArgumentException("Text cannot contain newline character");
         }
-        
+
         TextInternal = text;
         Size = new Vector(Length, 1);
 
@@ -32,7 +32,7 @@ public class Text : VisualComponent
     {
         Background = background;
     }
-    
+
     public override bool ShouldRender => Parent is {ShouldRender: true};
 
     private VisualComponent? _parent;
@@ -69,17 +69,17 @@ public class Text : VisualComponent
     }
 
     public int Length => TextInternal.Length;
-    
+
     public override void Render()
     {
         if (_parent == null) return;
-        
+
         var background = Background == Color.Transparent ? _parent.CurrentColor : Background;
         var position = _parent.Center;
-        
+
         Display.Print(position.X, position.Y, TextInternal, Foreground, background, Alignment, TextMode);
     }
-    
+
     public override void Clear()
     {
         var startPos = Alignment switch
@@ -88,7 +88,7 @@ public class Text : VisualComponent
             Alignment.Right => new Vector(GlobalPosition.X - Length, GlobalPosition.Y),
             _ => new Vector(GlobalPosition.X - Length / 2, GlobalPosition.Y)
         };
-        
+
         Display.ClearRect(startPos, Size);
     }
 

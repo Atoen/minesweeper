@@ -27,7 +27,7 @@ public static class MainMenu
             Color = Color.LightSlateGray,
             ShowGridLines = true
         };
-        
+
         grid.Columns.Add(new Column());
         grid.Columns.Add(new Column());
         grid.Rows.Add(new Row());
@@ -37,53 +37,53 @@ public static class MainMenu
         {
             Color = Color.Red
         };
-        
+
         var label2 = new Label
         {
             Color = Color.Blue
         };
-        
+
         var label3 = new Label
         {
             Color = Color.Yellow,
             ResizeMode = ResizeMode.Expand,
             Text = new Text("Long Label")
         };
-        
+
         var label4 = new Label
         {
             Color = Color.Green
         };
-        
+
         grid.SetColumnAndRow(label1, 0, 0);
         grid.SetColumnAndRow(label2, 1, 0);
         grid.SetColumnAndRow(label3, 0, 1);
         grid.SetColumnAndRow(label4, 1, 1);
 
-        label1.MouseScroll += delegate(Control sender, MouseScrollEventArgs args)
+        label1.MouseScroll += delegate(Control sender, MouseEventArgs args)
         {
             if (args.ScrollDirection == ScrollDirection.Down && sender.Width > sender.MinSize.X) sender.Width--;
             else if (args.ScrollDirection == ScrollDirection.Up) sender.Width++;
         };
-        
-        label2.MouseScroll += delegate(Control sender, MouseScrollEventArgs args)
+
+        label2.MouseScroll += delegate(Control sender, MouseEventArgs args)
         {
             if (args.ScrollDirection == ScrollDirection.Down && sender.Height > sender.MinSize.Y) sender.Height--;
             else if (args.ScrollDirection == ScrollDirection.Up) sender.Height++;
         };
-        
+
         label4.MouseMove += delegate(Control sender, MouseEventArgs args)
         {
             if (args.LeftButton == MouseButtonState.Pressed) sender.Center = args.CursorPosition;
         };
     }
-    
+
     public static void Show()
     {
         var grid = new Grid
         {
             Color = Color.LightSlateGray,
-            
+
             ShowGridLines = true,
             GridLineStyle = GridLineStyle.Single
         };
@@ -99,28 +99,28 @@ public static class MainMenu
         grid.Rows.Add(new Row());
         grid.Rows.Add(new Row());
         grid.Rows.Add(new Row());
-        
+
         var titleLabel = new Label
         {
             Color = Color.Orange,
             Text = new BigText("MINESWEEPER", Font.Cyber),
-            
+
             BorderColor = Color.Black,
             BorderStyle = BorderStyle.Rounded,
             ShowBorder = true,
-            
+
             InnerPadding = (2, 1),
             OuterPadding = (1, 0)
         };
 
         grid.SetColumnAndRow(titleLabel, 1, 0);
 
-        titleLabel.MouseScroll += delegate(Control sender, MouseScrollEventArgs args)
+        titleLabel.MouseScroll += delegate(Control sender, MouseEventArgs args)
         {
             if (args.ScrollDirection == ScrollDirection.Down && sender.Width > sender.MinSize.X) sender.Width--;
             else if (args.ScrollDirection == ScrollDirection.Up) sender.Width++;
         };
-        
+
         titleLabel.MouseDown += delegate(Control sender, MouseEventArgs args)
         {
             if (sender is not Label {Text: BigText bigText}) return;
@@ -139,7 +139,7 @@ public static class MainMenu
         {
             Text = new BigText("play", Font.CalvinS),
             Color = Color.Aquamarine,
-            
+
             ResizeMode = ResizeMode.Expand,
             OuterPadding = (1, 0),
 
@@ -149,7 +149,7 @@ public static class MainMenu
                 StartGame(variable.Val);
             }
         };
-        
+
         grid.SetColumnAndRow(playButton, 1, 6);
 
         var widthLabel = new Label
@@ -157,25 +157,25 @@ public static class MainMenu
             Text = new Text("Width"),
             Color = Color.DarkGray
         };
-        
+
         var heightLabel = new Label
         {
             Text = new Text("Height"),
             Color = Color.DarkGray
         };
-        
+
         var bombsLabel = new Label
         {
             Text = new Text("Bombs"),
             Color = Color.DarkGray
         };
-        
+
         grid.SetColumnAndRow(widthLabel, 1, 1);
         grid.SetColumnAndRow(heightLabel, 2, 1);
         grid.SetColumnAndRow(bombsLabel, 3, 1);
 
         var gradient = Colors.Gradient(Color.Green, Color.Orange, GamePresets.Count).ToList();
-        
+
         for (var i = 0; i < GamePresets.Count; i++)
         {
             var preset = GamePresets[i];
@@ -185,7 +185,7 @@ public static class MainMenu
                 Color = gradient[i],
                 ResizeMode = ResizeMode.Expand
             };
-            
+
             radioButton.DoubleClick += delegate
             {
                 grid.Remove();
@@ -197,21 +197,21 @@ public static class MainMenu
                 Text = new Text(preset.Width.ToString()),
                 Color = Color.DarkGray
             };
-            
+
             var height = new Label
             {
                 Text = new Text(preset.Height.ToString()),
                 Color = Color.DarkGray,
                 ResizeMode = ResizeMode.Expand
             };
-            
+
             var bombs = new Label
             {
                 Text = new Text(preset.Bombs.ToString()),
                 Color = Color.DarkGray,
                 ResizeMode = ResizeMode.Expand
             };
-            
+
             grid.SetColumnAndRow(radioButton, 0, i + 2);
             grid.SetColumnAndRow(width, 1, i + 2);
             grid.SetColumnAndRow(height, 2, i + 2);
@@ -224,13 +224,13 @@ public static class MainMenu
             Color = Color.DarkCyan,
             ResizeMode = ResizeMode.Expand
         };
-        
+
         customButton.DoubleClick += delegate
         {
             grid.Remove();
             StartGame(variable.Val);
         };
-        
+
         grid.SetColumnAndRow(customButton, 0, GamePresets.Count + 2);
 
         _customWidthText = new EntryText("15");
@@ -268,7 +268,7 @@ public static class MainMenu
         grid.SetColumnAndRow(widthEntry, 1, 5);
         grid.SetColumnAndRow(heightEntry, 2, 5);
         grid.SetColumnAndRow(bombsEntry, 3, 5);
-        
+
         variable.OnValueChanged += delegate(Variable _, int value)
         {
             var enabled = value == GamePresets.Count;
@@ -286,7 +286,7 @@ public static class MainMenu
             Game.Game.Start(GamePresets[preset]);
             return;
         }
-        
+
         Game.Game.Start(GetCustomPreset());
     }
 

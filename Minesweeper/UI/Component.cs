@@ -6,10 +6,10 @@ public abstract class Component
 {
     public State State { get; protected set; } = State.Default;
     public bool Enabled { get; private set; } = true;
-    
+
     public ResizeMode ResizeMode { get; set; } = ResizeMode.Stretch;
     public ZIndexUpdateMode ZIndexUpdateMode { get; set; } = ZIndexUpdateMode.OneHigherThanParent;
-    
+
     private int _zIndex;
     public int ZIndex
     {
@@ -23,29 +23,29 @@ public abstract class Component
         get => _parent;
         set => SetParentInternal(value);
     }
-    
+
     public delegate void PositionChangeEventHandler(Component sender, PositionChangedEventArgs e);
     public delegate void SizeChangeEventHandler(Component sender, SizeChangedEventArgs e);
     public delegate void ZIndexChangeEventHandler(Component sender, ZIndexChangedEventArgs e);
-    
+
     public event PositionChangeEventHandler? PositionChanged;
     public event SizeChangeEventHandler? SizeChanged;
     public event ZIndexChangeEventHandler? ZIndexChanged;
-    
+
     public Vector InnerPadding = new(1, 1);
     public Vector OuterPadding = Vector.Zero;
-    
+
     public Vector PaddedSize => Size + OuterPadding * 2;
     public int PaddedWidth => Width + OuterPadding.X * 2;
     public int PaddedHeight => Height + OuterPadding.Y * 2;
-    
+
     public Vector InnerSize => Size - InnerPadding * 2;
     public int InnerWidth => Width - InnerPadding.X * 2;
     public int InnerHeight => Height - InnerPadding.Y * 2;
 
     private Vector _localPosition;
     private Vector _globalPosition;
-    
+
     public Vector Position
     {
         get => _localPosition;
@@ -77,7 +77,7 @@ public abstract class Component
     public Vector Size
     {
         get => _size;
-        
+
         [MinSize(100, 100)]
         set
         {
@@ -150,7 +150,7 @@ public abstract class Component
 
         Enabled = enabled;
     }
-    
+
     public bool ContainsPoint(Vector pos) =>
         pos.X >= GlobalPosition.X && pos.X < GlobalPosition.X + Width &&
         pos.Y >= GlobalPosition.Y && pos.Y < GlobalPosition.Y + Height;
@@ -181,7 +181,7 @@ public abstract class Component
             _ => _zIndex
         };
     }
-    
+
     private void SetPositionInternal(Vector value, bool isLocal)
     {
         var positionBefore = isLocal ? _localPosition : _globalPosition;
@@ -230,7 +230,7 @@ public abstract class Component
         {
             Position = GlobalPosition;
             _parent = null;
-            
+
             return;
         }
 

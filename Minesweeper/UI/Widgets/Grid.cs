@@ -12,11 +12,11 @@ public class Grid : Control
         RenderOnItsOwn = true;
 
         Children.ElementChanged += ChildrenOnElementChanged;
-        
+
         Columns.CollectionChanged += ColumnsOnCollectionChanged;
         Rows.CollectionChanged += RowsOnCollectionChanged;
     }
-    
+
     public ObservableList<Control> Children { get; } = new();
 
     public readonly GridElementCollection<Column> Columns = new();
@@ -49,7 +49,7 @@ public class Grid : Control
         if (entry == null)
         {
             if (addChild) Children.Add(control);
-            
+
             _entries.Add(new Entry(control, column, row, 1, 1));
         }
         else
@@ -70,7 +70,7 @@ public class Grid : Control
             X = Columns.GetOffset(column) + InnerPadding.X,
             Y = Rows.GetOffset(row) + InnerPadding.Y
         };
-        
+
         CalculatePosition(control, pos + control.OuterPadding, column, row);
     }
 
@@ -80,7 +80,7 @@ public class Grid : Control
         {
             throw new InvalidOperationException($"Invalid column span. Value: {columnSpan}");
         }
-        
+
         if (rowSpan > Rows.Count)
         {
             throw new InvalidOperationException($"Invalid row span. Value: {rowSpan}");
@@ -101,7 +101,7 @@ public class Grid : Control
             {
                 throw new InvalidOperationException($"Invalid column span. Value: {columnSpan}");
             }
-            
+
             if (entry.Row + entry.RowSpawn > Rows.Count)
             {
                 throw new InvalidOperationException($"Invalid column span. Value: {columnSpan}");
@@ -124,14 +124,14 @@ public class Grid : Control
             VerticalAlignment.Bottom => Rows[row].Size - control.PaddedHeight,
             _ => 0
         };
-        
+
         control.Position = baseOffset;
     }
 
     private void AdjustCellSize(Vector size, int column, int row)
     {
         var shouldMoveContent = false;
-        
+
         if (Columns[column].Size < size.X &&
             GridResizeDirection is GridResizeDirection.Horizontal or GridResizeDirection.Both)
         {
@@ -162,7 +162,7 @@ public class Grid : Control
             if (control.ResizeMode == ResizeMode.Expand)
             {
                 var expandSize = new Vector(Columns[entry.Column].Size, Rows[entry.Row].Size) - control.OuterPadding * 2;
-                
+
                 control.Expand(expandSize);
             }
 
@@ -171,9 +171,9 @@ public class Grid : Control
                 X = Columns.GetOffset(entry.Column),
                 Y = Rows.GetOffset(entry.Row)
             };
-            
+
             baseOffset += InnerPadding + control.OuterPadding;
-            
+
             CalculatePosition(control, baseOffset, entry.Column, entry.Row);
         }
 
@@ -209,7 +209,7 @@ public class Grid : Control
     {
         var columns = Columns.Count;
         var rows = Rows.Count;
-        
+
         Span<Vector> crosses = stackalloc Vector[(columns - 1) * (rows - 1)];
 
         var pos  = GlobalPosition + InnerPadding;
@@ -232,7 +232,7 @@ public class Grid : Control
         for (var i = 0; i < rows - 1; i++)
         {
             pos.Y = Rows.GetOffset(i) + Position.Y + Rows[i].Size + 1;
-            
+
             Display.DrawLine(pos, Vector.Right, InnerWidth, GridLinesColor, CurrentColor,
                 GridLines.Symbols[GridLineStyle][GridLineFragment.Horizontal]);
 
@@ -250,11 +250,11 @@ public class Grid : Control
                 GridLinesColor, CurrentColor);
         }
     }
-    
+
     public override void Render()
     {
         base.Render();
-        
+
         if (ShowGridLines) RenderLines();
     }
 
@@ -267,7 +267,7 @@ public class Grid : Control
             child.Parent = null;
             child.Remove();
         }
-        
+
         Children.Clear();
     }
 
@@ -275,7 +275,7 @@ public class Grid : Control
     {
         Span<int> columnsMinimumWidth = stackalloc int[Columns.Count];
         Span<int> rowsMinimumHeight = stackalloc int[Rows.Count];
-        
+
         foreach (var entry in _entries)
         {
             if (entry.RefTarget is not { } control) continue;
@@ -290,12 +290,12 @@ public class Grid : Control
         {
             Columns[i].Size = columnsMinimumWidth[i];
         }
-        
+
         for (var i = 0; i < Rows.Count; i++)
         {
             Rows[i].Size = rowsMinimumHeight[i];
         }
-        
+
         Width = Columns.Size + InnerPadding.X * 2;
         Height = Rows.Size + InnerPadding.Y * 2;
 
@@ -315,7 +315,7 @@ public class Grid : Control
 
         public WeakReference Reference { get; }
         public Control? RefTarget => Reference.Target as Control;
-        
+
         public int Column { get; set; }
         public int Row { get; set; }
 
