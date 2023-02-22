@@ -2,7 +2,7 @@
 using System.Reflection;
 using Minesweeper.Attributes;
 
-namespace Minesweeper.Visual.Figlet;
+namespace Minesweeper.Visuals.Figlet;
 
 public class Font
 {

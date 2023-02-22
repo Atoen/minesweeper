@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace Minesweeper.Visual;
+namespace Minesweeper.Visuals;
 
 public static class Border
 {

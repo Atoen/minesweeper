@@ -8,6 +8,29 @@ public static class Application
     {
         Display.Init(displayMode);
         Input.Init();
+        
+        Console.CancelKeyPress += delegate
+        {
+            using var process = Process.GetCurrentProcess();
+
+            process.Refresh();
+            var peakPhysical = process.PeakWorkingSet64;
+            var peakPaged = process.PeakPagedMemorySize64;
+
+            Input.Stop();
+            Display.Stop();
+
+            Display.ResetStyle();
+
+            Console.Clear();
+            Console.WriteLine("Exiting...");
+
+            const double bytesPerMByte = 1_048_576D;
+            Console.WriteLine(
+                $"Memory usage - Physical: {peakPhysical / bytesPerMByte:.00}MB, Paged: {peakPaged / bytesPerMByte:.00}MB");
+
+            Environment.Exit(Environment.ExitCode);
+        };
     }
 
     public static void Exit(Exception? exception = null)
@@ -22,7 +45,7 @@ public static class Application
         {
             Console.Clear();
 
-            if (exception == null) Console.WriteLine(exception);
+            if (exception != null) Console.WriteLine(exception);
             else Console.WriteLine("Exiting...");
         }
     }

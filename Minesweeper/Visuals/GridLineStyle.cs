@@ -1,4 +1,4 @@
-﻿namespace Minesweeper.Visual;
+﻿namespace Minesweeper.Visuals;
 
 public enum GridLineStyle
 {

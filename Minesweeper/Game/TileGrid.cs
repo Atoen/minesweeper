@@ -9,20 +9,20 @@ public class TileGrid : Control
     public TileGrid(int width, int height, int bombs)
     {
         ShowFocusedBorder = false;
+        InnerPadding = Vector.Zero;
 
-        Width = width;
-        Height = height;
+        _gameSize = new Vector(width, height);
         Bombs = bombs;
 
         _tiles = new Tile[width, height];
 
-        for (var x = 0; x < Width; x++)
-        for (var y = 0; y < Height; y++)
+        for (var x = 0; x < width; x++)
+        for (var y = 0; y < height; y++)
         {
             _tiles[x, y] = new Tile {Pos = {X = x, Y = y}};
         }
 
-        _tilesLeftToReveal = Width * Height - Bombs;
+        _tilesLeftToReveal = width * height - Bombs;
 
         _revealed = false;
     }
@@ -37,6 +37,10 @@ public class TileGrid : Control
     private bool _revealed;
     private int _tilesLeftToReveal;
 
+    private readonly Vector _gameSize;
+    private int GameWidth => _gameSize.X;
+    private int GameHeight => _gameSize.Y;
+
     public int Bombs { get; private set; }
 
     public void GenerateNew()
@@ -46,7 +50,7 @@ public class TileGrid : Control
             tile.Reset();
         }
 
-        _tilesLeftToReveal = Width * Height - Bombs;
+        _tilesLeftToReveal = GameWidth * GameHeight - Bombs;
 
         _revealed = false;
     }
@@ -63,12 +67,12 @@ public class TileGrid : Control
             var tileX = clickPos.X + x;
             var tileY = clickPos.Y + y;
 
-            if (tileX < 0 || tileX >= Width || tileY < 0 || tileY >= Height) continue;
+            if (tileX < 0 || tileX >= GameWidth || tileY < 0 || tileY >= GameHeight) continue;
 
             nearTiles.Add(_tiles[tileX, tileY]);
         }
 
-        var bombSpots = Width * Height - nearTiles.Count;
+        var bombSpots = GameWidth * GameHeight - nearTiles.Count;
 
         if (Bombs > bombSpots) Bombs = bombSpots;
 
@@ -77,8 +81,8 @@ public class TileGrid : Control
 
         // copying the 2D tiles array into 1D one for easier picking
         var i = 0;
-        for (var x = 0; x < Width; x++)
-        for (var y = 0; y < Height; y++)
+        for (var x = 0; x < GameWidth; x++)
+        for (var y = 0; y < GameHeight; y++)
         {
             if (nearTiles.Contains(_tiles[x, y])) continue;
 
@@ -118,7 +122,7 @@ public class TileGrid : Control
             var tileX = tile.Pos.X + x;
             var tileY = tile.Pos.Y + y;
 
-            if (tileX < 0 || tileX >= Width || tileY < 0 || tileY >= Height) continue;
+            if (tileX < 0 || tileX >= GameWidth || tileY < 0 || tileY >= GameHeight) continue;
 
             if (x != 0 || y != 0) tile.Neighbours.Add(_tiles[tileX, tileY]);
 
@@ -226,12 +230,19 @@ public class TileGrid : Control
         base.OnMouseRightDown(e);
     }
 
+    public override void Resize()
+    {
+        MinSize = InnerPadding * 2 + _gameSize;
+
+        ApplyResizing();
+    }
+
     public override void Render()
     {
-        var pos = GlobalPosition;
+        var pos = GlobalPosition + InnerPadding;
 
-        for (var x = 0; x < Width; x++)
-        for (var y = 0; y < Height; y++)
+        for (var x = 0; x < GameWidth; x++)
+        for (var y = 0; y < GameHeight; y++)
         {
             var tile = _tiles[x, y];
 

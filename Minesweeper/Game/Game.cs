@@ -33,8 +33,6 @@ public static class Game
     {
         var grid = new Grid
         {
-            Size = (10, 10),
-
             Color = Color.RosyBrown,
             ShowGridLines = true
         };
@@ -45,7 +43,7 @@ public static class Game
         grid.Rows.Add(new Row());
         grid.Rows.Add(new Row());
         grid.Rows.Add(new Row());
-
+        
         var menuButton = new Button
         {
             Text = new Text("Menu"),
@@ -80,7 +78,9 @@ public static class Game
         grid.SetColumnAndRow(menuButton, 0, 0);
         grid.SetColumnAndRow(flagsLabel, 0, 1);
         grid.SetColumnAndRow(restartButton, 1, 1);
-        grid.SetColumnAndRow(_tileGrid, 1, 2);
+        
+        grid.SetColumnAndRow(_tileGrid, 0, 2);
+        grid.SetColumnSpanAndRowSpan(_tileGrid, 3, 1);
     }
 
     private static void Restart()

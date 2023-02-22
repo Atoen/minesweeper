@@ -23,22 +23,22 @@
 
     <ItemGroup>
       <None Remove="Visual\Figlet\default.flf" />
-      <EmbeddedResource Include="Visual\Figlet\default.flf" />
+      <EmbeddedResource Include="Visuals\Figlet\default.flf" />
       <None Remove="Visual\FigletText\4max.flf" />
-      <EmbeddedResource Include="Visual\Figlet\4max.flf" />
+      <EmbeddedResource Include="Visuals\Figlet\4max.flf" />
       <None Remove="Visual\FigletText\amc3.flf" />
-      <EmbeddedResource Include="Visual\Figlet\amc3.flf" />
+      <EmbeddedResource Include="Visuals\Figlet\amc3.flf" />
       <None Remove="Visual\FigletText\ansi shadow.flf" />
-      <EmbeddedResource Include="Visual\Figlet\ansi shadow.flf" />
+      <EmbeddedResource Include="Visuals\Figlet\ansi shadow.flf" />
       <None Remove="Visual\FigletText\ansi regular.flf" />
-      <EmbeddedResource Include="Visual\Figlet\ansi regular.flf" />
+      <EmbeddedResource Include="Visuals\Figlet\ansi regular.flf" />
       <None Remove="Visual\FigletText\bigfig.flf" />
-      <EmbeddedResource Include="Visual\Figlet\bigfig.flf" />
+      <EmbeddedResource Include="Visuals\Figlet\bigfig.flf" />
       <None Remove="Visual\FigletText\calvin s.flf" />
-      <EmbeddedResource Include="Visual\Figlet\calvin s.flf" />
+      <EmbeddedResource Include="Visuals\Figlet\calvin s.flf" />
       <None Remove="Visual\FigletText\broadway.flf" />
       <None Remove="Visual\FigletText\cyber.flf" />
-      <EmbeddedResource Include="Visual\Figlet\cyber.flf" />
+      <EmbeddedResource Include="Visuals\Figlet\cyber.flf" />
     </ItemGroup>
 
 </Project>

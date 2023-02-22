@@ -2,29 +2,6 @@
 using Minesweeper.ConsoleDisplay;
 using Minesweeper.UI;
 
-Console.CancelKeyPress += delegate
-{
-    using var process = Process.GetCurrentProcess();
-
-    process.Refresh();
-    var peakPhysical = process.PeakWorkingSet64;
-    var peakPaged = process.PeakPagedMemorySize64;
-
-    Input.Stop();
-    Display.Stop();
-
-    Display.ResetStyle();
-
-    Console.Clear();
-    Console.WriteLine("Exiting...");
-
-    const double bytesPerMByte = 1_048_576D;
-    Console.WriteLine(
-        $"Memory usage - Physical: {peakPhysical / bytesPerMByte:.00}MB, Paged: {peakPaged / bytesPerMByte:.00}MB");
-
-    Environment.Exit(Environment.ExitCode);
-};
-
 var displayMode = DisplayMode.Auto;
 
 void ParseArgs(string arg)

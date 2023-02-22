@@ -8,6 +8,9 @@ public static partial class NativeConsole
     [LibraryImport("kernel32.dll")]
     public static partial nint GetStdHandle(uint nStdHandle);
 
+    public static nint HandleIn => GetStdHandle(StdHandleIn);
+    public static nint HandleOut => GetStdHandle(StdHandleOut);
+
     [LibraryImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool GetConsoleMode(nint hConsoleInput, ref uint mode);

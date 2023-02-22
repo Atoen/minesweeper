@@ -4,7 +4,7 @@ using Minesweeper.Game;
 using Minesweeper.UI;
 using Minesweeper.UI.Widgets;
 using Minesweeper.Utils;
-using Minesweeper.Visual;
+using Minesweeper.Visuals;
 
 namespace Minesweeper.ConsoleDisplay;
 
@@ -36,10 +36,7 @@ public static class Display
 
         Mode = mode;
 
-        if (Mode == DisplayMode.Auto)
-        {
-            GetDisplayMode();
-        }
+        if (Mode == DisplayMode.Auto) GetDisplayMode();
 
         if (Mode == DisplayMode.Native)
         {
@@ -281,7 +278,7 @@ public static class Display
 
     private static void GetDisplayMode()
     {
-        var handle = NativeConsole.GetStdHandle(NativeConsole.StdHandleOut);
+        var handle = NativeConsole.HandleOut;
 
         var mode = 0u;
         if (handle == (nint) (-1L) || !NativeConsole.GetConsoleMode(handle, ref mode))

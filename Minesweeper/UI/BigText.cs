@@ -1,6 +1,6 @@
 ﻿using System.Text;
 using Minesweeper.ConsoleDisplay;
-using Minesweeper.Visual.Figlet;
+using Minesweeper.Visuals.Figlet;
 
 namespace Minesweeper.UI;
 

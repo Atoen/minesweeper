@@ -43,6 +43,8 @@ public abstract class Component
     public int InnerWidth => Width - InnerPadding.X * 2;
     public int InnerHeight => Height - InnerPadding.Y * 2;
 
+    public Vector RequiredSpace => ResizeMode == ResizeMode.Expand ? MinSize + OuterPadding * 2 : PaddedSize;
+
     private Vector _localPosition;
     private Vector _globalPosition;
 
@@ -78,7 +80,6 @@ public abstract class Component
     {
         get => _size;
 
-        [MinSize(100, 100)]
         set
         {
             var sizeBefore = _size;

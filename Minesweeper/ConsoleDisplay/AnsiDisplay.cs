@@ -2,7 +2,7 @@
 using System.Text;
 using Minesweeper.UI.Widgets;
 using Minesweeper.Utils;
-using Minesweeper.Visual;
+using Minesweeper.Visuals;
 
 namespace Minesweeper.ConsoleDisplay;
 

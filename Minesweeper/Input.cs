@@ -5,7 +5,7 @@ using static Minesweeper.NativeConsole;
 
 namespace Minesweeper;
 
-internal static class Input
+public static class Input
 {
     public static bool TreatControlCAsInput
     {
@@ -13,6 +13,7 @@ internal static class Input
         set => Console.TreatControlCAsInput = value;
     }
     internal static event EventHandler<SCoord>? WindowEvent;
+    internal static event EventHandler? ControlC;
 
     private static volatile bool _running;
     private static MouseButton _lastMouseButton = MouseButton.None;
@@ -33,7 +34,7 @@ internal static class Input
 
         TreatControlCAsInput = true;
 
-        var inHandle = GetStdHandle(StdHandleIn);
+        var inHandle = HandleIn;
 
         var mode = 0u;
         GetConsoleMode(inHandle, ref mode);
@@ -109,8 +110,6 @@ internal static class Input
 
     private static void HandleMouse()
     {
-        // if (MouseState.Position.Y > Display.Height - 1) MouseState.Position.Y = Display.Height - 1;
-
         var zIndex = int.MinValue;
         Control? hit = null;
 
@@ -168,15 +167,9 @@ internal static class Input
 
     private static void SendMouseEvents(Control control, MouseEventArgs args)
     {
-        if ((MouseState.Flags & MouseEventFlags.DoubleClicked) != 0)
-        {
-            control.SendMouseEvent(MouseEventType.DoubleClick, args);
-        }
+        if ((MouseState.Flags & MouseEventFlags.DoubleClicked) != 0) control.SendMouseEvent(MouseEventType.DoubleClick, args);
 
-        if (args.ScrollDirection != ScrollDirection.None)
-        {
-            control.SendMouseEvent(MouseEventType.MouseScroll, args);
-        }
+        if (args.ScrollDirection != ScrollDirection.None) control.SendMouseEvent(MouseEventType.MouseScroll, args);
 
         if (_lastMouseButton == MouseButton.None)
         {
@@ -205,6 +198,11 @@ internal static class Input
 
     private static void HandleKeyboard()
     {
+        if ((KeyboardState.Modifiers & KeyModifiers.LeftControl) != 0 && KeyboardState is { Key: ConsoleKey.C, Pressed: true })
+        {
+            ControlC?.Invoke(null, EventArgs.Empty);
+        }
+
         LockSlim.EnterWriteLock();
 
         foreach (var control in Controls)
@@ -228,7 +226,7 @@ internal static class Input
         KeyboardArgsPool.Return(args);
     }
 
-    internal static void Stop() => _running = false;
+    public static void Stop() => _running = false;
 }
 
 public sealed class KeyboardState
@@ -236,12 +234,14 @@ public sealed class KeyboardState
     public ConsoleKey Key;
     public char Char;
     public bool Pressed;
+    public KeyModifiers Modifiers;
 
     public void Assign(ref KeyEventRecord record)
     {
-        Key = (ConsoleKey) record.VirtualKeyCode;
+        Key = (ConsoleKey)record.VirtualKeyCode;
         Pressed = record.KeyDown;
         Char = record.UnicodeChar;
+        Modifiers = (KeyModifiers)record.ControlKeyState;
     }
 }
 
@@ -266,17 +266,17 @@ public enum MouseButton : byte
 {
     None = 0,
     Left = 1,
-    Right = 1 << 1,
-    Middle = 1 << 2
+    Right = 2,
+    Middle = 4
 }
 
 [Flags]
 public enum MouseEventFlags : byte
 {
     Moved = 1,
-    DoubleClicked = 1 << 1,
-    Wheeled = 1 << 2,
-    HorizontalWheeled = 1 << 3
+    DoubleClicked = 2,
+    Wheeled = 4,
+    HorizontalWheeled = 8
 }
 
 public enum MouseWheelState : ulong
@@ -285,4 +285,15 @@ public enum MouseWheelState : ulong
     AnsiUp = 0xff800000,
     Down = 0x780000,
     AnsiDown = 0x800000
+}
+
+[Flags]
+public enum KeyModifiers : byte
+{
+    None = 0,
+    RightAlt = 1,
+    LeftAlt = 2,
+    RightControl = 4,
+    LeftControl = 8,
+    Shift = 16
 }

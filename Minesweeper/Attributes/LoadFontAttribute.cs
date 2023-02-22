@@ -1,5 +1,5 @@
 ﻿using MethodBoundaryAspect.Fody.Attributes;
-using Minesweeper.Visual.Figlet;
+using Minesweeper.Visuals.Figlet;
 
 namespace Minesweeper.Attributes;
 

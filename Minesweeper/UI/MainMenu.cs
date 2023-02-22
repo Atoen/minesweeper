@@ -2,8 +2,8 @@
 using Minesweeper.Game;
 using Minesweeper.UI.Events;
 using Minesweeper.UI.Widgets;
-using Minesweeper.Visual;
-using Minesweeper.Visual.Figlet;
+using Minesweeper.Visuals;
+using Minesweeper.Visuals.Figlet;
 
 namespace Minesweeper.UI;
 
@@ -30,49 +30,54 @@ public static class MainMenu
 
         grid.Columns.Add(new Column());
         grid.Columns.Add(new Column());
+        grid.Columns.Add(new Column());
+        grid.Rows.Add(new Row());
         grid.Rows.Add(new Row());
         grid.Rows.Add(new Row());
 
-        var label1 = new Label
+        var red = new Label
         {
-            Color = Color.Red
+            Color = Color.Red,
+            ResizeMode = ResizeMode.Expand
         };
 
-        var label2 = new Label
+        var blue = new Label
         {
             Color = Color.Blue
         };
 
-        var label3 = new Label
+        var yellow = new Label
         {
             Color = Color.Yellow,
-            ResizeMode = ResizeMode.Expand,
+            // ResizeMode = ResizeMode.Expand,
             Text = new Text("Long Label")
         };
 
-        var label4 = new Label
+        var green = new Label
         {
             Color = Color.Green
         };
 
-        grid.SetColumnAndRow(label1, 0, 0);
-        grid.SetColumnAndRow(label2, 1, 0);
-        grid.SetColumnAndRow(label3, 0, 1);
-        grid.SetColumnAndRow(label4, 1, 1);
+        grid.SetColumnAndRow(red, 0, 0);
+        grid.SetColumnSpanAndRowSpan(red, 2, 2);
 
-        label1.MouseScroll += delegate(Control sender, MouseEventArgs args)
+        grid.SetColumnAndRow(blue, 2, 1);
+        grid.SetColumnAndRow(yellow, 0, 2);
+        grid.SetColumnAndRow(green, 1, 2);
+
+        yellow.MouseScroll += delegate(Control sender, MouseEventArgs args)
         {
             if (args.ScrollDirection == ScrollDirection.Down && sender.Width > sender.MinSize.X) sender.Width--;
             else if (args.ScrollDirection == ScrollDirection.Up) sender.Width++;
         };
 
-        label2.MouseScroll += delegate(Control sender, MouseEventArgs args)
+        blue.MouseScroll += delegate(Control sender, MouseEventArgs args)
         {
             if (args.ScrollDirection == ScrollDirection.Down && sender.Height > sender.MinSize.Y) sender.Height--;
             else if (args.ScrollDirection == ScrollDirection.Up) sender.Height++;
         };
 
-        label4.MouseMove += delegate(Control sender, MouseEventArgs args)
+        green.MouseMove += delegate(Control sender, MouseEventArgs args)
         {
             if (args.LeftButton == MouseButtonState.Pressed) sender.Center = args.CursorPosition;
         };
@@ -103,17 +108,17 @@ public static class MainMenu
         var titleLabel = new Label
         {
             Color = Color.Orange,
-            Text = new BigText("MINESWEEPER", Font.Cyber),
+            Text = new BigText("MINESWEEPER", Font.BigFig),
 
             BorderColor = Color.Black,
             BorderStyle = BorderStyle.Rounded,
             ShowBorder = true,
 
-            InnerPadding = (2, 1),
-            OuterPadding = (1, 0)
+            InnerPadding = (2, 1)
         };
 
-        grid.SetColumnAndRow(titleLabel, 1, 0);
+        grid.SetColumnAndRow(titleLabel, 0, 0);
+        grid.SetColumnSpanAndRowSpan(titleLabel, 4, 1);
 
         titleLabel.MouseScroll += delegate(Control sender, MouseEventArgs args)
         {
@@ -151,6 +156,7 @@ public static class MainMenu
         };
 
         grid.SetColumnAndRow(playButton, 1, 6);
+        grid.SetColumnSpanAndRowSpan(playButton, 2, 1);
 
         var widthLabel = new Label
         {
